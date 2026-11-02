@@ -105,12 +105,16 @@ const exampleTemplates: Template[] = [
     title: "ExampleHeatingPlant",
     description: "Example plant with a doublet and a heat exchanger.",
     purpose: "heating",
+    modules: 3,
+    categories: ["plants"],
   },
   {
     name: "ExampleHeatingCoolingPlant",
     title: "ExampleHeatingCoolingPlant",
     description: "Example plant with heating and cooling.",
     purpose: "both",
+    modules: 5,
+    categories: ["plants"],
   },
 ];
 

@@ -11,6 +11,7 @@ import {
   withRenamedModule,
   withRenamedPosition,
 } from "./spec";
+import type { Layout } from "@/shared/api/layout";
 import type { Flowsheet } from "@/shared/api/types";
 import type { usePlantEditor } from "./use-plant-editor";
 
@@ -38,6 +39,10 @@ export function usePlantActions(
     editor.setLayout(layout);
     if (!editor.dirty) layoutSave.mutate({ base: saved.version, layout });
   };
+  const arrange = (layout: Layout) => {
+    editor.setLayout(layout);
+    if (!editor.dirty) layoutSave.mutate({ base: saved.version, layout });
+  };
   const connect = (source: string, target: string) => {
     const exists = readConnections(editor.spec).some(
       (item) => item.source === source && item.target === target,
@@ -58,6 +63,7 @@ export function usePlantActions(
   return {
     add,
     moved,
+    arrange,
     connect,
     rename,
     remove,

@@ -221,6 +221,7 @@ function projectChangeHandlers(projects: Project[]): RequestHandler[] {
 
 function documentHandlers(documents: Document[]): RequestHandler[] {
   return [
+    http.get(toRoute("/workspace/documents/formats"), () => HttpResponse.json([".md", ".pdf"])),
     http.get(toRoute("/workspace/documents"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project");
       const items = documents.filter((document) => document.project === project);

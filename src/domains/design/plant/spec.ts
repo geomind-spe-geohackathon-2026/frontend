@@ -43,6 +43,11 @@ export function splitPort(reference: string): PortRef {
   return { module: reference.slice(0, dot), port: reference.slice(dot + 1) };
 }
 
+/** Splits a CamelCase class name into its words: ATESPlant becomes ATES and Plant. */
+export function toWords(name: string): string[] {
+  return name.split(/(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/);
+}
+
 /** Makes a snake_case id from a gemini class name: HeatExchanger becomes heat_exchanger. */
 export function toIdBase(type: string): string {
   return type.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();

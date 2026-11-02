@@ -841,6 +841,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspace/documents/formats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Formats */
+        get: operations["list_formats_api_v1_workspace_documents_formats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workspace/documents/{document_id}": {
         parameters: {
             query?: never;
@@ -2041,8 +2058,12 @@ export interface components {
         };
         /** Template */
         Template: {
+            /** Categories */
+            categories: string[];
             /** Description */
             description: string;
+            /** Modules */
+            modules: number;
             /** Name */
             name: string;
             /** Purpose */
@@ -3948,6 +3969,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_formats_api_v1_workspace_documents_formats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
                 };
             };
         };

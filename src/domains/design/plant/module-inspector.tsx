@@ -54,9 +54,9 @@ export function ModuleInspector(props: Props) {
       [splitPort(connection.source).module, splitPort(connection.target).module].includes(moduleId),
     );
   return (
-    <section aria-label={`Module ${moduleId}`} className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <h2>{title}</h2>
+    <section aria-label={`Module ${moduleId}`} className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+        <h2 className="min-w-0 [overflow-wrap:anywhere]">{title}</h2>
         <Button variant="danger" aria-label={`Remove module ${moduleId}`} onClick={props.onRemove}>
           <Trash2 aria-hidden="true" className="size-3.5" />
           Remove
@@ -70,12 +70,14 @@ export function ModuleInspector(props: Props) {
           {mine.map(({ connection, index }) => (
             <li
               key={index}
-              className="flex items-center justify-between gap-2 font-mono text-[12px]"
+              className="flex min-w-0 items-center justify-between gap-2 font-mono text-[12px]"
             >
-              <span>
-                {connection.source} → {connection.target}
+              <span className="flex min-w-0 flex-col [overflow-wrap:anywhere]">
+                <span>{connection.source} →</span>
+                <span>{connection.target}</span>
               </span>
               <Button
+                className="shrink-0"
                 aria-label={`Remove connection ${connection.source} to ${connection.target}`}
                 onClick={() => {
                   props.onRemoveConnection(index);

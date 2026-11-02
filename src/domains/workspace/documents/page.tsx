@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { toFieldMessage } from "@/shared/api/errors";
 import { useRef, useState, type ChangeEvent } from "react";
 import { toDateLabel } from "@/lib/datelabel";
@@ -9,14 +9,14 @@ import { Button } from "@/shared/ui/button";
 import { Chip } from "@/shared/ui/chip";
 import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
 import { showToast } from "@/shared/ui/toast";
-import { documentsQuery, useDeleteDocument, useUploadDocument } from "./api";
+import { documentFormatsQuery, documentsQuery, useDeleteDocument, useUploadDocument } from "./api";
 import { toSizeLabel } from "./format";
 import type { Document } from "@/shared/api/types";
 
 const searchableText: Record<Document["searchable"], string> = {
   pending: "indexing",
-  ready: "searchable",
-  failed: "failed",
+  ready: "ready",
+  failed: "failed: no text could be read",
 };
 
 const searchableTone: Record<Document["searchable"], "ok" | "warn" | "bad"> = {
@@ -82,7 +82,7 @@ function DeleteDialog({
       }}
     >
       <DialogContent title="Delete document">
-        <p>{document?.name} will be removed and the assistant can no longer cite it.</p>
+        <p>{document?.name} will be removed and the assistant can no longer search it.</p>
         {remove.error === null ? null : (
           <p role="alert" className="text-bad">
             {remove.error.message}
@@ -174,6 +174,7 @@ function DocumentsTable({
 export function DocumentsPage() {
   const projectId = useRequiredParam("projectId");
   const documents = useInfiniteQuery(documentsQuery(projectId));
+  const formats = useQuery(documentFormatsQuery());
   const [deleting, setDeleting] = useState<Document | null>(null);
   const items = toItems(documents.data?.pages);
 
@@ -181,9 +182,12 @@ export function DocumentsPage() {
     <div className="flex flex-col">
       <PageHeader
         title="Documents"
-        description="The assistant searches these and cites them."
+        description="The assistant can search these."
         actions={<UploadButton projectId={projectId} />}
       />
+      {formats.data === undefined ? null : (
+        <p className="mb-3 text-[12.5px] text-muted">Supported: {formats.data.join(", ")}</p>
+      )}
       {documents.isPending ? <p role="status">Loading documents</p> : null}
       {documents.isError ? <p role="alert">{documents.error.message}</p> : null}
       {documents.isSuccess && items.length === 0 ? (

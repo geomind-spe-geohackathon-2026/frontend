@@ -13,7 +13,7 @@ describe("documents page", () => {
     const row = (await screen.findByText("example-requirements.pdf")).closest("tr");
     if (row === null) throw new Error("row missing");
     expect(within(row).getByText("156 KB")).toBeVisible();
-    expect(within(row).getByText("searchable")).toBeVisible();
+    expect(within(row).getByText("ready")).toBeVisible();
   });
 
   it("uploads a file and shows it as indexing", async () => {

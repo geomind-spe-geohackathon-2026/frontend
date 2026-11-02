@@ -2,8 +2,8 @@ import { Quantity } from "@/shared/quantity/quantity";
 import type { LlmCall, LogMessage, LogStep, ToolCall } from "@/shared/sse/runlog";
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
-import { fromRoute, toRouteLabel } from "@/domains/assistant/chat/route";
-import { toFailureText, toPretty as toPrettyText } from "@/domains/assistant/chat/pretty";
+import { fromRoute, toRouteLabel } from "@/shared/sse/route";
+import { toFailureText, toPretty as toPrettyText } from "@/shared/sse/pretty";
 import { toPretty, toSplit } from "./split";
 
 function toAnswer(answer: string): string {

@@ -14,6 +14,42 @@ beforeAll(async () => {
 const withPlant = "/projects/example-project-1/design/plant";
 const withoutPlant = "/projects/example-project-2/design/plant";
 
+const quantity = (units: string[]) => ({
+  type: "object",
+  required: ["value", "unit"],
+  properties: { value: { type: "number" }, unit: { enum: units } },
+});
+
+const geminiParameters = {
+  module: "hx",
+  type: "HeatExchanger",
+  schema: {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "HeatExchanger",
+    type: "object",
+    properties: {
+      dispatch: {
+        anyOf: [{ type: "string", enum: ["least_cost"] }, { type: "null" }],
+        default: null,
+      },
+      thermal_conductance: {
+        anyOf: [{ type: "number", exclusiveMinimum: 0 }, quantity(["W/K"])],
+        unit: "W/K",
+      },
+      pressure_drop: {
+        anyOf: [{ type: "number", minimum: 0 }, quantity(["Pa", "bar"]), { type: "null" }],
+        unit: "Pa",
+        default: null,
+      },
+    },
+    required: ["thermal_conductance"],
+    additionalProperties: false,
+  },
+  values: { dispatch: null, thermal_conductance: 1500, pressure_drop: null },
+  missing: [],
+  history: [],
+};
+
 async function findSave() {
   return screen.findByRole("button", { name: "Save version" }, slow);
 }
@@ -119,8 +155,80 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: `${withPlant}?module=hx` });
     expect(await screen.findByLabelText(/Approach temperature/, {}, slow)).toBeVisible();
     expect(screen.getByLabelText(/Duty/)).toHaveValue(20);
-    expect(screen.getAllByText("[K]").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("K").length).toBeGreaterThan(0);
     expect(screen.getByText("missing")).toBeVisible();
+  });
+
+  it("draws gemini's parameters as value, unit and range, never as a form chooser", async () => {
+    const saved: unknown[] = [];
+    server.use(
+      http.get("*/api/v1/plant/parameters", () => HttpResponse.json(geminiParameters)),
+      http.post("*/api/v1/plant/parameters", async ({ request }) => {
+        saved.push(await request.json());
+        return HttpResponse.json(
+          { error: { code: "conflict", message: "newer", details: { latest: 4 } } },
+          { status: 409 },
+        );
+      }),
+    );
+    renderApp({ path: `${withPlant}?module=hx` });
+    const user = userEvent.setup();
+    const conductance = await screen.findByLabelText("Thermal conductance", {}, slow);
+    expect(conductance).toHaveValue(1500);
+    expect(screen.getByText(/Range > 0 W\/K/)).toBeVisible();
+    expect(screen.queryByLabelText(/^Form of/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Text" })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText("Dispatch")).getByRole("option", { name: "least_cost" }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText("Unit of Pressure drop")).getAllByRole("option"),
+    ).toHaveLength(2);
+    await user.selectOptions(screen.getByLabelText("Dispatch"), "least_cost");
+    const drop = screen.getByLabelText("Pressure drop");
+    await user.clear(drop);
+    await user.type(drop, "-1");
+    expect(screen.getByText("Must be ≥ 0")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save parameters" })).toBeDisabled();
+    await user.clear(drop);
+    await user.type(drop, "2");
+    await user.selectOptions(screen.getByLabelText("Unit of Pressure drop"), "bar");
+    await user.click(screen.getByRole("button", { name: "Save parameters" }));
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Save version" }),
+    );
+    await waitFor(() => {
+      expect(saved).toHaveLength(1);
+    });
+    expect(saved[0]).toMatchObject({
+      params: { dispatch: "least_cost", pressure_drop: { value: 2, unit: "bar" } },
+    });
+  });
+
+  it("offers a module without parameters no form", async () => {
+    server.use(
+      http.get("*/api/v1/plant/parameters", () =>
+        HttpResponse.json({
+          ...geminiParameters,
+          schema: { type: "object", properties: {} },
+          values: {},
+        }),
+      ),
+    );
+    renderApp({ path: `${withPlant}?module=hx` });
+    expect(await screen.findByText("This module has no parameters.", {}, slow)).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Save parameters" })).not.toBeInTheDocument();
+  });
+
+  it("hides a stream kind from the legend", async () => {
+    renderApp({ path: `${withPlant}?module=hx` });
+    const user = userEvent.setup();
+    const legend = await screen.findByRole("list", { name: "Stream kinds" }, slow);
+    const stream = within(legend).getAllByRole("button")[0];
+    if (stream === undefined) throw new Error("no stream in the legend");
+    expect(stream).toHaveAttribute("aria-pressed", "true");
+    await user.click(stream);
+    expect(stream).toHaveAttribute("aria-pressed", "false");
   });
 
   it("offers a reload when a newer version exists", async () => {
@@ -174,7 +282,72 @@ describe("Plant page", { timeout: 20000 }, () => {
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "Start from template" }, slow));
     await user.click(await screen.findByRole("button", { name: "Use ExampleHeatingPlant" }));
-    expect(await screen.findByText("Plant v1 saved")).toBeVisible();
+    expect(await screen.findByText("Plant v1 saved", {}, slow)).toBeVisible();
+  });
+
+  it("opens the first module with missing values after a template and walks through them", async () => {
+    renderApp({ path: withPlant });
+    const user = userEvent.setup();
+    await findSave();
+    await user.click(screen.getByRole("button", { name: "Start from template" }));
+    await user.click(await screen.findByRole("button", { name: "Use ExampleHeatingPlant" }, slow));
+    expect(await screen.findByLabelText("Module id", {}, slow)).toHaveValue("hx");
+    await user.click(await screen.findByRole("button", { name: "next" }, slow));
+    expect(screen.getByLabelText("Module id")).toHaveValue("hx");
+  });
+
+  it("lists the missing values from the badge and says when the draft is unsaved", async () => {
+    renderApp({ path: withPlant });
+    const user = userEvent.setup();
+    await findSave();
+    await user.click(await screen.findByRole("button", { name: /values missing/ }, slow));
+    await user.click(await screen.findByRole("menuitem", { name: "hx.approach_temperature" }));
+    expect(await screen.findByLabelText("Module id")).toHaveValue("hx");
+    expect(screen.queryByText("unsaved changes")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add HeatPump" }));
+    expect(await screen.findByText("unsaved changes")).toBeVisible();
+  });
+
+  it("keeps whole plants in a closed group at the end of the palette", async () => {
+    server.use(
+      http.get("*/api/v1/plant/flowsheet/palette", () =>
+        HttpResponse.json([
+          { type: "Pump", title: "Pump", category: "pumps", summary: "" },
+          { type: "BigPlant", title: "BigPlant", category: "plants", summary: "" },
+        ]),
+      ),
+    );
+    renderApp({ path: withPlant });
+    await findSave();
+    const group = screen.getByText("Sub-plants").closest("details");
+    expect(group).not.toHaveAttribute("open");
+    expect(group).toHaveAttribute("title", expect.stringContaining("nested plant"));
+    expect(group).toContainElement(
+      screen.getByRole("button", { name: "Add BigPlant", hidden: true }),
+    );
+  });
+
+  it("shows template names in words with the class below and rst literals as code", async () => {
+    server.use(
+      http.get("*/api/v1/plant/flowsheet/templates", () =>
+        HttpResponse.json([
+          {
+            name: "MultiWellPlant",
+            title: "MultiWellPlant",
+            description: "A field of ``producers`` limbs.",
+            purpose: null,
+            modules: 3,
+            categories: ["plants"],
+          },
+        ]),
+      ),
+    );
+    renderApp({ path: withoutPlant });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Start from template" }, slow));
+    expect(await screen.findByText("Multi Well Plant")).toBeVisible();
+    expect(screen.getByText("MultiWellPlant")).toBeVisible();
+    expect(screen.getByText("producers").tagName).toBe("CODE");
   });
 
   it("shows the error state with a retry", async () => {

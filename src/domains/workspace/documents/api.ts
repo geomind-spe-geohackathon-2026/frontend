@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData, toFormData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
 
@@ -55,3 +55,10 @@ export function useDeleteDocument(projectId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(projectId) }),
   });
 }
+
+/** Query options for the file suffixes an upload may have. */
+export const documentFormatsQuery = () =>
+  queryOptions({
+    queryKey: ["documents", "formats"],
+    queryFn: async () => toData(await api.GET("/workspace/documents/formats")),
+  });

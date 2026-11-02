@@ -113,6 +113,7 @@ export function useCopyCase(projectId: string) {
   });
 }
 
+/** Mutation that uploads a file the case names. */
 export function useUploadCaseFile(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({

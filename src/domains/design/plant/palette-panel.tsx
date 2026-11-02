@@ -1,19 +1,70 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { labelOf } from "@/shared/forms/json-schema";
 import { moduleDragType } from "./canvas";
+import { toWords } from "./spec";
 import type { Palette } from "@/shared/api/types";
 
 type Props = { items: Palette[]; onAdd: (type: string) => void };
 
-/** The module palette grouped by gemini category with a filter; drag onto the canvas or press Add. */
+const plantCategory = "plants";
+
+function BreakableName({ name }: { name: string }) {
+  return toWords(name).map((word, index) => (
+    <Fragment key={`${word}-${String(index)}`}>
+      {index === 0 ? null : <wbr />}
+      {word}
+    </Fragment>
+  ));
+}
+
+function ModuleList({ items, onAdd }: Props) {
+  return (
+    <ul className="m-0 flex list-none flex-col gap-1 p-0">
+      {items.map((item) => (
+        <li key={item.type}>
+          <button
+            type="button"
+            draggable
+            title={`${item.title}: ${item.summary}`}
+            aria-label={`Add ${item.title}`}
+            className="block w-full cursor-grab rounded-control border border-border bg-surface px-2 py-1 text-left [overflow-wrap:anywhere] hover:border-muted"
+            onDragStart={(event) => {
+              event.dataTransfer.setData(moduleDragType, item.type);
+            }}
+            onClick={() => {
+              onAdd(item.type);
+            }}
+          >
+            <BreakableName name={item.title} />
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function SubPlants({ items, onAdd, isOpen }: Props & { isOpen: boolean }) {
+  if (items.length === 0) return null;
+  return (
+    <details open={isOpen} title="Each of these inserts a whole nested plant, not a single module">
+      <summary className="mb-1 cursor-pointer text-[11px] font-medium tracking-wide text-muted uppercase">
+        Sub-plants
+      </summary>
+      <ModuleList items={items} onAdd={onAdd} />
+    </details>
+  );
+}
+
+/** The module palette by gemini category with a filter, whole plants last and collapsed; drag onto the canvas or press Add. */
 export function PalettePanel({ items, onAdd }: Props) {
   const [filter, setFilter] = useState("");
   const wanted = filter.trim().toLowerCase();
   const shown = items.filter(
     (item) => wanted === "" || `${item.title} ${item.summary}`.toLowerCase().includes(wanted),
   );
-  const categories = [...new Set(shown.map((item) => item.category))];
+  const modules = shown.filter((item) => item.category !== plantCategory);
+  const categories = [...new Set(modules.map((item) => item.category))];
   return (
     <section
       aria-label="Module palette"
@@ -35,31 +86,14 @@ export function PalettePanel({ items, onAdd }: Props) {
           <h3 className="mb-1 text-[11px] font-medium tracking-wide text-muted uppercase">
             {labelOf(category, {})}
           </h3>
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            {shown
-              .filter((item) => item.category === category)
-              .map((item) => (
-                <li key={item.type}>
-                  <button
-                    type="button"
-                    draggable
-                    title={`${item.title}: ${item.summary}`}
-                    aria-label={`Add ${item.title}`}
-                    className="block w-full cursor-grab truncate rounded-control border border-border bg-surface px-2 py-1 text-left hover:border-muted"
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData(moduleDragType, item.type);
-                    }}
-                    onClick={() => {
-                      onAdd(item.type);
-                    }}
-                  >
-                    {item.title}
-                  </button>
-                </li>
-              ))}
-          </ul>
+          <ModuleList items={modules.filter((item) => item.category === category)} onAdd={onAdd} />
         </div>
       ))}
+      <SubPlants
+        items={shown.filter((item) => item.category === plantCategory)}
+        onAdd={onAdd}
+        isOpen={wanted !== ""}
+      />
     </section>
   );
 }

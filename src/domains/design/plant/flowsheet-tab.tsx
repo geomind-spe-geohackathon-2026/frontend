@@ -4,8 +4,9 @@ import { ModuleInspector } from "./module-inspector";
 import { PalettePanel } from "./palette-panel";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
 import { ProblemsPanel } from "./problems-panel";
-import { modulesOfProblem, readConnections, readModules, toPorts } from "./spec";
-import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
+import { modulesOfProblem } from "./spec";
+import type { Flowsheet, Palette } from "@/shared/api/types";
+import type { PlantGraph } from "./use-auto-layout";
 import type { usePlantActions } from "./use-plant-actions";
 import type { usePlantEditor } from "./use-plant-editor";
 
@@ -13,7 +14,7 @@ export type FlowsheetProps = {
   projectId: string;
   saved: Flowsheet;
   palette: Palette[];
-  catalog: ModulePorts[];
+  graph: PlantGraph;
   editor: ReturnType<typeof usePlantEditor>;
   actions: ReturnType<typeof usePlantActions>;
   selected: string | null;
@@ -23,9 +24,9 @@ export type FlowsheetProps = {
   onConflict: () => void;
 };
 
-function toIssues(editor: FlowsheetProps["editor"]): Issues {
-  const connections = readConnections(editor.spec);
-  const ids = readModules(editor.spec).map((module) => module.id);
+function toIssues({ editor, graph }: FlowsheetProps): Issues {
+  const { connections } = graph;
+  const ids = graph.modules.map((module) => module.id);
   const issues: Issues = new Map();
   for (const problem of editor.problems) {
     const tone = problem.code === "missing_value" ? "missing" : "invalid";
@@ -70,13 +71,11 @@ function Inspector(props: FlowsheetProps & { moduleId: string; type: string }) {
 
 /** The flowsheet tab: palette, canvas with problems below it, and the inspector of the selected module. */
 export function FlowsheetTab(props: FlowsheetProps) {
-  const { palette, editor, actions, selected } = props;
-  const modules = readModules(editor.spec);
-  const connections = readConnections(editor.spec);
-  const ports = toPorts(modules, props.catalog);
+  const { palette, editor, actions, selected, graph } = props;
+  const { modules, connections } = graph;
   const current = modules.find((module) => module.id === selected);
   return (
-    <div className="grid gap-3.5 lg:grid-cols-[170px_minmax(0,1fr)_280px]">
+    <div className="grid gap-3.5 lg:grid-cols-[180px_minmax(0,1fr)_300px]">
       <Card>
         <CardBody>
           <PalettePanel
@@ -89,15 +88,15 @@ export function FlowsheetTab(props: FlowsheetProps) {
       </Card>
       <div className="min-w-0">
         <Canvas
-          spec={editor.spec}
+          graph={graph}
           layout={editor.layout}
           palette={palette}
-          ports={ports}
-          issues={toIssues(editor)}
+          issues={toIssues(props)}
           selected={selected}
           onSelect={props.onSelect}
           onMove={actions.move}
           onMoved={actions.moved}
+          onArrange={actions.arrange}
           onConnect={actions.connect}
           onRemoveModule={actions.remove}
           onRemoveConnection={actions.removeConnection}

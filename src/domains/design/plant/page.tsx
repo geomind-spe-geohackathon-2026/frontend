@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError, hasCode } from "@/shared/api/errors";
 import { ConflictDialog } from "@/shared/forms/conflict-dialog";
@@ -23,29 +23,16 @@ import {
 } from "./api";
 import { FlowsheetTab, type FlowsheetProps } from "./flowsheet-tab";
 import { HistoryPanel } from "./history-panel";
+import { ValidityStatus, toMissingModules } from "./validity-status";
 import type { ParameterDraft } from "./parameters-panel";
 import { TemplatesDialog } from "./templates-dialog";
 import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
 import type { SaveFlowsheetInput } from "./types";
 import { usePlantActions } from "./use-plant-actions";
-import { useAutoLayout } from "./use-auto-layout";
+import { useAutoLayout, usePlantGraph, type PlantGraph } from "./use-auto-layout";
 import { usePlantEditor } from "./use-plant-editor";
 
 type Editor = ReturnType<typeof usePlantEditor>;
-
-function validityChip(editor: Editor) {
-  const blocking = editor.problems.filter((problem) => problem.code !== "missing_value").length;
-  const missing = editor.problems.length - blocking;
-  if (editor.isChecking) return <Chip tone="off">checking</Chip>;
-  if (blocking > 0)
-    return (
-      <Chip tone="bad">
-        {blocking} {blocking === 1 ? "problem" : "problems"}
-      </Chip>
-    );
-  if (missing > 0) return <Chip tone="warn">{missing} values missing</Chip>;
-  return <Chip tone="ok">valid</Chip>;
-}
 
 type PlantSaveFlow = {
   isNoting: boolean;
@@ -64,17 +51,17 @@ function useSaveFlow(projectId: string): PlantSaveFlow {
   const [isNoting, setIsNoting] = useState(false);
   const [hasConflict, setHasConflict] = useState(false);
   const submit = (input: SaveFlowsheetInput, then: () => void) => {
-    save.mutate(input, {
-      onSuccess: (saved) => {
+    save.mutateAsync(input).then(
+      (saved) => {
         setIsNoting(false);
         then();
         showToast(`Plant v${String(saved.version)} saved`);
       },
-      onError: (error) => {
+      (error: unknown) => {
         setIsNoting(false);
         if (error instanceof ApiError && "latest" in error.details) setHasConflict(true);
       },
-    });
+    );
   };
   const reload = (discard: () => void) => {
     setHasConflict(false);
@@ -102,6 +89,9 @@ type EditorProps = {
 
 type ActionsProps = {
   editor: Editor;
+  graph: PlantGraph;
+  selected: string | null;
+  onSelect: (id: string | null) => void;
   version: number;
   dirty: boolean;
   canSave: boolean;
@@ -110,11 +100,21 @@ type ActionsProps = {
   onSave: () => void;
 };
 
-function PlantActions({ editor, version, dirty, canSave, ...handlers }: ActionsProps) {
+function PlantActions({
+  editor,
+  version,
+  dirty,
+  canSave,
+  graph,
+  onSelect,
+  selected,
+  ...handlers
+}: ActionsProps) {
   return (
-    <>
-      {validityChip(editor)}
+    <div className="flex flex-wrap items-center gap-2">
+      <ValidityStatus editor={editor} graph={graph} selected={selected} onSelect={onSelect} />
       <Chip tone="off">v{version}</Chip>
+      {dirty ? <span className="text-[12.5px] text-muted">unsaved changes</span> : null}
       <Button onClick={handlers.onTemplate}>Start from template</Button>
       <Button disabled={!dirty} onClick={handlers.onDiscard}>
         Discard changes
@@ -122,7 +122,7 @@ function PlantActions({ editor, version, dirty, canSave, ...handlers }: ActionsP
       <Button variant="primary" disabled={!canSave} onClick={handlers.onSave}>
         Save version
       </Button>
-    </>
+    </div>
   );
 }
 
@@ -133,6 +133,7 @@ type DialogsProps = {
   isPickingTemplate: boolean;
   onPickingTemplate: (value: boolean) => void;
   onDiscard: () => void;
+  onTemplated: () => void;
 };
 
 function PlantDialogs({
@@ -142,6 +143,7 @@ function PlantDialogs({
   isPickingTemplate,
   onPickingTemplate,
   onDiscard,
+  onTemplated,
 }: DialogsProps) {
   return (
     <>
@@ -170,6 +172,7 @@ function PlantDialogs({
           flow.submit({ base: saved.version, note, template: name }, () => {
             onPickingTemplate(false);
             onDiscard();
+            onTemplated();
           });
         }}
       />
@@ -187,15 +190,43 @@ function PlantDialogs({
   );
 }
 
+const followKey = "follow";
+
 function usePlantParams() {
   const [params, setParams] = useSearchParams();
-  const setParam = (key: string, value: string | null) => {
+  const setValues = (values: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
-    if (value === null) next.delete(key);
-    else next.set(key, value);
+    for (const [key, value] of Object.entries(values)) {
+      if (value === null) next.delete(key);
+      else next.set(key, value);
+    }
     setParams(next, { replace: true });
   };
-  return { selected: params.get("module"), tab: params.get("tab") ?? "flowsheet", setParam };
+  return {
+    selected: params.get("module"),
+    tab: params.get("tab") ?? "flowsheet",
+    isFollowing: params.has(followKey),
+    setValues,
+    setParam: (key: string, value: string | null) => {
+      setValues({ [key]: value });
+    },
+    follow: () => {
+      setValues({ [followKey]: "missing" });
+    },
+  };
+}
+
+function useFollowMissing(
+  { isFollowing, setValues }: ReturnType<typeof usePlantParams>,
+  editor: Editor,
+  graph: PlantGraph,
+) {
+  const { problems, isChecking } = editor;
+  useEffect(() => {
+    if (!isFollowing || isChecking) return;
+    const first = toMissingModules(problems, graph)[0] ?? null;
+    setValues({ [followKey]: null, module: first });
+  });
 }
 
 type TabsProps = FlowsheetProps & {
@@ -242,10 +273,23 @@ function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
   );
 }
 
+function useRestore(
+  projectId: string,
+  editor: Editor,
+  setParam: (key: string, value: string | null) => void,
+) {
+  const queryClient = useQueryClient();
+  return async (number: number) => {
+    editor.restore(await queryClient.query(plantVersionQuery(projectId, number)));
+    setParam("tab", null);
+    showToast(`Version ${String(number)} loaded into the editor; save to keep it`);
+  };
+}
+
 function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   const editor = usePlantEditor(projectId, saved);
-  const queryClient = useQueryClient();
-  const { selected, tab, setParam } = usePlantParams();
+  const params = usePlantParams();
+  const { selected, tab, setParam } = params;
   const [draft, setDraft] = useState<ParameterDraft | null>(null);
   const [isPickingTemplate, setIsPickingTemplate] = useState(false);
   const flow = useSaveFlow(projectId);
@@ -253,7 +297,9 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
     setParam("module", id);
   };
   const actions = usePlantActions(projectId, saved, editor, select);
-  useAutoLayout(editor.spec, editor.layout, editor.place);
+  const graph = usePlantGraph(editor.spec, catalog, palette);
+  useAutoLayout(graph, editor.layout, editor.place);
+  useFollowMissing(params, editor, graph);
   const dirty = editor.dirty || draft !== null;
   const blocker = useUnsavedGuard(dirty);
   const hasBlocking = editor.problems.some((problem) => problem.code !== "missing_value");
@@ -263,17 +309,14 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
     editor.reset();
     setDraft(null);
   };
-  const restore = async (number: number) => {
-    editor.restore(await queryClient.query(plantVersionQuery(projectId, number)));
-    setParam("tab", null);
-    showToast(`Version ${String(number)} loaded into the editor; save to keep it`);
-  };
+  const restore = useRestore(projectId, editor, setParam);
   return (
     <>
       <PlantHeader
-        {...{ editor, dirty, canSave }}
+        {...{ editor, graph, selected, dirty, canSave }}
         version={saved.version}
         error={flow.error}
+        onSelect={select}
         onTemplate={() => {
           setIsPickingTemplate(true);
         }}
@@ -283,7 +326,7 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
         }}
       />
       <PlantTabs
-        {...{ projectId, saved, palette, catalog, editor, actions, selected, draft, tab }}
+        {...{ projectId, saved, palette, graph, editor, actions, selected, draft, tab }}
         onSelect={select}
         onDraft={setDraft}
         onConflict={() => {
@@ -297,6 +340,7 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
       <PlantDialogs
         {...{ saved, editor, flow, isPickingTemplate, onDiscard: discard }}
         onPickingTemplate={setIsPickingTemplate}
+        onTemplated={params.follow}
       />
       <UnsavedChangesDialog blocker={blocker} />
     </>
@@ -306,6 +350,7 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
 function EmptyPlant({ projectId }: { projectId: string }) {
   const [isPicking, setIsPicking] = useState(false);
   const flow = useSaveFlow(projectId);
+  const { follow } = usePlantParams();
   return (
     <Card>
       <CardBody className="flex flex-col items-start gap-2">
@@ -333,6 +378,7 @@ function EmptyPlant({ projectId }: { projectId: string }) {
               { base: null, note: `Started from template ${name}`, template: name },
               () => {
                 setIsPicking(false);
+                follow();
               },
             );
           }}

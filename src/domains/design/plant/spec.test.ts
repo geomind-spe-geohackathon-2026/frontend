@@ -9,6 +9,7 @@ import {
   readModules,
   splitPort,
   toPorts,
+  toWords,
   withConnection,
   withModule,
   withoutConnection,
@@ -124,5 +125,13 @@ describe("plant ports from the catalog", () => {
 
   it("refuses a port the catalog does not list", () => {
     expect(isSameKind(ports, "hx", "typed_by_hand", "pump", "fluid_in")).toBe(false);
+  });
+});
+
+describe("toWords", () => {
+  it("splits a CamelCase name and keeps an acronym whole", () => {
+    expect(toWords("HeatingFullCoolingPlant")).toEqual(["Heating", "Full", "Cooling", "Plant"]);
+    expect(toWords("ATESPlant")).toEqual(["ATES", "Plant"]);
+    expect(toWords("CHP")).toEqual(["CHP"]);
   });
 });
