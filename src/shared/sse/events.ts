@@ -106,6 +106,16 @@ function toToolFinished(fields: Fields): RunEventBody {
   return { ...body, error: typeof error === "string" ? error : JSON.stringify(error) };
 }
 
+function toDelta(fields: Fields): RunEventBody {
+  const type = "text.delta";
+  const body = {
+    type,
+    index: requireNumber(fields, "index", type),
+    text: requireString(fields, "text", type),
+  } as const;
+  return fields.buffered === true ? { ...body, buffered: true } : body;
+}
+
 function toStepBody(type: string, fields: Fields): RunEventBody | null {
   switch (type) {
     case "run.started":
@@ -121,11 +131,7 @@ function toStepBody(type: string, fields: Fields): RunEventBody | null {
         model: requireString(fields, "model", type),
       };
     case "text.delta":
-      return {
-        type,
-        index: requireNumber(fields, "index", type),
-        text: requireString(fields, "text", type),
-      };
+      return toDelta(fields);
     case "tool.started":
       return {
         type,

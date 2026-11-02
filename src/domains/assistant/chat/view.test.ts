@@ -93,6 +93,52 @@ describe("applyEvent", () => {
   });
 });
 
+const origin = { agent: "coordinator", parent: null };
+const started: RunEvent = { ...origin, type: "step.started", sequence: 1, index: 0, model: "m" };
+
+function delta(text: string, buffered?: true): RunEvent {
+  const body = { ...origin, type: "text.delta" as const, sequence: null, index: 0, text };
+  return buffered === undefined ? body : { ...body, buffered };
+}
+
+function textOf(view: View): string {
+  const block = view.blocks[0];
+  return block?.kind === "text" ? block.text : "";
+}
+
+describe("applyEvent with text.delta", () => {
+  it("appends a normal delta and replaces the text with a buffered one", () => {
+    const streamed = fold([started, delta("Hello "), delta("brave ")]);
+    expect(textOf(streamed)).toBe("Hello brave ");
+    expect(textOf(fold([delta("Hi", true)], streamed))).toBe("Hi");
+  });
+
+  it("shows the live text after a reconnect in the middle of a step", () => {
+    const live = fold([started, delta("Hello "), delta("brave "), delta("new "), delta("world")]);
+    const beforeDrop = fold([started, delta("Hello ")]);
+    const reconnected = fold([delta("Hello brave new ", true), delta("world")], beforeDrop);
+    expect(textOf(reconnected)).toBe(textOf(live));
+  });
+
+  it("keeps the text when the buffered delta repeats what the view already has", () => {
+    const view = fold([started, delta("Hello "), delta("brave ")]);
+    expect(textOf(fold([delta("Hello brave ", true)], view))).toBe("Hello brave ");
+  });
+
+  it("lets step.finished replace the text after a buffered delta", () => {
+    const finished: RunEvent = {
+      ...origin,
+      type: "step.finished",
+      sequence: 2,
+      index: 0,
+      usage: { input_tokens: 1, output_tokens: 1, cost: 0 },
+      text: "Hello brave new world",
+    };
+    const view = fold([started, delta("Hello brave ", true), finished]);
+    expect(view.blocks[0]).toMatchObject({ text: "Hello brave new world", open: false });
+  });
+});
+
 describe("applyChanges", () => {
   it("appends to a list with -, replaces by id and removes by id", () => {
     const document = { requirements: [{ id: "R1", status: "open" }] };

@@ -21,7 +21,7 @@ type Origin = { sequence: number | null; agent: string; parent: string | null };
 export type RunEventBody =
   | { type: "run.started"; run: string; loop: string }
   | { type: "step.started"; index: number; model: string }
-  | { type: "text.delta"; index: number; text: string }
+  | { type: "text.delta"; index: number; text: string; buffered?: true }
   | { type: "tool.started"; index: number; call_id: string; tool: string; input: unknown }
   | {
       type: "tool.finished";

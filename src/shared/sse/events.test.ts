@@ -17,6 +17,19 @@ describe("fromEvent", () => {
     });
   });
 
+  it("keeps buffered true on the one text.delta a reconnect receives, which has no id", () => {
+    const data = JSON.stringify({ ...origin, index: 1, text: "So far", buffered: true });
+    expect(fromEvent("text.delta", data, "")).toEqual({
+      type: "text.delta",
+      sequence: null,
+      agent: "coordinator",
+      parent: null,
+      index: 1,
+      text: "So far",
+      buffered: true,
+    });
+  });
+
   it("keeps a missing id as a null sequence", () => {
     const data = JSON.stringify({ ...origin, input_tokens: 1, output_tokens: 2, cost: 0.5 });
     expect(fromEvent("usage", data, "")).toMatchObject({ type: "usage", sequence: null });

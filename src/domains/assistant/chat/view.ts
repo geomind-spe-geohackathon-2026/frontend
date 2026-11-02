@@ -90,13 +90,14 @@ function changeBlock(view: View, id: string, change: (block: Block) => Block): V
   return { ...view, blocks: view.blocks.map((block) => (block.id === id ? change(block) : block)) };
 }
 
-function appendText(view: View, event: RunEvent & { type: "text.delta" }): View {
+function changeText(view: View, event: RunEvent & { type: "text.delta" }): View {
   const key = toStepKey(event.agent, event.index);
   const id = view.openSteps[key];
   if (id === undefined) return view;
-  return changeBlock(view, id, (block) =>
-    block.kind === "text" ? { ...block, text: block.text + event.text } : block,
-  );
+  return changeBlock(view, id, (block) => {
+    if (block.kind !== "text") return block;
+    return { ...block, text: event.buffered === true ? event.text : block.text + event.text };
+  });
 }
 
 function startStep(view: View, event: RunEvent & { type: "step.started" }): View {
@@ -165,7 +166,7 @@ function reduce(view: View, event: RunEvent): View {
     case "step.started":
       return startStep(view, event);
     case "text.delta":
-      return appendText(view, event);
+      return changeText(view, event);
     case "step.finished":
       return finishStep(view, event);
     case "tool.started":

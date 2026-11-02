@@ -17,6 +17,18 @@ export type Feed = {
   finished: boolean;
 };
 
+function toBuffered(deltas: RunEvent[]): RunEvent[] {
+  const buffered = new Map<string, RunEvent>();
+  for (const delta of deltas) {
+    if (delta.type !== "text.delta") continue;
+    const key = `${delta.agent}#${String(delta.index)}`;
+    const known = buffered.get(key);
+    const text = known?.type === "text.delta" ? known.text + delta.text : delta.text;
+    buffered.set(key, { ...delta, text, buffered: true });
+  }
+  return [...buffered.values()];
+}
+
 /** Opens a stream that replays the stored events after `lastId`, then follows the live ones until the run ends. */
 export function toStream(feed: Feed, lastId: number): ReadableStream<Uint8Array> {
   let listener: ((event: RunEvent) => void) | null = null;
@@ -26,11 +38,9 @@ export function toStream(feed: Feed, lastId: number): ReadableStream<Uint8Array>
       stored.forEach((event) => {
         controller.enqueue(toFrame(event));
       });
-      if (lastId === 0) {
-        feed.openDeltas.forEach((event) => {
-          controller.enqueue(toFrame(event));
-        });
-      }
+      toBuffered(feed.openDeltas).forEach((event) => {
+        controller.enqueue(toFrame(event));
+      });
       if (feed.finished) {
         controller.close();
         return;
