@@ -38,14 +38,21 @@ function Entry({ name, value }: { name: string; value: unknown }) {
   );
 }
 
+function isEmpty(value: unknown): boolean {
+  if (value === null || value === undefined || value === "") return true;
+  if (Array.isArray(value)) return value.length === 0;
+  return isRecord(value) && Object.keys(value).length === 0;
+}
+
 /** Shows the problem state the assistant has built, one entry per top-level key of the document. */
 export function ProblemView({ document }: { document: unknown }) {
-  if (!isRecord(document) || Object.keys(document).length === 0) {
-    return <p className="text-muted">Nothing recorded yet.</p>;
-  }
+  const entries = isRecord(document)
+    ? Object.entries(document).filter(([, value]) => !isEmpty(value))
+    : [];
+  if (entries.length === 0) return <p className="text-muted">Nothing recorded yet.</p>;
   return (
     <dl className="space-y-1.5">
-      {Object.entries(document).map(([name, value]) => (
+      {entries.map(([name, value]) => (
         <Entry key={name} name={name} value={value} />
       ))}
     </dl>

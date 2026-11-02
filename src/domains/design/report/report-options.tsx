@@ -1,14 +1,15 @@
+import { toShortId } from "@/lib/shortid";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Field } from "@/shared/ui/field";
-import type { ReportPart, Result } from "@/shared/api/types";
+import type { ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
-import { reportParts } from "./parts";
 
 type Props = {
   results: Result[];
   runs: Run[];
   result: string;
   run: string;
+  parts: ReportPartInfo[];
   chosen: ReportPart[];
   onResult: (id: string) => void;
   onRun: (id: string) => void;
@@ -18,25 +19,27 @@ type Props = {
 const selectClass = "w-full rounded-control border border-border bg-surface px-2.5 py-[7px]";
 
 function PartsFieldset({
+  parts,
   chosen,
   onPart,
 }: {
+  parts: ReportPartInfo[];
   chosen: ReportPart[];
   onPart: (part: ReportPart, checked: boolean) => void;
 }) {
   return (
     <fieldset className="flex flex-col gap-1.5 border-0 p-0">
       <legend className="mb-1 text-[12.5px] text-muted">Sections</legend>
-      {reportParts.map((entry) => (
-        <label key={entry.part} className="inline-flex items-center gap-2">
+      {parts.map((entry) => (
+        <label key={entry.key} className="inline-flex items-center gap-2">
           <input
             type="checkbox"
-            checked={chosen.includes(entry.part)}
+            checked={chosen.includes(entry.key)}
             onChange={(event) => {
-              onPart(entry.part, event.target.checked);
+              onPart(entry.key, event.target.checked);
             }}
           />
-          {entry.label}
+          {entry.title}
         </label>
       ))}
     </fieldset>
@@ -47,6 +50,7 @@ function PartsFieldset({
 export function ReportOptions({
   results,
   runs,
+  parts,
   result,
   run,
   chosen,
@@ -84,11 +88,14 @@ export function ReportOptions({
           >
             <option value="">No run</option>
             {runs.map((entry) => (
-              <option key={entry.id} value={entry.id}>{`Run ${entry.id} (${entry.status})`}</option>
+              <option
+                key={entry.id}
+                value={entry.id}
+              >{`Run ${toShortId(entry.id)} (${entry.status})`}</option>
             ))}
           </select>
         </Field>
-        <PartsFieldset chosen={chosen} onPart={onPart} />
+        <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} />
       </CardBody>
     </Card>
   );

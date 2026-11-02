@@ -9,6 +9,14 @@ export const reportKeys = {
     [...reportKeys.all(request.project), "preview", request] as const,
 };
 
+/** Query options for the report sections the backend offers, in order with their titles. */
+export const partsQuery = () =>
+  queryOptions({
+    queryKey: ["report", "parts"] as const,
+    queryFn: async ({ signal }) => toData(await api.GET("/reporting/design/parts", { signal })),
+    staleTime: 5 * 60_000,
+  });
+
 /** Query options for the runs whose agent log can go into a report. */
 export const reportRunsQuery = (projectId: string) =>
   queryOptions({

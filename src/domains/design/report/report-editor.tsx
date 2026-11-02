@@ -1,28 +1,40 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
-import type { ReportPart, Result } from "@/shared/api/types";
+import type { Report, ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
-import { reportParts, toOrderedParts } from "./parts";
+import { toOrderedParts } from "./parts";
 import { ReportDocument } from "./report-document";
 import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
 
-type Props = { projectId: string; results: Result[]; runs: Run[] };
+type Props = { projectId: string; results: Result[]; runs: Run[]; parts: ReportPartInfo[] };
 
-const allParts = reportParts.map((entry) => entry.part);
+function PreviewBody({
+  include,
+  preview,
+}: {
+  include: ReportPart[];
+  preview: UseQueryResult<Report>;
+}) {
+  if (include.length === 0) return <Notice status="empty">Choose at least one section.</Notice>;
+  if (preview.isPending) return <Notice status="loading" what="the preview" />;
+  if (preview.isError) return <Notice status="failed" error={preview.error} />;
+  return <ReportDocument preview={preview.data} />;
+}
 
 /** The report workspace: options on the right, live preview on the left, export buttons in the header. */
-export function ReportEditor({ projectId, results, runs }: Props) {
+export function ReportEditor({ projectId, results, runs, parts }: Props) {
+  const order = parts.map((entry) => entry.key);
   const [params, setParams] = useSearchParams();
-  const [chosen, setChosen] = useState<ReportPart[]>(allParts);
+  const [chosen, setChosen] = useState<ReportPart[]>(order);
   const result = params.get("result") ?? results[0]?.id ?? "";
   const run = params.get("run") ?? "";
-  const include = toOrderedParts(chosen);
+  const include = toOrderedParts(order, chosen);
   const request = { project: projectId, result, ...(run === "" ? {} : { run }), include };
   const preview = useQuery(previewQuery(request));
   const name = results.find((entry) => entry.id === result)?.name ?? result;
@@ -51,22 +63,14 @@ export function ReportEditor({ projectId, results, runs }: Props) {
       {exporter.isError ? <Notice status="failed" error={exporter.error} /> : null}
       <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
-          {include.length === 0 ? (
-            <Notice status="empty">Choose at least one section.</Notice>
-          ) : null}
-          {include.length > 0 && preview.isPending ? (
-            <Notice status="loading" what="the preview" />
-          ) : null}
-          {preview.isError ? <Notice status="failed" error={preview.error} /> : null}
-          {include.length > 0 && preview.data !== undefined ? (
-            <ReportDocument preview={preview.data} />
-          ) : null}
+          <PreviewBody include={include} preview={preview} />
         </div>
         <ReportOptions
           results={results}
           runs={runs}
           result={result}
           run={run}
+          parts={parts}
           chosen={chosen}
           onResult={(id) => {
             handleParam("result", id);

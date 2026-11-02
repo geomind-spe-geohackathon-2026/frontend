@@ -1,5 +1,5 @@
 import { Slot } from "@radix-ui/react-slot";
-import type { ButtonHTMLAttributes } from "react";
+import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 type Variant = "default" | "primary" | "danger" | "link";
@@ -14,10 +14,14 @@ const variants: Record<Variant, string> = {
 };
 
 /** The one button: default, primary, danger or link look; asChild styles a link as a button. */
-export function Button({ variant = "default", asChild = false, className, type, ...rest }: Props) {
+export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
+  { variant = "default", asChild = false, className, type, ...rest },
+  ref,
+) {
   const Component = asChild ? Slot : "button";
   return (
     <Component
+      ref={ref}
       type={asChild ? undefined : (type ?? "button")}
       className={cn(
         "inline-flex items-center gap-2 rounded-control border px-3 py-1.5 text-[13px] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60",
@@ -27,4 +31,4 @@ export function Button({ variant = "default", asChild = false, className, type, 
       {...rest}
     />
   );
-}
+});

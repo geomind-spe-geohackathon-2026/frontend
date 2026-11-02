@@ -83,11 +83,33 @@ function CopyPicker() {
   );
 }
 
+function NameProblem() {
+  return (
+    <p role="alert" className="text-bad">
+      Enter a name for the project.
+    </p>
+  );
+}
+
+function FormButtons({ pending }: { pending: boolean }) {
+  return (
+    <div className="flex justify-end gap-2">
+      <DialogClose asChild>
+        <Button>Cancel</Button>
+      </DialogClose>
+      <Button type="submit" variant="primary" disabled={pending}>
+        Create
+      </Button>
+    </div>
+  );
+}
+
 function NewProjectForm() {
   const navigate = useNavigate();
   const [source, setSource] = useState<Source>("empty");
   const create = useCreateProject();
   const importZip = useImportProject();
+  const [nameMissing, setNameMissing] = useState(false);
   const error = create.error ?? importZip.error;
 
   function handleCreated(project: { id: string }) {
@@ -101,6 +123,9 @@ function NewProjectForm() {
     const name = form.get("name");
     const file = form.get("file");
     const caseFrom = form.get("case_from");
+    const isBlank = source !== "zip" && typeof name === "string" && name.trim() === "";
+    setNameMissing(isBlank);
+    if (isBlank) return;
     if (source === "empty" && typeof name === "string") {
       create.mutate({ name: name.trim() }, { onSuccess: handleCreated });
     }
@@ -122,8 +147,9 @@ function NewProjectForm() {
       ) : (
         <>
           <Field label="Name" htmlFor="project-name">
-            <Input id="project-name" name="name" required />
+            <Input id="project-name" name="name" />
           </Field>
+          {nameMissing ? <NameProblem /> : null}
           {source === "copy" ? <CopyPicker /> : null}
         </>
       )}
@@ -132,14 +158,7 @@ function NewProjectForm() {
           {toFieldMessage(error)}
         </p>
       )}
-      <div className="flex justify-end gap-2">
-        <DialogClose asChild>
-          <Button>Cancel</Button>
-        </DialogClose>
-        <Button type="submit" variant="primary" disabled={create.isPending || importZip.isPending}>
-          Create
-        </Button>
-      </div>
+      <FormButtons pending={create.isPending || importZip.isPending} />
     </form>
   );
 }

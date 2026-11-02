@@ -175,7 +175,7 @@ function ListField({ name, path, label, schema }: NodeProps) {
 function ChoiceListField({ name, path, label, schema }: NodeProps) {
   const { control, setValue } = useFormContext();
   const current: unknown = useWatch({ control, name });
-  const chosen = Array.isArray(current) ? current : [];
+  const chosen: unknown[] = Array.isArray(current) ? current : [];
   const options = schema.items?.enum ?? [];
   const toggle = (option: unknown, checked: boolean) => {
     const next = checked ? [...chosen, option] : chosen.filter((item) => item !== option);
