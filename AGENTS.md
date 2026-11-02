@@ -4,20 +4,15 @@ React app for designing geothermal heating and cooling plants with an AI assista
 
 ## Start here
 
-State: Phase C done; every screen is built and tested in mock mode, not yet run against the real backend. Phase D is next: read `docs/app-build/handover.md` in the backend repo. What exists:
+State: Phase D integration in progress. Every screen is built and tested in mock mode; the types now come from the backend schema (`npm run gen:api` reads `../backend/openapi.json`, contract version 21). Still to do in Phase D: the golden path in real and mock mode, screenshots against the mockup, the running stack (see `docs/app-build/handover.md` in the backend repo). What exists:
 
 - Tooling: Vite, React 18, TypeScript strict, Tailwind 4, ESLint (typescript-eslint strict), Prettier, Vitest, Playwright (one smoke test), MSW.
 - Shell: `/signin`; `/projects`, `/account`, `/users` (top bar); `/projects/:projectId/...` (top bar, breadcrumb, run pill, project sidebar). Auth guard, admin guard, unknown project redirect.
-- Every route has an empty page stub (`page.tsx`) that renders only its heading. Phase C fills them in.
-- Sign in page is built. `/projects` shows only its heading.
-- `shared/api`: typed client, single-flight refresh, `ApiError`, session, pagination helper, `projectQuery`, `meQuery`, `activeRunsQuery`.
-- `shared/ui`, `shared/quantity` (`Quantity`, `Missing`), `shared/layout` (`PageHeader`, theme, route types, `useRequiredParam`), toasts.
-- `src/mocks`: one file per domain; only `identity` and `workspace` have handlers (example sign in, three example projects).
-- `src/shared/api/schema.d.ts` is a hand-kept placeholder until `npm run gen:api` reads `../backend/openapi.json`. Adjust names in `src/shared/api/types.ts` after the first real generation.
-- C5 built (identity and workspace): account, users, projects home (search, new project, import zip), overview (ask box, stepper, recent chats, activity), documents, project settings, with MSW mocks. Their contract types are hand-written in each feature `types.ts`; `domains/{identity,workspace}/paths.ts` add the routes missing from the placeholder `schema.d.ts` by module augmentation: delete both files when `gen:api` has run.
-- Assistant (C6): `domains/assistant/chat` (three columns: chat list, conversation, run panel) and `domains/assistant/runs` (runs table, run log). Live runs: `shared/sse` (`streamEvents` with `@microsoft/fetch-event-source`, bearer token, Last-Event-ID; `fromEvent`; run event and contract types) and the pure reducer `applyEvent(view, event)` in `chat/view.ts`; a reload replays from event 0 and must equal the live view (`chat/view.test.ts`). Details in `docs/assistant.md`.
-- C7 built `shared/forms` (schema forms, see `docs/forms.md`), the Problem page (`design/case`) and the Plant page (`design/plant`: @xyflow/react canvas, ELK layout, parameters, versions). Feature API types are hand-written in each `types.ts` and merged into the `paths` interface until `npm run gen:api` runs; delete those blocks then.
-- Study, Results and Report pages and `shared/charts` are built (C8). Their contract types are hand-written in `shared/api/design.ts` with route typing in `shared/api/design-paths.d.ts`; after `npm run gen:api` delete both files and import the generated names from `shared/api/types.ts`. The study settings form uses `SchemaForm`.
+- `shared/api`: typed client, single-flight refresh, `ApiError`, session, pagination helpers (`pagedQuery`, `toItems`, `toAllItems`), `toFormData`, `projectQuery`, `meQuery`, `activeRunsQuery`, `resultsQuery`. `schema.d.ts` is generated and `types.ts` is the one place that names its types; there are no hand-written path or type blocks. Loose schema parts have small typed views (`layout.ts`, `shared/sse/runlog.ts`).
+- `shared/ui`, `shared/quantity` (`Quantity`, `Missing`), `shared/layout`, `shared/forms` (schema forms, `docs/forms.md`), `shared/charts`, toasts.
+- `src/mocks`: one file per domain, typed with the generated types; example data only.
+- Identity, workspace (projects with "a copy of another project's problem" via `case_from`, overview, documents, settings), assistant (chat, runs; live runs over SSE, `docs/assistant.md`: a buffered `text.delta` replaces the step text, event run ids are written in the dashed form of the API), design (case, plant with ports from `GET /plant/flowsheet/ports`, study, results, report).
+- Activity links open `/projects/<id>/<route>[/<id>]` with the routes the backend writes (`design/case`, `design/plant`, `design/study`, `design/results/<id>`, `design/report`, `assistant/runs/<id>`); `src/app/activity-links.test.ts` checks each one.
 
 Commands: `npm run dev` (mock API), `npm run check` (types, lint, tests), `npm run build` (production build plus the bundle check), `npm run gen:api`, `npm run e2e`.
 
@@ -38,4 +33,4 @@ Read first: `docs/conventions.md` (rules and checklist), `docs/architecture.md` 
 
 ## Ownership in Phase C
 
-Each agent edits only its own paths: C5 `domains/{identity,workspace}`, `mocks/{identity,workspace}.ts`; C6 `domains/assistant`, `shared/sse`, `mocks/assistant.ts`; C7 `domains/design/{case,plant}`, `shared/forms`, `mocks/{case,plant}.ts`; C8 `domains/design/{study,results,report}`, `shared/charts`, `mocks/{study,results,report}.ts`. Keep each page's file name and export name (`page.tsx`, `CasePage`), because `domains/<domain>/routes.ts` imports them. Shared files (`src/app/**`, `package.json`, `src/shared/api/**`, `src/mocks/handlers.ts`) are changed only by the coordinator: list the change you need in your summary.
+Each agent edited only its own paths: C5 `domains/{identity,workspace}`, `mocks/{identity,workspace}.ts`; C6 `domains/assistant`, `shared/sse`, `mocks/assistant.ts`; C7 `domains/design/{case,plant}`, `shared/forms`, `mocks/{case,plant}.ts`; C8 `domains/design/{study,results,report}`, `shared/charts`, `mocks/{study,results,report}.ts`. Keep each page's file name and export name (`page.tsx`, `CasePage`), because `domains/<domain>/routes.ts` imports them. Shared files (`src/app/**`, `package.json`, `src/shared/api/**`, `src/mocks/handlers.ts`) are changed only by the coordinator: list the change you need in your summary.
