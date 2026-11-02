@@ -1,9 +1,9 @@
 import { Button } from "@/shared/ui/button";
 import { modulesOfProblem, type SpecConnection } from "./spec";
-import type { PlantProblem } from "./types";
+import type { Problem } from "@/shared/api/types";
 
 type Props = {
-  problems: PlantProblem[];
+  problems: Problem[];
   connections: SpecConnection[];
   onSelect: (moduleId: string) => void;
 };
@@ -12,7 +12,7 @@ function ProblemItem({
   problem,
   connections,
   onSelect,
-}: Omit<Props, "problems"> & { problem: PlantProblem }) {
+}: Omit<Props, "problems"> & { problem: Problem }) {
   const target = modulesOfProblem(problem.path, connections)[0];
   return (
     <li>

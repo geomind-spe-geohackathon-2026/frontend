@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
-import type { Answer } from "@/shared/sse/contract";
-import { toAllItems } from "@/shared/sse/chats";
+import type { Answer } from "@/shared/api/types";
+import { toAllItems } from "@/shared/api/pagination";
 
 export const chatKeys = {
   all: (projectId: string) => ["projects", projectId, "chats"] as const,
@@ -20,8 +20,8 @@ export const messagesQuery = (projectId: string, chatId: string) =>
     queryFn: ({ signal }) =>
       toAllItems(async (cursor) =>
         toData(
-          await api.GET("/assistant/chat/{id}/messages", {
-            params: { path: { id: chatId }, query: cursor === undefined ? {} : { cursor } },
+          await api.GET("/assistant/chat/{chat_id}/messages", {
+            params: { path: { chat_id: chatId }, query: cursor === undefined ? {} : { cursor } },
             signal,
           }),
         ),
@@ -34,7 +34,10 @@ export const problemQuery = (projectId: string, chatId: string) =>
     queryKey: chatKeys.state(projectId, chatId),
     queryFn: async ({ signal }) =>
       toData(
-        await api.GET("/assistant/chat/{id}/state", { params: { path: { id: chatId } }, signal }),
+        await api.GET("/assistant/chat/{chat_id}/state", {
+          params: { path: { chat_id: chatId } },
+          signal,
+        }),
       ),
   });
 
@@ -43,7 +46,9 @@ export const runQuery = (projectId: string, runId: string) =>
   queryOptions({
     queryKey: [...runsKey(projectId), "detail", runId],
     queryFn: async ({ signal }) =>
-      toData(await api.GET("/assistant/runs/{id}", { params: { path: { id: runId } }, signal })),
+      toData(
+        await api.GET("/assistant/runs/{run_id}", { params: { path: { run_id: runId } }, signal }),
+      ),
   });
 
 /** Mutation that creates a chat. */
@@ -69,8 +74,8 @@ export function useSendMessage(projectId: string) {
   return useMutation({
     mutationFn: async (input: { chatId: string; content: string }) =>
       toData(
-        await api.POST("/assistant/chat/{id}/messages", {
-          params: { path: { id: input.chatId } },
+        await api.POST("/assistant/chat/{chat_id}/messages", {
+          params: { path: { chat_id: input.chatId } },
           body: { content: input.content },
         }),
       ),
@@ -87,8 +92,8 @@ export function useRenameChat(projectId: string) {
   return useMutation({
     mutationFn: async (input: { chatId: string; title: string }) =>
       toData(
-        await api.PATCH("/assistant/chat/{id}", {
-          params: { path: { id: input.chatId } },
+        await api.PATCH("/assistant/chat/{chat_id}", {
+          params: { path: { chat_id: input.chatId } },
           body: { title: input.title },
         }),
       ),
@@ -101,7 +106,7 @@ export function useDeleteChat(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (chatId: string) => {
-      await api.DELETE("/assistant/chat/{id}", { params: { path: { id: chatId } } });
+      await api.DELETE("/assistant/chat/{chat_id}", { params: { path: { chat_id: chatId } } });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all(projectId) }),
   });
@@ -113,8 +118,8 @@ export function useAnswerRun(projectId: string, runId: string) {
   return useMutation({
     mutationFn: async (input: { request: string; answer: Answer }) =>
       toData(
-        await api.POST("/assistant/runs/{id}/answer", {
-          params: { path: { id: runId } },
+        await api.POST("/assistant/runs/{run_id}/answer", {
+          params: { path: { run_id: runId } },
           body: input,
         }),
       ),
@@ -127,7 +132,9 @@ export function useCancelRun(projectId: string, runId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () =>
-      toData(await api.POST("/assistant/runs/{id}/cancel", { params: { path: { id: runId } } })),
+      toData(
+        await api.POST("/assistant/runs/{run_id}/cancel", { params: { path: { run_id: runId } } }),
+      ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: runsKey(projectId) });
       await queryClient.invalidateQueries({ queryKey: chatKeys.all(projectId) });

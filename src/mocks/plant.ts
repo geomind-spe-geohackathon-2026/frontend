@@ -1,35 +1,24 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import { isRecord, type JsonSchema } from "@/shared/forms/json-schema";
+import type { Page } from "@/shared/api/pagination";
+import type {
+  Flowsheet,
+  FlowsheetCreate,
+  LayoutUpdate,
+  Palette,
+  Parameters,
+  ParametersUpdate,
+  Problem,
+  SpecCheck,
+  SpecProblems,
+  Template,
+  Version,
+} from "@/shared/api/types";
+import { fromLayout, type Layout } from "@/shared/api/layout";
+import { isRecord } from "@/shared/forms/json-schema";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
 
-type PlantSpec = Record<string, unknown>;
-type Layout = Record<string, { x: number; y: number }>;
-type PaletteItem = { type: string; title: string; category: string; summary: string };
-type Template = { name: string; title: string; description: string; purpose: string | null };
-type PlantVersion = {
-  number: number;
-  note: string;
-  author: { id: string; name: string };
-  created: string;
-};
-type PlantProblem = { path: string; message: string; code: string };
-type Flowsheet = {
-  project: string;
-  version: number;
-  spec: PlantSpec;
-  layout: Layout;
-  modules: { id: string; type: string; title: string; category: string }[];
-  connections: { source: string; target: string; stream: string; kind: string | null }[];
-};
-type Parameters = {
-  module: string;
-  type: string;
-  schema: JsonSchema;
-  values: Record<string, unknown>;
-  missing: string[];
-  history: { valid_from: string; params: Record<string, unknown> }[];
-};
+type PlantSpec = Flowsheet["spec"];
 
 function readModules(spec: PlantSpec): { id: string; type: string }[] {
   const modules = isRecord(spec.modules) ? spec.modules : {};
@@ -52,7 +41,7 @@ function moduleOf(reference: string): string {
   return reference.split(".")[0] ?? "";
 }
 
-const examplePalette: PaletteItem[] = [
+const examplePalette: Palette[] = [
   {
     type: "Doublet",
     title: "Doublet",
@@ -118,7 +107,7 @@ const exampleStreams: Record<string, string> = {
 
 const exampleAuthor = { id: "example-user-admin", name: "Example Admin" };
 
-type Stored = { version: PlantVersion; spec: PlantSpec; layout: Layout };
+type Stored = { version: Version; spec: PlantSpec; layout: Layout };
 
 function toFlowsheet(project: string, stored: Stored): Flowsheet {
   const modules = readModules(stored.spec).map((module) => ({
@@ -141,9 +130,9 @@ function toFlowsheet(project: string, stored: Stored): Flowsheet {
   };
 }
 
-function toProblems(spec: PlantSpec): PlantProblem[] {
+function toProblems(spec: PlantSpec): Problem[] {
   const ids = new Set(readModules(spec).map((module) => module.id));
-  const problems: PlantProblem[] = [];
+  const problems: Problem[] = [];
   readConnections(spec).forEach((connection, index) => {
     const ends = [moduleOf(connection.source), moduleOf(connection.target)];
     if (ends.every((id) => ids.has(id))) return;
@@ -177,18 +166,13 @@ function conflict(latest: number) {
   );
 }
 
-function toVersion(number: number, note: string): PlantVersion {
-  return { number, note, author: exampleAuthor, created: new Date().toISOString() };
+function toLayout(value: Record<string, unknown> | null | undefined): Layout {
+  return fromLayout(value ?? {});
 }
 
-type SaveBody = {
-  project: string;
-  base: number | null;
-  note: string;
-  spec?: PlantSpec;
-  layout?: Layout;
-  template?: string;
-};
+function toVersion(number: number, note: string): Version {
+  return { number, note, author: exampleAuthor, created: new Date().toISOString() };
+}
 
 type Store = Map<string, Stored[]>;
 
@@ -209,18 +193,15 @@ function createStore(): Store {
 function catalogHandlers(): RequestHandler[] {
   return [
     http.get(toRoute("/plant/flowsheet/palette"), () =>
-      HttpResponse.json<PaletteItem[]>(examplePalette),
+      HttpResponse.json<Palette[]>(examplePalette),
     ),
     http.get(toRoute("/plant/flowsheet/templates"), () =>
       HttpResponse.json<Template[]>(exampleTemplates),
     ),
-    http.post<NoParams, { spec: PlantSpec }>(
-      toRoute("/plant/flowsheet/validate"),
-      async ({ request }) => {
-        const { spec } = await request.json();
-        return HttpResponse.json({ problems: toProblems(spec) });
-      },
-    ),
+    http.post<NoParams, SpecCheck>(toRoute("/plant/flowsheet/validate"), async ({ request }) => {
+      const { spec } = await request.json();
+      return HttpResponse.json<SpecProblems>({ problems: toProblems(spec) });
+    }),
   ];
 }
 
@@ -236,7 +217,7 @@ function readHandlers(store: Store): RequestHandler[] {
     http.get(toRoute("/plant/flowsheet/versions"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project") ?? "";
       const versions = (store.get(project) ?? []).map((item) => item.version).reverse();
-      return HttpResponse.json<PlantVersion[]>(versions);
+      return HttpResponse.json<Page<Version>>({ items: versions, next: null });
     }),
     http.get(toRoute("/plant/flowsheet/versions/:number"), ({ request, params }) => {
       const project = new URL(request.url).searchParams.get("project") ?? "";
@@ -287,7 +268,7 @@ function toParameters(module: string, type: string, spec: PlantSpec): Parameters
 function writeHandlers(store: Store): RequestHandler[] {
   const latest = (project: string) => store.get(project)?.at(-1);
   return [
-    http.post<NoParams, SaveBody>(toRoute("/plant/flowsheet"), async ({ request }) => {
+    http.post<NoParams, FlowsheetCreate>(toRoute("/plant/flowsheet"), async ({ request }) => {
       const body = await request.json();
       const current = latest(body.project);
       if ((current?.version.number ?? null) !== body.base)
@@ -296,31 +277,19 @@ function writeHandlers(store: Store): RequestHandler[] {
       const next: Stored = {
         version: toVersion((current?.version.number ?? 0) + 1, body.note),
         spec,
-        layout: body.layout ?? {},
+        layout: toLayout(body.layout),
       };
       store.set(body.project, [...(store.get(body.project) ?? []), next]);
       return HttpResponse.json<Flowsheet>(toFlowsheet(body.project, next), { status: 201 });
     }),
-    http.put<NoParams, { project: string; base: number; layout: Layout }>(
-      toRoute("/plant/flowsheet/layout"),
-      async ({ request }) => {
-        const body = await request.json();
-        const current = latest(body.project);
-        if (current === undefined) return toErrorResponse(404, "plant_not_found", "No plant yet");
-        current.layout = body.layout;
-        return HttpResponse.json<Flowsheet>(toFlowsheet(body.project, current));
-      },
-    ),
-    http.post<
-      NoParams,
-      {
-        project: string;
-        base: number;
-        module: string;
-        params: Record<string, unknown>;
-        note: string;
-      }
-    >(toRoute("/plant/parameters"), async ({ request }) => {
+    http.put<NoParams, LayoutUpdate>(toRoute("/plant/flowsheet/layout"), async ({ request }) => {
+      const body = await request.json();
+      const current = latest(body.project);
+      if (current === undefined) return toErrorResponse(404, "plant_not_found", "No plant yet");
+      current.layout = toLayout(body.layout);
+      return HttpResponse.json<Flowsheet>(toFlowsheet(body.project, current));
+    }),
+    http.post<NoParams, ParametersUpdate>(toRoute("/plant/parameters"), async ({ request }) => {
       const body = await request.json();
       const current = latest(body.project);
       if (current === undefined) return toErrorResponse(404, "plant_not_found", "No plant yet");
@@ -338,7 +307,7 @@ function writeHandlers(store: Store): RequestHandler[] {
         spec: { ...current.spec, params },
       };
       store.set(body.project, [...(store.get(body.project) ?? []), next]);
-      return HttpResponse.json<PlantVersion>(next.version, { status: 201 });
+      return HttpResponse.json<Version>(next.version, { status: 201 });
     }),
   ];
 }

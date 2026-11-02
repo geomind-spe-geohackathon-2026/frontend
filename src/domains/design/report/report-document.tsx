@@ -1,9 +1,9 @@
 import Markdown from "react-markdown";
 import { Card, CardBody } from "@/shared/ui/card";
-import type { ReportPreview } from "@/shared/api/design";
+import type { Report } from "@/shared/api/types";
 
 /** The report as it will be exported: the title and each chosen section rendered from Markdown without raw HTML. */
-export function ReportDocument({ preview }: { preview: ReportPreview }) {
+export function ReportDocument({ preview }: { preview: Report }) {
   return (
     <Card>
       <CardBody className="flex flex-col gap-4">

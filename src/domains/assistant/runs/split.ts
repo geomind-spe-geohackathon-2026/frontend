@@ -1,4 +1,4 @@
-import type { LogMessage } from "@/shared/sse/contract";
+import type { LogMessage } from "@/shared/sse/runlog";
 
 /** Splits the messages of an LLM call: system prompt and history (collapsed) and the new messages after the last answer. */
 export function toSplit(messages: LogMessage[]): { history: LogMessage[]; fresh: LogMessage[] } {

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ApiError } from "@/shared/api/errors";
-import type { Chat } from "@/shared/sse/contract";
+import type { Chat } from "@/shared/api/types";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
 import { Field } from "@/shared/ui/field";

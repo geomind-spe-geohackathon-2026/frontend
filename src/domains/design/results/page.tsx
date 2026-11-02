@@ -4,7 +4,7 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Notice } from "@/shared/ui/notice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { resultsQuery } from "./api";
+import { resultsQuery } from "@/shared/api/results";
 import { ComparePane } from "./compare-pane";
 import { ResultPane } from "./result-pane";
 

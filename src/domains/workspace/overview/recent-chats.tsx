@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { toDateLabel } from "@/lib/datelabel";
 import { Card, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
-import type { Chat } from "./types";
+import type { Chat } from "@/shared/api/types";
 
 const activeStatuses = ["queued", "running", "waiting"];
 

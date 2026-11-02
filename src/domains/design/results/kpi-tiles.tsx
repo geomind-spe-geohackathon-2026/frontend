@@ -1,7 +1,7 @@
 import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Card, CardBody } from "@/shared/ui/card";
-import type { Kpi } from "@/shared/api/design";
+import type { Kpi } from "@/shared/api/types";
 
 type Props = { items: Kpi[]; label: string };
 

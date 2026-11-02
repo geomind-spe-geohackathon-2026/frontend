@@ -21,3 +21,17 @@ export function pagedQuery<T>(
 export function toItems<T>(pages: Page<T>[] | undefined): T[] {
   return pages?.flatMap((page) => page.items) ?? [];
 }
+
+/** Collects every page of a cursor list into one array. */
+export async function toAllItems<T>(
+  fetchPage: (cursor: string | undefined) => Promise<Page<T>>,
+): Promise<T[]> {
+  const items: T[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await fetchPage(cursor);
+    items.push(...page.items);
+    cursor = page.next ?? undefined;
+  } while (cursor !== undefined);
+  return items;
+}

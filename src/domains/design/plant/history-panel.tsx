@@ -5,7 +5,7 @@ import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
 import { plantVersionsQuery } from "./api";
-import type { PlantVersion } from "./types";
+import type { Version } from "@/shared/api/types";
 
 type Props = { projectId: string; current: number; onRestore: (number: number) => void };
 
@@ -65,7 +65,7 @@ function VersionRow({
   current,
   onRestore,
 }: {
-  version: PlantVersion;
+  version: Version;
   current: number;
   onRestore: (number: number) => void;
 }) {

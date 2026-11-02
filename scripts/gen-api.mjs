@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import ts from "typescript";
 import openapiTS, { astToString } from "openapi-typescript";
 
 const source = new URL("../../backend/openapi.json", import.meta.url);
@@ -19,6 +20,15 @@ const paths = Object.fromEntries(
     item,
   ]),
 );
-const ast = await openapiTS({ ...spec, paths });
+const ast = await openapiTS(
+  { ...spec, paths },
+  {
+    transform(schemaObject) {
+      if (schemaObject.contentMediaType === "application/octet-stream")
+        return ts.factory.createTypeReferenceNode("Blob");
+      return undefined;
+    },
+  },
+);
 writeFileSync(target, astToString(ast));
 console.log("Wrote src/shared/api/schema.d.ts");

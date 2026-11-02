@@ -1,7 +1,8 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { projectKeys } from "@/shared/api/projects";
-import type { PlantSpec, SaveFlowsheetInput, SaveParametersInput, Layout } from "./types";
+import type { Layout } from "@/shared/api/layout";
+import type { PlantSpec, SaveFlowsheetInput, SaveParametersInput } from "./types";
 
 export const plantKeys = {
   all: (projectId: string) => ["projects", projectId, "plant"] as const,
@@ -52,7 +53,7 @@ export const plantVersionsQuery = (projectId: string) =>
           params: { query: { project: projectId } },
           signal,
         }),
-      ),
+      ).items,
   });
 
 /** Query options for one saved version of the flowsheet, used to restore it into the editor. */

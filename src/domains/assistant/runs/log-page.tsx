@@ -3,7 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useRequiredParam } from "@/shared/layout/params";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Quantity } from "@/shared/quantity/quantity";
-import type { LogStep, Run } from "@/shared/sse/contract";
+import type { Run } from "@/shared/api/types";
+import type { LogStep } from "@/shared/sse/runlog";
 import { ErrorNotice } from "@/shared/sse/notice";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
@@ -47,8 +48,10 @@ function StepList({ steps, selected, onSelect }: StepListProps) {
   );
 }
 
-function toSeconds(started: string, ended: string | null): number | null {
-  return ended === null ? null : (Date.parse(ended) - Date.parse(started)) / 1000;
+function toSeconds(started: string | null, ended: string | null): number | null {
+  return started === null || ended === null
+    ? null
+    : (Date.parse(ended) - Date.parse(started)) / 1000;
 }
 
 function LogHeader({ projectId, run }: { projectId: string; run: Run }) {

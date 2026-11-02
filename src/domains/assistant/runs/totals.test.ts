@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LogStep } from "@/shared/sse/contract";
+import type { LogStep } from "@/shared/sse/runlog";
 import { toPretty, toSplit } from "./split";
 import { toStepTokens, toTotals } from "./totals";
 

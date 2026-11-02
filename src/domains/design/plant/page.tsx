@@ -24,7 +24,8 @@ import { FlowsheetTab, type FlowsheetProps } from "./flowsheet-tab";
 import { HistoryPanel } from "./history-panel";
 import type { ParameterDraft } from "./parameters-panel";
 import { TemplatesDialog } from "./templates-dialog";
-import type { Flowsheet, PaletteItem, SaveFlowsheetInput } from "./types";
+import type { Flowsheet, Palette } from "@/shared/api/types";
+import type { SaveFlowsheetInput } from "./types";
 import { usePlantActions } from "./use-plant-actions";
 import { useAutoLayout } from "./use-auto-layout";
 import { usePlantEditor } from "./use-plant-editor";
@@ -86,7 +87,7 @@ function useSaveFlow(projectId: string): PlantSaveFlow {
   };
 }
 
-type EditorProps = { projectId: string; saved: Flowsheet; palette: PaletteItem[] };
+type EditorProps = { projectId: string; saved: Flowsheet; palette: Palette[] };
 
 type ActionsProps = {
   editor: Editor;

@@ -3,22 +3,11 @@ import { api, toData } from "@/shared/api/client";
 
 export const resultKeys = {
   all: (projectId: string) => ["projects", projectId, "results"] as const,
-  list: (projectId: string) => [...resultKeys.all(projectId), "list"] as const,
   detail: (projectId: string, resultId: string) =>
     [...resultKeys.all(projectId), "detail", resultId] as const,
   compare: (projectId: string, ids: string[], x: string, y: string) =>
     [...resultKeys.all(projectId), "compare", ids, x, y] as const,
 };
-
-/** Query options for the result summaries of a project. */
-export const resultsQuery = (projectId: string) =>
-  queryOptions({
-    queryKey: resultKeys.list(projectId),
-    queryFn: async ({ signal }) =>
-      toData(
-        await api.GET("/design/results", { params: { query: { project: projectId } }, signal }),
-      ),
-  });
 
 /** Query options for one result with capacities, coverage and constraints. */
 export const resultQuery = (projectId: string, resultId: string) =>

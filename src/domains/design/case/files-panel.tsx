@@ -8,7 +8,7 @@ import { Input } from "@/shared/ui/input";
 import { Chip } from "@/shared/ui/chip";
 import { caseSeriesQuery, useUploadCaseFile } from "./api";
 import { SeriesChart } from "./series-chart";
-import type { Case } from "./types";
+import type { Case } from "@/shared/api/types";
 
 type Props = { projectId: string; saved: Case; dirty: boolean };
 

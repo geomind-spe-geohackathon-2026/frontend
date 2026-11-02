@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { labelOf } from "@/shared/forms/json-schema";
 import { moduleDragType } from "./canvas";
-import type { PaletteItem } from "./types";
+import type { Palette } from "@/shared/api/types";
 
-type Props = { items: PaletteItem[]; onAdd: (type: string) => void };
+type Props = { items: Palette[]; onAdd: (type: string) => void };
 
 /** The module palette grouped by gemini category with a filter; drag onto the canvas or press Add. */
 export function PalettePanel({ items, onAdd }: Props) {

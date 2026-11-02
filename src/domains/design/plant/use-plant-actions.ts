@@ -11,7 +11,7 @@ import {
   withRenamedModule,
   withRenamedPosition,
 } from "./spec";
-import type { Flowsheet } from "./types";
+import type { Flowsheet } from "@/shared/api/types";
 import type { usePlantEditor } from "./use-plant-editor";
 
 type Editor = ReturnType<typeof usePlantEditor>;

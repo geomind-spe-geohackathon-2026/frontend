@@ -1,4 +1,4 @@
-import type { Activity } from "./types";
+import type { Activity } from "@/shared/api/types";
 
 /** Builds the path of an activity link inside a project: the route, plus the id when the row has one. */
 export function toActivityPath(projectId: string, link: NonNullable<Activity["link"]>): string {

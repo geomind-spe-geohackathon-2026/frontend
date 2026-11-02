@@ -1,6 +1,12 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { paths } from "@/shared/api/schema";
-import type { LoginRequest, RefreshResponse, User } from "@/shared/api/types";
+import type {
+  Credentials,
+  NewUser,
+  PasswordChange,
+  TokenPair,
+  User,
+  UserChanges,
+} from "@/shared/api/types";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
 
@@ -26,22 +32,9 @@ export const exampleMember = {
   password: "example-password",
 } as const;
 
-type Body<
-  Path extends keyof paths,
-  Method extends keyof paths[Path],
-> = paths[Path][Method] extends {
-  requestBody: { content: { "application/json": infer Content } };
-}
-  ? Content
-  : never;
-
-type NewUser = Body<"/identity/users", "post">;
-type UserChanges = Body<"/identity/users/{id}", "patch">;
-type PasswordChange = Body<"/identity/me/password", "post">;
-
 const accounts = [exampleAdmin, exampleMember];
 
-function toTokens(userId: string, counter: number): RefreshResponse {
+function toTokens(userId: string, counter: number): TokenPair {
   return {
     access_token: `example-access.${userId}.${String(counter)}`,
     refresh_token: `example-refresh.${userId}.${String(counter)}`,
@@ -72,7 +65,7 @@ function createState(): State {
 function authHandlers(state: State): RequestHandler[] {
   let counter = 0;
   return [
-    http.post<NoParams, LoginRequest>(toRoute("/identity/authn/login"), async ({ request }) => {
+    http.post<NoParams, Credentials>(toRoute("/identity/authn/login"), async ({ request }) => {
       const body = await request.json();
       const user = state.users.find((item) => item.email === body.email);
       const known = user !== undefined && state.passwords.get(user.id) === body.password;

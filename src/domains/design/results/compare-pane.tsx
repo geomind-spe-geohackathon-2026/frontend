@@ -4,14 +4,14 @@ import { Scatter, type ScatterPoint } from "@/shared/charts/scatter";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Field } from "@/shared/ui/field";
 import { Notice } from "@/shared/ui/notice";
-import type { Comparison, Kpi, ResultSummary } from "@/shared/api/design";
+import type { ResultComparison, Kpi, Result } from "@/shared/api/types";
 import { comparisonQuery } from "./api";
 import { findKpi, toSharedKpis } from "./compare";
 import { CompareTable } from "./compare-table";
 
-type Props = { projectId: string; results: ResultSummary[] };
+type Props = { projectId: string; results: Result[] };
 
-function toPoints(comparison: Comparison, x: Kpi, y: Kpi): ScatterPoint[] {
+function toPoints(comparison: ResultComparison, x: Kpi, y: Kpi): ScatterPoint[] {
   return comparison.items.flatMap((item) => {
     const xValue = findKpi(item, x.name)?.value ?? null;
     const yValue = findKpi(item, y.name)?.value ?? null;
@@ -58,7 +58,7 @@ function KpiSelect({
 }
 
 type ControlsProps = {
-  results: ResultSummary[];
+  results: Result[];
   kpis: Kpi[];
   xName: string;
   yName: string;
@@ -159,7 +159,7 @@ export function ComparePane({ projectId, results }: Props) {
               paretoIds={comparison.data.pareto}
               xTitle={toAxisTitle(x)}
               yTitle={toAxisTitle(y)}
-              title="Comparison of results"
+              title="ResultComparison of results"
             />
             <p className="text-[12.5px] text-muted">The dashed line joins the best trade-offs.</p>
             <CompareTable comparison={comparison.data} x={x} y={y} />

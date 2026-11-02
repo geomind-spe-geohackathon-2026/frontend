@@ -1,11 +1,11 @@
 import { Card, CardBody } from "@/shared/ui/card";
 import { Field } from "@/shared/ui/field";
-import type { ReportPart, ResultSummary } from "@/shared/api/design";
+import type { ReportPart, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
 import { reportParts } from "./parts";
 
 type Props = {
-  results: ResultSummary[];
+  results: Result[];
   runs: Run[];
   result: string;
   run: string;

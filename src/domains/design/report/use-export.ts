@@ -1,5 +1,5 @@
 import { showToast } from "@/shared/ui/toast";
-import type { ReportRequest } from "@/shared/api/design";
+import type { ReportRequest } from "@/shared/api/types";
 import { useExportReport } from "./api";
 import { toDownload } from "./download";
 

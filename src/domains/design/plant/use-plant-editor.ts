@@ -3,7 +3,9 @@ import { useCallback, useState } from "react";
 import { isEqualDocument } from "@/shared/forms/document";
 import { useDebouncedValue } from "@/shared/forms/use-debounced-value";
 import { plantValidationQuery } from "./api";
-import type { Flowsheet, Layout, PlantProblem, PlantSpec } from "./types";
+import type { Flowsheet, Problem } from "@/shared/api/types";
+import { fromLayout, type Layout } from "@/shared/api/layout";
+import type { PlantSpec } from "./types";
 
 type EditorState = { spec: PlantSpec | null; layout: Layout | null };
 
@@ -13,11 +15,11 @@ const validationDelayMs = 400;
 export function usePlantEditor(saved: Flowsheet) {
   const [state, setState] = useState<EditorState>({ spec: null, layout: null });
   const spec = state.spec ?? saved.spec;
-  const layout = state.layout ?? saved.layout;
+  const layout = state.layout ?? fromLayout(saved.layout);
   const dirty = state.spec !== null && !isEqualDocument(state.spec, saved.spec);
   const settled = useDebouncedValue(spec, validationDelayMs);
   const checked = useQuery(plantValidationQuery(settled));
-  const problems: PlantProblem[] = checked.data?.problems ?? [];
+  const problems: Problem[] = checked.data?.problems ?? [];
   const isChecking = checked.isFetching || settled !== spec;
 
   const editSpec = (next: PlantSpec, nextLayout?: Layout) => {
@@ -33,7 +35,7 @@ export function usePlantEditor(saved: Flowsheet) {
     (placed: Layout) => {
       setState((previous) => ({
         ...previous,
-        layout: { ...(previous.layout ?? saved.layout), ...placed },
+        layout: { ...(previous.layout ?? fromLayout(saved.layout)), ...placed },
       }));
     },
     [saved.layout],
@@ -42,7 +44,7 @@ export function usePlantEditor(saved: Flowsheet) {
     setState({ spec: null, layout: null });
   };
   const restore = (from: Flowsheet) => {
-    setState({ spec: from.spec, layout: from.layout });
+    setState({ spec: from.spec, layout: fromLayout(from.layout) });
   };
   return { spec, layout, dirty, problems, isChecking, editSpec, setLayout, place, reset, restore };
 }

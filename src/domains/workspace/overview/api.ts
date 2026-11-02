@@ -22,8 +22,8 @@ export function useAskAssistant(projectId: string) {
     mutationFn: async (content: string) => {
       const chat = toData(await api.POST("/assistant/chat", { body: { project: projectId } }));
       toData(
-        await api.POST("/assistant/chat/{id}/messages", {
-          params: { path: { id: chat.id } },
+        await api.POST("/assistant/chat/{chat_id}/messages", {
+          params: { path: { chat_id: chat.id } },
           body: { content },
         }),
       );

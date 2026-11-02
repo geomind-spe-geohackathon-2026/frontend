@@ -1,6 +1,6 @@
-export type RunStatus = "queued" | "running" | "waiting" | "done" | "failed" | "cancelled";
+import type { RunStatus, Tokens } from "@/shared/api/types";
 
-export type Usage = { input_tokens: number; output_tokens: number; cost: number };
+export type Usage = Tokens;
 
 export type RequestOption = { value: string; label: string };
 

@@ -1,7 +1,7 @@
 import { Missing } from "@/shared/quantity/missing";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
-import type { MissingValue } from "./types";
+import type { MissingValue } from "@/shared/api/types";
 
 type Props = { missing: MissingValue[]; onShow: (path: string) => void };
 

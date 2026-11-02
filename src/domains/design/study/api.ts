@@ -8,7 +8,7 @@ import {
 import { api, toData } from "@/shared/api/client";
 import { showToast } from "@/shared/ui/toast";
 import { pagedQuery, toItems, type Page } from "@/shared/api/pagination";
-import type { NewStudy, Study, StudyStatus } from "@/shared/api/design";
+import type { StudyCreate, Study, StudyStatus } from "@/shared/api/types";
 
 export const studyKeys = {
   all: (projectId: string) => ["projects", projectId, "studies"] as const,
@@ -50,7 +50,8 @@ export const kindsQuery = () =>
 export function useCreateStudy(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: NewStudy) => toData(await api.POST("/design/study", { body: input })),
+    mutationFn: async (input: StudyCreate) =>
+      toData(await api.POST("/design/study", { body: input })),
     onSuccess: () => {
       showToast("Study created");
       return queryClient.invalidateQueries({ queryKey: studyKeys.all(projectId) });

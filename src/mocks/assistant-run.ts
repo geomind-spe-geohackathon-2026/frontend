@@ -1,4 +1,4 @@
-import type { Chat, Message, Run } from "@/shared/sse/contract";
+import type { Chat, Message, Run } from "@/shared/api/types";
 import type { RunEvent } from "@/shared/sse/types";
 import {
   exampleApproval,

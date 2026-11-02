@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, toData } from "@/shared/api/client";
+import { api, toData, toFormData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
 import { projectKeys } from "@/shared/api/projects";
-import type { NewProject } from "./types";
+import type { ProjectCreate } from "@/shared/api/types";
 
 function toQuery(search: string, cursor: string | null) {
   return {
@@ -26,7 +26,7 @@ export const projectsQuery = (search: string) =>
 export function useCreateProject() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: NewProject) =>
+    mutationFn: async (input: ProjectCreate) =>
       toData(await api.POST("/workspace/projects", { body: input })),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
   });
@@ -37,9 +37,12 @@ export function useImportProject() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (file: File) => {
-      const body = new FormData();
-      body.append("file", file);
-      return toData(await api.POST("/workspace/projects/import", { body }));
+      return toData(
+        await api.POST("/workspace/projects/import", {
+          body: { file },
+          bodySerializer: toFormData,
+        }),
+      );
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
   });

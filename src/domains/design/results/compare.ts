@@ -1,7 +1,7 @@
-import type { Kpi, ResultSummary } from "@/shared/api/design";
+import type { Kpi, Result } from "@/shared/api/types";
 
 /** Lists the KPI names that every given result has, in the order of the first result. */
-export function toSharedKpis(results: ResultSummary[]): Kpi[] {
+export function toSharedKpis(results: Result[]): Kpi[] {
   const [first, ...rest] = results;
   if (first === undefined) return [];
   return first.kpis.filter((kpi) =>
@@ -10,6 +10,6 @@ export function toSharedKpis(results: ResultSummary[]): Kpi[] {
 }
 
 /** Finds the value and unit of a named KPI in a result. */
-export function findKpi(result: ResultSummary, name: string): Kpi | null {
+export function findKpi(result: Result, name: string): Kpi | null {
   return result.kpis.find((kpi) => kpi.name === name) ?? null;
 }

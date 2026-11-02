@@ -1,8 +1,11 @@
-import type { SeriesPoints } from "./types";
+import type { Series } from "@/shared/api/types";
 
 type Point = [string, number];
 
-type Props = { series: SeriesPoints; colorIndex: number };
+type Props = {
+  series: Omit<Series, "points"> & { points: (string | number)[][] };
+  colorIndex: number;
+};
 
 const width = 640;
 const height = 160;

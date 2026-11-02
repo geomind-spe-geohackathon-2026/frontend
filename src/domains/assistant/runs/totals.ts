@@ -1,4 +1,4 @@
-import type { LogStep } from "@/shared/sse/contract";
+import type { LogStep } from "@/shared/sse/runlog";
 
 export type Total = { name: string; count: number; input: number; output: number; cost: number };
 

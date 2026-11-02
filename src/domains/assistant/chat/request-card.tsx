@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/shared/ui/button";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import type { Answer } from "@/shared/sse/contract";
+import type { Answer } from "@/shared/api/types";
 import type { RunRequest } from "@/shared/sse/types";
 
 type Props = {

@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Notice } from "@/shared/ui/notice";
-import { reportResultsQuery, reportRunsQuery } from "./api";
+import { resultsQuery } from "@/shared/api/results";
+import { reportRunsQuery } from "./api";
 import { ReportEditor } from "./report-editor";
 
 /** The Report page: loads the results and runs, then shows the report workspace. */
 export function ReportPage() {
   const projectId = useRequiredParam("projectId");
-  const results = useQuery(reportResultsQuery(projectId));
+  const results = useQuery(resultsQuery(projectId));
   const runs = useQuery(reportRunsQuery(projectId));
   if (results.isPending || results.isError || results.data.length === 0) {
     return (

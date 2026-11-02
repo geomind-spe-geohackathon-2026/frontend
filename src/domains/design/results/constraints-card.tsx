@@ -1,6 +1,6 @@
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
-import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/design";
+import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/types";
 
 type Tone = "ok" | "bad" | "off";
 

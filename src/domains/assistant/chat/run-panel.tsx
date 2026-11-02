@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Run } from "@/shared/sse/contract";
+import type { Run } from "@/shared/api/types";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
@@ -27,6 +27,7 @@ function Elapsed({ run, active }: { run: Run; active: boolean }) {
       clearInterval(timer);
     };
   }, [active]);
+  if (run.started === null) return <span className="tabular-nums">{toClock(0)}</span>;
   const end = active || run.ended === null ? now : Date.parse(run.ended);
   return (
     <span className="tabular-nums">

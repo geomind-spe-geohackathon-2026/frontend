@@ -1,5 +1,5 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, toData } from "@/shared/api/client";
+import { api, toData, toFormData } from "@/shared/api/client";
 import { projectKeys } from "@/shared/api/projects";
 import type { CaseContent, SaveCaseInput, UploadInput } from "./types";
 
@@ -39,7 +39,7 @@ export const caseVersionsQuery = (projectId: string) =>
           params: { query: { project: projectId } },
           signal,
         }),
-      ),
+      ).items,
   });
 
 /** Query options for the series of a case version, read through gemini. */
@@ -76,13 +76,10 @@ export function useSaveCase(projectId: string) {
   });
 }
 
-function toForm(body: { project: string; base: number | null; name: string; file: Blob }) {
-  const form = new FormData();
-  form.set("project", body.project);
-  form.set("base", body.base === null ? "" : String(body.base));
-  form.set("name", body.name);
-  form.set("file", body.file, body.name);
-  return form;
+type UploadBody = { project: string; base?: number | null; name: string; file: Blob };
+
+function toUploadForm(body: UploadBody): FormData {
+  return toFormData({ ...body, file: new File([body.file], body.name) });
 }
 
 /** Mutation that uploads a series file; the answer is the new case version. */
@@ -93,7 +90,7 @@ export function useUploadCaseFile(projectId: string) {
       toData(
         await api.POST("/design/case/files", {
           body: { project: projectId, ...input },
-          bodySerializer: toForm,
+          bodySerializer: toUploadForm,
         }),
       ),
     onSuccess: async (saved) => {

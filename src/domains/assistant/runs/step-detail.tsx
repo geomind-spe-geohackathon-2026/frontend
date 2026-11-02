@@ -1,5 +1,5 @@
 import { Quantity } from "@/shared/quantity/quantity";
-import type { LlmCall, LogMessage, LogStep, ToolCall } from "@/shared/sse/contract";
+import type { LlmCall, LogMessage, LogStep, ToolCall } from "@/shared/sse/runlog";
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
 import { toPretty, toSplit } from "./split";

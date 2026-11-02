@@ -10,7 +10,9 @@ import {
 import { ModuleNode, type ModuleFlowNode } from "./module-node";
 import { toStreamColor } from "./stream-colors";
 import { readConnections, readModules, splitPort, type PortKinds } from "./spec";
-import type { Layout, PaletteItem, PlantSpec } from "./types";
+import type { Palette } from "@/shared/api/types";
+import type { Layout } from "@/shared/api/layout";
+import type { PlantSpec } from "./types";
 
 export const moduleDragType = "application/x-plant-module";
 
@@ -21,7 +23,7 @@ export type Issues = Map<string, "missing" | "invalid">;
 type Props = {
   spec: PlantSpec;
   layout: Layout;
-  palette: PaletteItem[];
+  palette: Palette[];
   ports: Map<string, PortKinds>;
   issues: Issues;
   selected: string | null;

@@ -1,20 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
-import type { Page } from "@/shared/api/pagination";
-
-/** Collects every page of a cursor list into one array. */
-export async function toAllItems<T>(
-  fetchPage: (cursor: string | undefined) => Promise<Page<T>>,
-): Promise<T[]> {
-  const items: T[] = [];
-  let cursor: string | undefined;
-  do {
-    const page = await fetchPage(cursor);
-    items.push(...page.items);
-    cursor = page.next ?? undefined;
-  } while (cursor !== undefined);
-  return items;
-}
+import { toAllItems } from "@/shared/api/pagination";
 
 /** Query key of the chat list of a project. */
 export const chatsKey = (projectId: string) => ["projects", projectId, "chats", "list"] as const;

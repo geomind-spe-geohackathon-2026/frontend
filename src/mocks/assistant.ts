@@ -1,6 +1,17 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { RunList } from "@/shared/api/types";
-import type { Chat, LogStep, Message, Run, SentMessage } from "@/shared/sse/contract";
+import type { Page } from "@/shared/api/pagination";
+import type {
+  Chat,
+  ChatCreate,
+  ChatUpdate,
+  ChatState,
+  Message,
+  MessageSent,
+  Run,
+  RunAnswer,
+  Usage,
+} from "@/shared/api/types";
+import type { LogStep } from "@/shared/sse/runlog";
 import { toRunLog } from "./assistant-log";
 import {
   answerRun,
@@ -17,10 +28,6 @@ import { toRoute, type NoParams } from "./url";
 
 type World = { chats: MockChat[]; runs: MockRun[] };
 type WithId = { id: string };
-type Answer = {
-  request: string;
-  answer: { approved: boolean; reason?: string } | { text: string };
-};
 
 const emptyUsage = { input_tokens: 0, output_tokens: 0, cost: 0 };
 const seedTime = "2026-10-31T09:00:00Z";
@@ -54,14 +61,14 @@ function addMessage(chat: MockChat, role: Message["role"], content: string, run:
     chat: chat.chat.id,
     role,
     content,
-    created: run.started,
+    created: run.started ?? seedTime,
     run: run.id,
   };
   chat.messages.push(message);
   return message;
 }
 
-function startRun(world: World, chat: MockChat, content: string, started: string): SentMessage {
+function startRun(world: World, chat: MockChat, content: string, started: string): MessageSent {
   const run = toNewRun(world, chat.chat, started);
   const mock = toMockRun(run, content);
   world.runs.push(mock);
@@ -113,18 +120,18 @@ function chatHandlers(world: World): RequestHandler[] {
     http.get(toRoute("/assistant/chat"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project");
       const items = world.chats.filter((item) => item.chat.project === project);
-      return HttpResponse.json({ items: items.map((item) => item.chat).reverse(), next: null });
+      return HttpResponse.json<Page<Chat>>({
+        items: items.map((item) => item.chat).reverse(),
+        next: null,
+      });
     }),
-    http.post<NoParams, { project: string; title?: string }>(
-      toRoute("/assistant/chat"),
-      async ({ request }) => {
-        const body = await request.json();
-        const created = new Date().toISOString();
-        const chat = toNewChat(world, body.project, body.title ?? "New chat", created);
-        return HttpResponse.json(chat.chat, { status: 201 });
-      },
-    ),
-    http.patch<WithId, { title: string }>(toRoute("/assistant/chat/:id"), async (input) => {
+    http.post<NoParams, ChatCreate>(toRoute("/assistant/chat"), async ({ request }) => {
+      const body = await request.json();
+      const created = new Date().toISOString();
+      const chat = toNewChat(world, body.project, body.title ?? "New chat", created);
+      return HttpResponse.json(chat.chat, { status: 201 });
+    }),
+    http.patch<WithId, ChatUpdate>(toRoute("/assistant/chat/:id"), async (input) => {
       const chat = findChat(world, input.params.id);
       if (chat === null) return chatMissing();
       chat.chat.title = (await input.request.json()).title;
@@ -146,7 +153,7 @@ function messageHandlers(world: World): RequestHandler[] {
     http.get<WithId>(toRoute("/assistant/chat/:id/messages"), ({ params }) => {
       const chat = findChat(world, params.id);
       if (chat === null) return chatMissing();
-      return HttpResponse.json({ items: chat.messages, next: null });
+      return HttpResponse.json<Page<Message>>({ items: chat.messages, next: null });
     }),
     http.post<WithId, { content: string }>(
       toRoute("/assistant/chat/:id/messages"),
@@ -162,7 +169,7 @@ function messageHandlers(world: World): RequestHandler[] {
       const chat = findChat(world, params.id);
       if (chat === null) return chatMissing();
       const { version, state } = chat.problem;
-      return HttpResponse.json({ version, state: version === 0 ? null : state });
+      return HttpResponse.json<ChatState>({ version, state: version === 0 ? null : state });
     }),
   ];
 }
@@ -175,7 +182,7 @@ function runHandlers(world: World): RequestHandler[] {
         .map((item) => item.run)
         .filter((run) => run.project === query.get("project"))
         .filter((run) => query.get("status") !== "active" || isActive(run));
-      return HttpResponse.json<RunList>({ items: items.reverse(), next: null });
+      return HttpResponse.json<Page<Run>>({ items: items.reverse(), next: null });
     }),
     http.get<WithId>(toRoute("/assistant/runs/:id"), ({ params }) => {
       const mock = findRun(world, params.id);
@@ -186,7 +193,7 @@ function runHandlers(world: World): RequestHandler[] {
       const runs = world.runs.filter((item) => item.run.project === project);
       const sum = (pick: (run: Run) => number) =>
         runs.reduce((total, item) => total + pick(item.run), 0);
-      return HttpResponse.json({
+      return HttpResponse.json<Usage>({
         runs: runs.length,
         input_tokens: sum((run) => run.usage.input_tokens),
         output_tokens: sum((run) => run.usage.output_tokens),
@@ -206,7 +213,7 @@ function liveHandlers(world: World): RequestHandler[] {
         headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
       });
     }),
-    http.post<WithId, Answer>(toRoute("/assistant/runs/:id/answer"), async (input) => {
+    http.post<WithId, RunAnswer>(toRoute("/assistant/runs/:id/answer"), async (input) => {
       const mock = findRun(world, input.params.id);
       if (mock === null) return runMissing();
       if (mock.run.status !== "waiting") {

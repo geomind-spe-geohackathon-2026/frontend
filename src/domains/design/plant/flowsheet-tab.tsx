@@ -6,14 +6,14 @@ import { PalettePanel } from "./palette-panel";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
 import { ProblemsPanel } from "./problems-panel";
 import { learnPorts, modulesOfProblem, portsFor, readConnections, readModules } from "./spec";
-import type { Flowsheet, PaletteItem } from "./types";
+import type { Flowsheet, Palette } from "@/shared/api/types";
 import type { usePlantActions } from "./use-plant-actions";
 import type { usePlantEditor } from "./use-plant-editor";
 
 export type FlowsheetProps = {
   projectId: string;
   saved: Flowsheet;
-  palette: PaletteItem[];
+  palette: Palette[];
   editor: ReturnType<typeof usePlantEditor>;
   actions: ReturnType<typeof usePlantActions>;
   selected: string | null;

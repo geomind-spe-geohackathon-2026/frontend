@@ -1,8 +1,8 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { ReportExportRequest, ReportPreview, ReportRequest } from "@/shared/api/design";
+import type { Report, ReportExport, ReportRequest } from "@/shared/api/types";
 import { toRoute, type NoParams } from "./url";
 
-const titles: Record<string, string> = {
+const titles: Record<ReportRequest["include"][number], string> = {
   capacities: "Capacities",
   design: "Design",
   checks: "Checks",
@@ -10,12 +10,12 @@ const titles: Record<string, string> = {
   agentlog: "Agent log",
 };
 
-function toPreview(body: ReportRequest): ReportPreview {
+function toPreview(body: ReportRequest): Report {
   return {
     title: `Example report for ${body.result}`,
     sections: body.include.map((key) => ({
       key,
-      title: titles[key] ?? key,
+      title: titles[key],
       markdown: key === "costs" ? "Cost per unit: **missing**" : `Example text for ${key}.`,
     })),
   };
@@ -25,17 +25,14 @@ function toPreview(body: ReportRequest): ReportPreview {
 export function reportHandlers(): RequestHandler[] {
   return [
     http.post<NoParams, ReportRequest>(toRoute("/reporting/design/preview"), async ({ request }) =>
-      HttpResponse.json<ReportPreview>(toPreview(await request.json())),
+      HttpResponse.json<Report>(toPreview(await request.json())),
     ),
-    http.post<NoParams, ReportExportRequest>(
-      toRoute("/reporting/design/export"),
-      async ({ request }) => {
-        const body = await request.json();
-        const text = toPreview(body)
-          .sections.map((section) => `## ${section.title}\n\n${section.markdown}`)
-          .join("\n\n");
-        return new HttpResponse(text, { headers: { "Content-Type": "application/octet-stream" } });
-      },
-    ),
+    http.post<NoParams, ReportExport>(toRoute("/reporting/design/export"), async ({ request }) => {
+      const body = await request.json();
+      const text = toPreview(body)
+        .sections.map((section) => `## ${section.title}\n\n${section.markdown}`)
+        .join("\n\n");
+      return new HttpResponse(text, { headers: { "Content-Type": "text/markdown" } });
+    }),
   ];
 }

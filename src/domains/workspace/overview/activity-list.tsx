@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { toDateLabel } from "@/lib/datelabel";
 import { Card, CardHeader } from "@/shared/ui/card";
 import { toActivityPath } from "./link";
-import type { Activity } from "./types";
+import type { Activity } from "@/shared/api/types";
 
 function ActivityText({ projectId, item }: { projectId: string; item: Activity }) {
   const text = `${item.actor.name} ${item.text}`;

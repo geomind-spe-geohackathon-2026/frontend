@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
-import type { NewUser, UserChanges } from "./types";
+import type { NewUser, UserChanges } from "@/shared/api/types";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -34,8 +34,8 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: async (input: { id: string; changes: UserChanges }) =>
       toData(
-        await api.PATCH("/identity/users/{id}", {
-          params: { path: { id: input.id } },
+        await api.PATCH("/identity/users/{user_id}", {
+          params: { path: { user_id: input.id } },
           body: input.changes,
         }),
       ),

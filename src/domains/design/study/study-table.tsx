@@ -1,6 +1,6 @@
 import { Card } from "@/shared/ui/card";
 import { StudyRow } from "./study-row";
-import type { Study } from "@/shared/api/design";
+import type { Study } from "@/shared/api/types";
 
 type Props = {
   studies: Study[];

@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
+import { fromLog } from "@/shared/sse/runlog";
 
 export const runKeys = {
   all: (projectId: string) => ["projects", projectId, "runs"] as const,
@@ -35,16 +36,21 @@ export const runLogQuery = (projectId: string, runId: string) =>
   queryOptions({
     queryKey: runKeys.log(projectId, runId),
     queryFn: async ({ signal }) =>
-      toData(
-        await api.GET("/assistant/runs/{id}/log", { params: { path: { id: runId } }, signal }),
+      fromLog(
+        toData(
+          await api.GET("/assistant/runs/{run_id}/log", {
+            params: { path: { run_id: runId } },
+            signal,
+          }),
+        ),
       ),
   });
 
 /** Downloads the log of a run as a JSON or Markdown file through the authenticated client. */
 export async function downloadLog(runId: string, format: "json" | "md"): Promise<void> {
   const blob = toData(
-    await api.GET("/assistant/runs/{id}/log/export", {
-      params: { path: { id: runId }, query: { format } },
+    await api.GET("/assistant/runs/{run_id}/log/export", {
+      params: { path: { run_id: runId }, query: { format } },
       parseAs: "blob",
     }),
   );

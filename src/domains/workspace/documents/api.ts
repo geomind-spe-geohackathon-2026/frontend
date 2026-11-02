@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, toData } from "@/shared/api/client";
+import { api, toData, toFormData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
 
 export const documentKeys = {
@@ -32,10 +32,12 @@ export function useUploadDocument(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (file: File) => {
-      const body = new FormData();
-      body.append("project", projectId);
-      body.append("file", file);
-      return toData(await api.POST("/workspace/documents", { body }));
+      return toData(
+        await api.POST("/workspace/documents", {
+          body: { project: projectId, file },
+          bodySerializer: toFormData,
+        }),
+      );
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(projectId) }),
   });
@@ -46,7 +48,9 @@ export function useDeleteDocument(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (documentId: string) => {
-      await api.DELETE("/workspace/documents/{id}", { params: { path: { id: documentId } } });
+      await api.DELETE("/workspace/documents/{document_id}", {
+        params: { path: { document_id: documentId } },
+      });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(projectId) }),
   });

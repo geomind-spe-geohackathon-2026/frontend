@@ -1,6 +1,6 @@
 import type { SpecConnection, SpecModule } from "./spec";
 import { splitPort } from "./spec";
-import type { Layout } from "./types";
+import type { Layout } from "@/shared/api/layout";
 
 export const nodeWidth = 200;
 export const nodeHeight = 84;

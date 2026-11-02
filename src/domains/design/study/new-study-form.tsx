@@ -7,14 +7,14 @@ import { Notice } from "@/shared/ui/notice";
 import { SchemaForm } from "@/shared/forms/schema-form";
 import { isRecord, type Problem } from "@/shared/forms/json-schema";
 import { findMissing } from "@/shared/forms/missing";
-import type { NewStudy, StudyKind } from "@/shared/api/design";
+import type { StudyCreate, StudyKind } from "@/shared/api/types";
 
 type Props = {
   projectId: string;
   kinds: StudyKind[];
   error: unknown;
   pending: boolean;
-  onSubmit: (input: NewStudy) => void;
+  onSubmit: (input: StudyCreate) => void;
 };
 
 function KindSelect({

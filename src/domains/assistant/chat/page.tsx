@@ -11,7 +11,7 @@ function ChatBody({ projectId, chatId }: { projectId: string; chatId: string }) 
   const messages = useQuery(messagesQuery(projectId, chatId));
   if (messages.isPending) return <p className="text-muted">Loading messages</p>;
   if (messages.isError) return <ErrorNotice error={messages.error} what="The chat" />;
-  const runId = messages.data.findLast((message) => message.run !== undefined)?.run ?? null;
+  const runId = messages.data.findLast((message) => message.run !== null)?.run ?? null;
   return (
     <ChatWorkspace
       key={`${chatId}/${runId ?? ""}`}

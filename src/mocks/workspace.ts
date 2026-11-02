@@ -1,20 +1,8 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { paths } from "@/shared/api/schema";
-import type { Project, ProgressStep } from "@/shared/api/types";
+import type { Page } from "@/shared/api/pagination";
+import type { Document, Overview, Project, ProgressStep, ProjectCreate } from "@/shared/api/types";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
-
-type Json<
-  Path extends keyof paths,
-  Method extends keyof paths[Path],
-> = paths[Path][Method] extends {
-  responses: Record<number, { content: { "application/json": infer Content } }>;
-}
-  ? Content
-  : never;
-
-type Overview = Json<"/workspace/overview", "get">;
-type ExampleDocument = Json<"/workspace/documents", "post">;
 
 const step = (state: ProgressStep["state"], label: string): ProgressStep => ({ state, label });
 
@@ -110,7 +98,7 @@ const exampleOverview: Overview = {
   ],
 };
 
-const exampleDocuments: ExampleDocument[] = [
+const exampleDocuments: Document[] = [
   {
     id: "example-document-1",
     project: "example-project-1",
@@ -126,9 +114,9 @@ function projectHandlers(projects: Project[]): RequestHandler[] {
     http.get(toRoute("/workspace/projects"), ({ request }) => {
       const search = new URL(request.url).searchParams.get("search")?.toLowerCase() ?? "";
       const items = projects.filter((project) => project.name.toLowerCase().includes(search));
-      return HttpResponse.json<Json<"/workspace/projects", "get">>({ items, next: null });
+      return HttpResponse.json<Page<Project>>({ items, next: null });
     }),
-    http.post<NoParams, { name: string }>(toRoute("/workspace/projects"), async ({ request }) => {
+    http.post<NoParams, ProjectCreate>(toRoute("/workspace/projects"), async ({ request }) => {
       const body = await request.json();
       const now = new Date().toISOString();
       const project: Project = {
@@ -200,12 +188,12 @@ function projectChangeHandlers(projects: Project[]): RequestHandler[] {
   ];
 }
 
-function documentHandlers(documents: ExampleDocument[]): RequestHandler[] {
+function documentHandlers(documents: Document[]): RequestHandler[] {
   return [
     http.get(toRoute("/workspace/documents"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project");
       const items = documents.filter((document) => document.project === project);
-      return HttpResponse.json<Json<"/workspace/documents", "get">>({ items, next: null });
+      return HttpResponse.json<Page<Document>>({ items, next: null });
     }),
     http.post(toRoute("/workspace/documents"), async ({ request }) => {
       const form = await request.formData();
@@ -214,7 +202,7 @@ function documentHandlers(documents: ExampleDocument[]): RequestHandler[] {
       if (file === null || typeof file === "string" || typeof project !== "string") {
         return toErrorResponse(422, "validation_failed", "A project and a file are required");
       }
-      const document: ExampleDocument = {
+      const document: Document = {
         id: `example-document-${String(documents.length + 1)}`,
         project,
         name: file.name,
@@ -223,7 +211,7 @@ function documentHandlers(documents: ExampleDocument[]): RequestHandler[] {
         created: new Date().toISOString(),
       };
       documents.push(document);
-      return HttpResponse.json(document, { status: 201 });
+      return HttpResponse.json<Document>(document, { status: 201 });
     }),
     http.delete(toRoute("/workspace/documents/:documentId"), ({ params }) => {
       const index = documents.findIndex((item) => item.id === params.documentId);

@@ -1,4 +1,4 @@
-import type { Study } from "@/shared/api/design";
+import type { Study } from "@/shared/api/types";
 
 export type StudyProgress =
   | { kind: "none" }

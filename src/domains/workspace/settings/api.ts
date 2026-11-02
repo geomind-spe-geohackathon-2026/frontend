@@ -10,8 +10,8 @@ export function useRenameProject(projectId: string) {
   return useMutation({
     mutationFn: async (name: string) =>
       toData(
-        await api.PATCH("/workspace/projects/{id}", {
-          params: { path: { id: projectId } },
+        await api.PATCH("/workspace/projects/{project_id}", {
+          params: { path: { project_id: projectId } },
           body: { name },
         }),
       ),
@@ -24,7 +24,9 @@ export function useDeleteProject(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      await api.DELETE("/workspace/projects/{id}", { params: { path: { id: projectId } } });
+      await api.DELETE("/workspace/projects/{project_id}", {
+        params: { path: { project_id: projectId } },
+      });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: listKey }),
   });
@@ -35,8 +37,8 @@ export function useExportProject(projectId: string) {
   return useMutation({
     mutationFn: async () =>
       toData(
-        await api.GET("/workspace/projects/{id}/export", {
-          params: { path: { id: projectId } },
+        await api.GET("/workspace/projects/{project_id}/export", {
+          params: { path: { project_id: projectId } },
           parseAs: "blob",
         }),
       ),

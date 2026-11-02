@@ -1,10 +1,10 @@
 import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
-import type { Comparison, Kpi } from "@/shared/api/design";
+import type { ResultComparison, Kpi } from "@/shared/api/types";
 import { findKpi } from "./compare";
 
-type Props = { comparison: Comparison; x: Kpi; y: Kpi };
+type Props = { comparison: ResultComparison; x: Kpi; y: Kpi };
 
 function Cell({ kpi }: { kpi: Kpi | null }) {
   const value = kpi?.value ?? null;

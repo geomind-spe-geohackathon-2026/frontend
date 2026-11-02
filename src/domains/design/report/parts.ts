@@ -1,4 +1,4 @@
-import type { ReportPart } from "@/shared/api/design";
+import type { ReportPart } from "@/shared/api/types";
 
 export const reportParts: { part: ReportPart; label: string }[] = [
   { part: "capacities", label: "Capacities" },

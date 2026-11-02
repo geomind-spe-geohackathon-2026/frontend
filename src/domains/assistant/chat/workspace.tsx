@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import type { Message } from "@/shared/sse/contract";
+import type { Message } from "@/shared/api/types";
 import { runQuery, useAnswerRun, useCancelRun, useCreateChat, useSendMessage } from "./api";
 import { Composer } from "./composer";
 import { Conversation } from "./conversation";

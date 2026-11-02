@@ -3,7 +3,7 @@ import { lazy, Suspense, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
-import type { Chat } from "@/shared/sse/contract";
+import type { Chat } from "@/shared/api/types";
 import { Button } from "@/shared/ui/button";
 
 const ChatDialog = lazy(() =>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Study } from "@/shared/api/design";
+import type { Study } from "@/shared/api/types";
 import { toProgress } from "./progress";
 
 function study(change: Partial<Study>): Study {
@@ -11,7 +11,7 @@ function study(change: Partial<Study>): Study {
     settings: {},
     status: "running",
     progress: { done: 0, total: 1 },
-    started_by: { kind: "user", name: "Example" },
+    started_by: { kind: "user", name: "Example", run: null },
     case_version: 1,
     plant_version: 1,
     result: null,

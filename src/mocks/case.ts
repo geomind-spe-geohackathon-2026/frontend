@@ -1,26 +1,21 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
+import type { Page } from "@/shared/api/pagination";
+import type {
+  Case,
+  CaseCheck,
+  CaseCreate,
+  CaseProblems,
+  Series,
+  SeriesList,
+  Version,
+} from "@/shared/api/types";
 import type { JsonSchema } from "@/shared/forms/json-schema";
 import { findMissing } from "@/shared/forms/missing";
 import { validateDocument } from "@/shared/forms/resolver";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
 
-type CaseContent = Record<string, unknown>;
-type CaseVersion = {
-  number: number;
-  note: string;
-  author: { id: string; name: string };
-  created: string;
-};
-type Case = {
-  project: string;
-  version: number;
-  content: CaseContent;
-  files: { name: string; size: number }[];
-  missing: { path: string; message: string }[];
-  problems: { path: string; message: string; code: string }[];
-};
-type SeriesPoints = { name: string; unit: string; points: (string | number)[][] };
+type CaseContent = Case["content"];
 
 const quantity = (units: string[]): JsonSchema => ({
   type: "object",
@@ -101,7 +96,7 @@ const exampleContent: CaseContent = {
   economics: { lifetime: { value: 25, unit: "a" } },
 };
 
-type Stored = { version: CaseVersion; content: CaseContent; files: Case["files"] };
+type Stored = { version: Version; content: CaseContent; files: Case["files"] };
 
 function toCase(project: string, stored: Stored): Case {
   const missing = findMissing(exampleSchema, stored.content).map((path) => ({
@@ -122,8 +117,8 @@ function toCase(project: string, stored: Stored): Case {
   };
 }
 
-function toSeries(): SeriesPoints[] {
-  const points = Array.from({ length: 365 }, (_, day): (string | number)[] => {
+function toSeries(): Series[] {
+  const points = Array.from({ length: 365 }, (_, day): [string, number] => {
     const time = new Date(Date.UTC(2000, 0, 1 + day)).toISOString();
     return [time, Math.round(20 + 10 * Math.cos((day / 365) * 2 * Math.PI))];
   });
@@ -146,8 +141,6 @@ function conflict(latest: number | null) {
 function textOf(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
-
-type SaveBody = { project: string; base: number | null; note: string; content: CaseContent };
 
 type Store = Map<string, Stored[]>;
 
@@ -175,20 +168,19 @@ function readHandlers(stored: Store): RequestHandler[] {
   const latest = (project: string) => stored.get(project)?.at(-1);
   return [
     http.get(toRoute("/design/case/schema"), () => HttpResponse.json<JsonSchema>(exampleSchema)),
-    http.get(toRoute("/design/case/series"), () => HttpResponse.json({ series: toSeries() })),
+    http.get(toRoute("/design/case/series"), () =>
+      HttpResponse.json<SeriesList>({ series: toSeries() }),
+    ),
     http.get(toRoute("/design/case/versions"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project") ?? "";
       const versions = (stored.get(project) ?? []).map((item) => item.version).reverse();
-      return HttpResponse.json<CaseVersion[]>(versions);
+      return HttpResponse.json<Page<Version>>({ items: versions, next: null });
     }),
-    http.post<NoParams, { content: CaseContent }>(
-      toRoute("/design/case/validate"),
-      async ({ request }) => {
-        const { content } = await request.json();
-        const view = toCase("", { version: emptyVersion, content, files: [] });
-        return HttpResponse.json({ missing: view.missing, problems: view.problems });
-      },
-    ),
+    http.post<NoParams, CaseCheck>(toRoute("/design/case/validate"), async ({ request }) => {
+      const { content } = await request.json();
+      const view = toCase("", { version: emptyVersion, content, files: [] });
+      return HttpResponse.json<CaseProblems>({ missing: view.missing, problems: view.problems });
+    }),
     http.get(toRoute("/design/case"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project") ?? "";
       const current = latest(project);
@@ -201,7 +193,7 @@ function readHandlers(stored: Store): RequestHandler[] {
 function writeHandlers(stored: Store): RequestHandler[] {
   const latest = (project: string) => stored.get(project)?.at(-1);
   return [
-    http.post<NoParams, SaveBody>(toRoute("/design/case"), async ({ request }) => {
+    http.post<NoParams, CaseCreate>(toRoute("/design/case"), async ({ request }) => {
       const body = await request.json();
       const current = latest(body.project);
       if ((current?.version.number ?? null) !== body.base) {
@@ -249,7 +241,7 @@ export function caseHandlers(): RequestHandler[] {
   return [...readHandlers(stored), ...writeHandlers(stored)];
 }
 
-const emptyVersion: CaseVersion = {
+const emptyVersion: Version = {
   number: 0,
   note: "",
   author: { id: "", name: "" },

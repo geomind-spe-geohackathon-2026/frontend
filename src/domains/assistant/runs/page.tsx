@@ -59,7 +59,7 @@ function RunsTable({
               </Link>
             </td>
             <td className="px-3 py-2">{titles.get(run.chat) ?? run.chat}</td>
-            <td className="px-3 py-2">{run.loop}</td>
+            <td className="px-3 py-2">{run.loop ?? "not started"}</td>
             <td className="px-3 py-2">
               <RunStatusChip status={run.status} />
             </td>
@@ -73,7 +73,9 @@ function RunsTable({
             <td className="px-3 py-2">
               <Quantity value={run.usage.cost} unit="USD" fractionDigits={3} />
             </td>
-            <td className="px-3 py-2">{new Date(run.started).toLocaleString()}</td>
+            <td className="px-3 py-2">
+              {run.started === null ? "not started" : new Date(run.started).toLocaleString()}
+            </td>
           </tr>
         ))}
       </tbody>

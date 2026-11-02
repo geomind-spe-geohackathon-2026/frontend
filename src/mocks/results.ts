@@ -1,9 +1,10 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { Comparison, CoverageDay, ResultDetail, ResultSummary } from "@/shared/api/design";
+import type { Page } from "@/shared/api/pagination";
+import type { Coverage, Result, ResultComparison, ResultDetail } from "@/shared/api/types";
 import { toErrorResponse } from "./errors";
 import { toRoute } from "./url";
 
-function toYear(): CoverageDay[] {
+function toYear(): Coverage[] {
   const start = Date.UTC(2027, 0, 1);
   return Array.from({ length: 365 }, (_, index) => {
     const date = new Date(start + index * 86_400_000).toISOString().slice(0, 10);
@@ -12,7 +13,7 @@ function toYear(): CoverageDay[] {
   });
 }
 
-const designA: ResultSummary = {
+const designA: Result = {
   id: "example-result-1",
   name: "Example design A",
   study: "example-study-1",
@@ -27,7 +28,7 @@ const designA: ResultSummary = {
   created: "2026-01-12T14:03:00Z",
 };
 
-const designB: ResultSummary = {
+const designB: Result = {
   id: "example-result-2",
   name: "Example design B",
   study: "example-study-2",
@@ -42,7 +43,7 @@ const designB: ResultSummary = {
   created: "2026-01-12T14:10:00Z",
 };
 
-const exampleSummaries = [designA, designB];
+const exampleSummaries: Result[] = [designA, designB];
 
 const exampleDetails: ResultDetail[] = [
   {
@@ -88,12 +89,12 @@ const exampleDetails: ResultDetail[] = [
 export function resultsHandlers(): RequestHandler[] {
   return [
     http.get(toRoute("/design/results"), () =>
-      HttpResponse.json<ResultSummary[]>(exampleSummaries),
+      HttpResponse.json<Page<Result>>({ items: exampleSummaries, next: null }),
     ),
     http.get(toRoute("/design/results/compare"), ({ request }) => {
       const ids = new URL(request.url).searchParams.get("ids")?.split(",") ?? [];
       const items = exampleSummaries.filter((summary) => ids.includes(summary.id));
-      return HttpResponse.json<Comparison>({ items, pareto: items.map((item) => item.id) });
+      return HttpResponse.json<ResultComparison>({ items, pareto: items.map((item) => item.id) });
     }),
     http.get<{ id: string }>(toRoute("/design/results/:id"), ({ params }) => {
       const detail = exampleDetails.find((entry) => entry.id === params.id);

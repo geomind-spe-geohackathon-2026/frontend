@@ -1,9 +1,9 @@
 import { ApiError } from "@/shared/api/errors";
+import type { RunStatus } from "@/shared/api/types";
 import type {
   RunEvent,
   RunEventBody,
   RunRequest,
-  RunStatus,
   StateChange,
   StateOperation,
   Usage,

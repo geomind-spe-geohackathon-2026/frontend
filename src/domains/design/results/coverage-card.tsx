@@ -1,9 +1,9 @@
 import { DaysStrip } from "@/shared/charts/days-strip";
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
-import type { CoverageDay } from "@/shared/api/design";
+import type { Coverage } from "@/shared/api/types";
 
 /** The days-covered strip, or a plain "not available" when gemini has not published coverage. */
-export function CoverageCard({ coverage }: { coverage: CoverageDay[] | null }) {
+export function CoverageCard({ coverage }: { coverage: Coverage[] | null }) {
   return (
     <Card className="mb-3.5">
       <CardHeader>

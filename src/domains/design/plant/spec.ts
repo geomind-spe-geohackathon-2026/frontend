@@ -1,5 +1,7 @@
 import { isRecord } from "@/shared/forms/json-schema";
-import type { FlowConnection, Layout, PlantSpec } from "./types";
+import type { FlowsheetConnection } from "@/shared/api/types";
+import type { Layout } from "@/shared/api/layout";
+import type { PlantSpec } from "./types";
 
 export type SpecModule = { id: string; type: string };
 export type SpecConnection = { source: string; target: string };
@@ -131,7 +133,7 @@ export type PortKinds = { inlets: Map<string, string>; outlets: Map<string, stri
 /** Learns, per module type, which ports exist and what stream each carries, from saved connections. */
 export function learnPorts(
   types: Map<string, string>,
-  connections: FlowConnection[],
+  connections: FlowsheetConnection[],
 ): Map<string, PortKinds> {
   const known = new Map<string, PortKinds>();
   const kindsOf = (type: string): PortKinds => {
@@ -146,8 +148,8 @@ export function learnPorts(
     const to = splitPort(connection.target);
     const fromType = types.get(from.module);
     const toType = types.get(to.module);
-    if (fromType !== undefined) kindsOf(fromType).outlets.set(from.port, connection.stream);
-    if (toType !== undefined) kindsOf(toType).inlets.set(to.port, connection.stream);
+    if (fromType !== undefined) kindsOf(fromType).outlets.set(from.port, connection.stream ?? "");
+    if (toType !== undefined) kindsOf(toType).inlets.set(to.port, connection.stream ?? "");
   }
   return known;
 }

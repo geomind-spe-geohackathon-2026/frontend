@@ -4,7 +4,8 @@ import { isEqualDocument } from "@/shared/forms/document";
 import type { Problem } from "@/shared/forms/json-schema";
 import { useDebouncedValue } from "@/shared/forms/use-debounced-value";
 import { caseValidationQuery } from "./api";
-import type { Case, CaseContent, MissingValue } from "./types";
+import type { Case, MissingValue } from "@/shared/api/types";
+import type { CaseContent } from "./types";
 
 type EditorState = { draft: CaseContent | null; sectionProblems: Record<string, Problem[]> };
 

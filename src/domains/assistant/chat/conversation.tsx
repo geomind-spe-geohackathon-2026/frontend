@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { ApiError } from "@/shared/api/errors";
-import type { Message } from "@/shared/sse/contract";
+import type { Message } from "@/shared/api/types";
 import { Blocks } from "./blocks";
 import { MarkdownText } from "./markdown-text";
 import type { View } from "./view";
@@ -30,7 +30,7 @@ export function Conversation({ messages, liveRunId, view, failure }: Props) {
   return (
     <div className="space-y-3" aria-live="polite">
       {messages.map((message) => {
-        const isLive = message.run !== undefined && message.run === liveRunId;
+        const isLive = message.run !== null && message.run === liveRunId;
         if (message.role === "assistant") {
           return isLive ? null : <MarkdownText key={message.id} text={message.content} />;
         }

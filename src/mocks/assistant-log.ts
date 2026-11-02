@@ -1,4 +1,5 @@
-import type { LlmCall, LogMessage, LogStep, Run, RunLog, ToolCall } from "@/shared/sse/contract";
+import type { Run } from "@/shared/api/types";
+import type { LlmCall, LogMessage, LogStep, RunLog, ToolCall } from "@/shared/sse/runlog";
 import type { RunEvent } from "@/shared/sse/types";
 
 const stepSeconds = 1.2;

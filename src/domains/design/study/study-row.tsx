@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { Chip } from "@/shared/ui/chip";
 import { Missing } from "@/shared/quantity/missing";
 import { toProgress } from "./progress";
-import type { Study, StudyStatus } from "@/shared/api/design";
+import type { Study, StudyStatus } from "@/shared/api/types";
 
 type Props = {
   study: Study;

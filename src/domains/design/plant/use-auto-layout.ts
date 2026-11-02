@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { toAutoLayout } from "./auto-layout";
 import { readConnections, readModules } from "./spec";
-import type { Layout, PlantSpec } from "./types";
+import type { Layout } from "@/shared/api/layout";
+import type { PlantSpec } from "./types";
 
 /** Places modules that have no position with ELK and reports only the new positions; onPlaced must be stable. */
 export function useAutoLayout(

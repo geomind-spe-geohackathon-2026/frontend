@@ -9,7 +9,7 @@ import type { Problem } from "@/shared/forms/json-schema";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import { parametersQuery, useSaveParameters } from "./api";
-import type { Parameters } from "./types";
+import type { Parameters } from "@/shared/api/types";
 
 export type ParameterDraft = { module: string; params: Record<string, unknown>; blocked: boolean };
 

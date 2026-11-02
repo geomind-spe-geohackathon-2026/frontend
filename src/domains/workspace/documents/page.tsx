@@ -10,7 +10,7 @@ import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
 import { showToast } from "@/shared/ui/toast";
 import { documentsQuery, useDeleteDocument, useUploadDocument } from "./api";
 import { toSizeLabel } from "./format";
-import type { Document } from "./types";
+import type { Document } from "@/shared/api/types";
 
 const searchableText: Record<Document["searchable"], string> = {
   pending: "indexing",

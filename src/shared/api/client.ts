@@ -2,7 +2,7 @@ import createClient from "openapi-fetch";
 import { ApiError, fromResponse } from "./errors";
 import { session } from "./session";
 import type { paths } from "./schema";
-import type { RefreshResponse } from "./types";
+import type { TokenPair } from "./types";
 
 const authPath = "/identity/authn/";
 
@@ -25,7 +25,7 @@ async function send(request: Request, accessToken: string | null): Promise<Respo
   }
 }
 
-function isRefreshResponse(value: unknown): value is RefreshResponse {
+function isTokenPair(value: unknown): value is TokenPair {
   if (typeof value !== "object" || value === null) return false;
   return (
     "access_token" in value &&
@@ -49,7 +49,7 @@ async function isRefreshed(baseUrl: string): Promise<boolean> {
     return false;
   }
   const body: unknown = await response.json();
-  if (!isRefreshResponse(body)) {
+  if (!isTokenPair(body)) {
     throw new ApiError({
       status: response.status,
       code: "invalid_response",
@@ -106,4 +106,16 @@ export function toData<T>(result: { data?: T; response: Response }): T {
     });
   }
   return result.data;
+}
+
+type FormValue = Blob | string | number | null | undefined;
+
+/** Builds the multipart body of a request from its fields; null and missing fields are left out. */
+export function toFormData(fields: Record<string, FormValue>): FormData {
+  const form = new FormData();
+  for (const [name, value] of Object.entries(fields)) {
+    if (value === null || value === undefined) continue;
+    form.set(name, typeof value === "number" ? String(value) : value);
+  }
+  return form;
 }

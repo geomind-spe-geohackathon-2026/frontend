@@ -1,5 +1,6 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { NewStudy, Study, StudyKind, StudyList } from "@/shared/api/design";
+import type { Page } from "@/shared/api/pagination";
+import type { Study, StudyCreate, StudyKind } from "@/shared/api/types";
 import type { JsonSchema } from "@/shared/forms/json-schema";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
@@ -44,7 +45,7 @@ function toStudy(project: string, id: string, input: Partial<Study>): Study {
     settings: {},
     status: "queued",
     progress: { done: 0, total: 1 },
-    started_by: { kind: "user", name: "Example Admin" },
+    started_by: { kind: "user", name: "Example Admin", run: null },
     case_version: 2,
     plant_version: 3,
     result: null,
@@ -115,9 +116,9 @@ export function studyHandlers(): RequestHandler[] {
     http.get(toRoute("/design/study/kinds"), () => HttpResponse.json<StudyKind[]>(exampleKinds)),
     http.get(toRoute("/design/study"), () => {
       advance();
-      return HttpResponse.json<StudyList>({ items: [...studies].reverse(), next: null });
+      return HttpResponse.json<Page<Study>>({ items: [...studies].reverse(), next: null });
     }),
-    http.post<NoParams, NewStudy>(toRoute("/design/study"), async ({ request }) => {
+    http.post<NoParams, StudyCreate>(toRoute("/design/study"), async ({ request }) => {
       const body = await request.json();
       const id = `example-study-${String(studies.length + 1)}`;
       const study = toStudy(body.project, id, {

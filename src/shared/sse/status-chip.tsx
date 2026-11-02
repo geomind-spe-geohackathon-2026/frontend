@@ -1,5 +1,5 @@
 import { Chip } from "@/shared/ui/chip";
-import type { RunStatus } from "./types";
+import type { RunStatus } from "@/shared/api/types";
 
 const tones = {
   queued: "off",

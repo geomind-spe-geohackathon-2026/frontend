@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
-import type { ReportPart, ResultSummary } from "@/shared/api/design";
+import type { ReportPart, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
@@ -12,7 +12,7 @@ import { ReportDocument } from "./report-document";
 import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
 
-type Props = { projectId: string; results: ResultSummary[]; runs: Run[] };
+type Props = { projectId: string; results: Result[]; runs: Run[] };
 
 const allParts = reportParts.map((entry) => entry.part);
 

@@ -21,7 +21,8 @@ import { BlockerBanner } from "./blocker-banner";
 import { FilesPanel } from "./files-panel";
 import { HistoryPanel } from "./history-panel";
 import { toEmptyCase } from "./empty-case";
-import type { Case, CaseContent } from "./types";
+import type { Case } from "@/shared/api/types";
+import type { CaseContent } from "./types";
 import { useCaseEditor } from "./use-case-editor";
 
 const filesTab = "files";

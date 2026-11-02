@@ -1,4 +1,5 @@
-import type { RunEvent, RunRequest, RunStatus, Usage } from "@/shared/sse/types";
+import type { RunStatus } from "@/shared/api/types";
+import type { RunEvent, RunRequest, Usage } from "@/shared/sse/types";
 import { applyChanges } from "./patch";
 
 export type Block =
