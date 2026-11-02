@@ -35,6 +35,7 @@ export type RunEventBody =
   | { type: "state.changed"; version: number; changes: StateChange[] }
   | ({ type: "request" } & RunRequest)
   | ({ type: "usage" } & Usage)
+  | { type: "study.recorded"; call_id: string; study: string; method: string }
   | { type: "run.finished"; status: RunStatus; stop_reason: string; message?: string };
 
 export type RunEvent = Origin & RunEventBody;

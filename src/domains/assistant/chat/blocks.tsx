@@ -1,3 +1,4 @@
+import { Link, useParams } from "react-router-dom";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import { toDepth, toGroups, toLabel, type Group } from "./agents";
@@ -13,12 +14,15 @@ import {
   toSummary,
 } from "@/shared/sse/pretty";
 import { fromRoute, toRouteLabel } from "@/shared/sse/route";
-import type { Block } from "./view";
+import type { Block, RecordedStudy } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
 type TextBlock = Extract<Block, { kind: "text" }>;
+type EndBlock = Extract<Block, { kind: "end" }>;
 
 const indents = ["", "ml-3", "ml-6"];
+const internalStop = "error";
+const internalFailure = "The assistant stopped with an internal error in geomind";
 
 /** The tool an agent ends with; its text is the answer, shown as the message. */
 export const finishTool = "finish";
@@ -86,9 +90,32 @@ function TextView({ block, running }: { block: TextBlock; running: boolean }) {
   return <p className="text-[12px] text-muted">{toRouteLabel(route)}</p>;
 }
 
-function toEndText(status: string, message: string | null): string {
+function toEndText(block: EndBlock): string {
+  const { status, message, reason } = block;
   if (message === null) return `Run ${status}`;
-  return toBudgetStop(message) ?? `Run ${status}: ${message}`;
+  const budget = toBudgetStop(message);
+  if (budget !== null) return budget;
+  return reason === internalStop ? internalFailure : `Run ${status}: ${message}`;
+}
+
+function RecordedStudies({ studies }: { studies: RecordedStudy[] }) {
+  const { projectId = "" } = useParams();
+  if (studies.length === 0) return null;
+  return (
+    <div className="text-[12.5px]">
+      <p className="text-muted">Studies this run finished before it stopped:</p>
+      <ul className="list-inside list-disc">
+        {studies.map((study) => (
+          <li key={study.id}>
+            <Link to={`/projects/${projectId}/design/study`} className="underline">
+              {study.name}
+            </Link>
+            {study.best === null ? null : ` ${study.best}`}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 function FailedTools({ count }: { count: number }) {
@@ -111,9 +138,12 @@ function BlockView({ block, running, failed }: { block: Block; running: boolean;
     case "end":
       if (block.status === "done") return failed === 0 ? null : <FailedTools count={failed} />;
       return (
-        <p role="status" className="text-bad">
-          {toEndText(block.status, block.message)}
-        </p>
+        <>
+          <p role="status" className="text-bad">
+            {toEndText(block)}
+          </p>
+          <RecordedStudies studies={block.studies} />
+        </>
       );
   }
 }
