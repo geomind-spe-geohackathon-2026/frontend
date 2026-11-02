@@ -5,15 +5,17 @@ import type { Problem } from "@/shared/api/types";
 type Props = {
   problems: Problem[];
   connections: SpecConnection[];
+  ids: string[];
   onSelect: (moduleId: string) => void;
 };
 
 function ProblemItem({
   problem,
   connections,
+  ids,
   onSelect,
 }: Omit<Props, "problems"> & { problem: Problem }) {
-  const target = modulesOfProblem(problem.path, connections)[0];
+  const target = modulesOfProblem(problem.path, connections, ids)[0];
   return (
     <li>
       {target === undefined ? (
@@ -34,7 +36,7 @@ function ProblemItem({
 }
 
 /** The validation result as two lists: problems that block saving, and missing values that do not. */
-export function ProblemsPanel({ problems, connections, onSelect }: Props) {
+export function ProblemsPanel({ problems, connections, ids, onSelect }: Props) {
   const missing = problems.filter((problem) => problem.code === "missing_value");
   const invalid = problems.filter((problem) => problem.code !== "missing_value");
   if (problems.length === 0) return null;
@@ -56,6 +58,7 @@ export function ProblemsPanel({ problems, connections, onSelect }: Props) {
                   key={`${problem.path}:${problem.message}`}
                   problem={problem}
                   connections={connections}
+                  ids={ids}
                   onSelect={onSelect}
                 />
               ))}

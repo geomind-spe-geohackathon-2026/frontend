@@ -69,9 +69,12 @@ describe("plant spec edits", () => {
   });
 
   it("points problems at modules", () => {
-    expect(modulesOfProblem("connections.0", readConnections(exampleSpec))).toEqual(["hx", "pump"]);
-    expect(modulesOfProblem("params.hx.duty", [])).toEqual(["hx"]);
-    expect(modulesOfProblem("format", [])).toEqual([]);
+    expect(modulesOfProblem("connections.0", readConnections(exampleSpec), [])).toEqual([
+      "hx",
+      "pump",
+    ]);
+    expect(modulesOfProblem("params.hx.duty", [], ["hx"])).toEqual(["hx"]);
+    expect(modulesOfProblem("format", [], ["hx"])).toEqual([]);
   });
 });
 

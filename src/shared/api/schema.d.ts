@@ -1221,6 +1221,10 @@ export interface components {
             spec: {
                 [key: string]: unknown;
             };
+            /** Structure */
+            structure: {
+                [key: string]: unknown;
+            };
             /** Version */
             version: number;
         };
@@ -1812,6 +1816,8 @@ export interface components {
         };
         /** SpecCheck */
         SpecCheck: {
+            /** Project */
+            project?: string | null;
             /** Spec */
             spec: {
                 [key: string]: unknown;

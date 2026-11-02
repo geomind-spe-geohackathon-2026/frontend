@@ -114,7 +114,7 @@ const exampleTemplates: Template[] = [
   },
 ];
 
-const exampleSpec: PlantSpec = {
+const exampleStructure: PlantSpec = {
   format: 1,
   kind: "plant",
   name: "ExamplePlant",
@@ -130,6 +130,19 @@ const exampleSpec: PlantSpec = {
   params: { hx: { duty: { value: 20, unit: "MW" } } },
 };
 
+const exampleSpec: PlantSpec = {
+  format: 1,
+  kind: "plant",
+  name: "ExamplePlant",
+  type: "ExampleHeatingPlant",
+  params: { hx: { duty: { value: 20, unit: "MW" } } },
+};
+
+function structureOf(spec: PlantSpec): PlantSpec {
+  if (isRecord(spec.modules)) return spec;
+  return { ...exampleStructure, params: spec.params };
+}
+
 const exampleAuthor = { id: "example-user-admin", name: "Example Admin" };
 
 type Stored = { version: Version; spec: PlantSpec; layout: Layout };
@@ -142,19 +155,21 @@ function toKind(spec: PlantSpec, reference: string): string | null {
 }
 
 function toFlowsheet(project: string, stored: Stored): Flowsheet {
-  const modules = readModules(stored.spec).map((module) => ({
+  const structure = structureOf(stored.spec);
+  const modules = readModules(structure).map((module) => ({
     ...module,
     title: module.type,
     category: examplePalette.find((item) => item.type === module.type)?.category ?? "",
   }));
-  const connections = readConnections(stored.spec).map((connection) => {
-    const kind = toKind(stored.spec, connection.source);
+  const connections = readConnections(structure).map((connection) => {
+    const kind = toKind(structure, connection.source);
     return { ...connection, stream: kind, kind };
   });
   return {
     project,
     version: stored.version.number,
     spec: stored.spec,
+    structure,
     layout: stored.layout,
     modules,
     connections,
@@ -264,7 +279,7 @@ function readHandlers(store: Store): RequestHandler[] {
     http.get(toRoute("/plant/parameters"), ({ request }) => {
       const query = new URL(request.url).searchParams;
       const current = latest(query.get("project") ?? "");
-      const module = readModules(current?.spec ?? {}).find(
+      const module = readModules(structureOf(current?.spec ?? {})).find(
         (item) => item.id === query.get("module"),
       );
       if (current === undefined || module === undefined)
@@ -307,7 +322,11 @@ function writeHandlers(store: Store): RequestHandler[] {
       const current = latest(body.project);
       if ((current?.version.number ?? null) !== body.base)
         return conflict(current?.version.number ?? 0);
-      const spec = body.spec ?? { ...exampleSpec, name: body.template ?? "Template" };
+      const spec = body.spec ?? {
+        ...exampleSpec,
+        name: body.template ?? "Template",
+        type: body.template ?? "Template",
+      };
       const next: Stored = {
         version: toVersion((current?.version.number ?? 0) + 1, body.note),
         spec,

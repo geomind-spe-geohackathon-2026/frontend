@@ -1,4 +1,5 @@
 import "@xyflow/react/dist/style.css";
+import { useEffect } from "react";
 import {
   Background,
   Controls,
@@ -86,8 +87,23 @@ function isAllowed(props: Props, connection: Ends): boolean {
   );
 }
 
+function useFitWhenPlaced(spec: PlantSpec, layout: Layout) {
+  const flow = useReactFlow();
+  const isPlaced = readModules(spec).every((module) => layout[module.id] !== undefined);
+  useEffect(() => {
+    if (!isPlaced) return;
+    const frame = requestAnimationFrame(() => {
+      void flow.fitView({ padding: 0.1 });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [isPlaced, flow]);
+}
+
 function FlowCanvas(props: Props) {
   const flow = useReactFlow();
+  useFitWhenPlaced(props.spec, props.layout);
   return (
     <div
       className="h-[520px] min-w-0 rounded-card border border-border bg-sunken"
@@ -106,6 +122,7 @@ function FlowCanvas(props: Props) {
         edges={toEdges(props)}
         nodeTypes={nodeTypes}
         fitView
+        minZoom={0.1}
         isValidConnection={(connection) => isAllowed(props, connection)}
         onNodeClick={(_, node) => {
           props.onSelect(node.id);

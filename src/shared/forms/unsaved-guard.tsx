@@ -5,7 +5,10 @@ import { Dialog, DialogContent } from "@/shared/ui/dialog";
 
 /** Blocks in-app navigation and tab close while there are unsaved changes; render the dialog with the result. */
 export function useUnsavedGuard(dirty: boolean): Blocker {
-  const blocker = useBlocker(dirty);
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      dirty && currentLocation.pathname !== nextLocation.pathname,
+  );
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => {

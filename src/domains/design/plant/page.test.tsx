@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -37,6 +37,20 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(await screen.findByLabelText("Inlet source_in (brine)", {}, slow)).toBeInTheDocument();
     expect(screen.getByLabelText("Inlet power_in (electricity)")).toBeInTheDocument();
     expect(screen.getByLabelText("Outlet heat_out (hot_water)")).toBeInTheDocument();
+  });
+
+  it("keeps every module of a template plant when one is added, and selecting does not ask to leave", async () => {
+    renderApp({ path: withPlant });
+    const user = userEvent.setup();
+    await findSave();
+    expect((await screen.findAllByText("HeatExchanger", {}, slow)).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: "Add HeatPump" }));
+    await screen.findByLabelText("Module id", {}, slow);
+    expect(screen.getAllByText("HeatExchanger").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("HeatingGrid").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByText("hx"));
+    expect(await screen.findByLabelText("Module id")).toHaveValue("hx");
+    expect(screen.queryByRole("dialog", { name: "Unsaved changes" })).not.toBeInTheDocument();
   });
 
   it("has no form to type port names for a connection", async () => {
