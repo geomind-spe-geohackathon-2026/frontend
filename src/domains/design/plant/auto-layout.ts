@@ -2,8 +2,8 @@ import type { SpecConnection, SpecModule } from "./spec";
 import { splitPort } from "./spec";
 import type { Layout } from "@/shared/api/layout";
 
-export const nodeWidth = 200;
-export const nodeHeight = 84;
+export const nodeWidth = 220;
+export const nodeHeight = 130;
 
 async function createElk() {
   const { default: ELK } = await import("elkjs/lib/elk.bundled.js");

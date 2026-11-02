@@ -1,4 +1,5 @@
 import "@xyflow/react/dist/style.css";
+import { useEffect, type CSSProperties } from "react";
 import {
   Background,
   Controls,
@@ -17,6 +18,20 @@ import type { PlantSpec } from "./types";
 export const moduleDragType = "application/x-plant-module";
 
 const nodeTypes = { module: ModuleNode };
+
+const flowTheme = {
+  "--xy-background-color": "var(--sunken)",
+  "--xy-background-pattern-dots-color": "var(--border)",
+  "--xy-controls-button-background-color": "var(--surface)",
+  "--xy-controls-button-background-color-hover": "var(--accent-soft)",
+  "--xy-controls-button-color": "var(--text)",
+  "--xy-controls-button-color-hover": "var(--text)",
+  "--xy-controls-button-border-color": "var(--border)",
+  "--xy-controls-box-shadow": "none",
+  "--xy-attribution-background-color": "var(--surface)",
+  "--xy-edge-label-background-color": "var(--surface)",
+  "--xy-edge-label-color": "var(--muted)",
+} as CSSProperties;
 
 export type Issues = Map<string, "missing" | "invalid">;
 
@@ -77,6 +92,7 @@ type Ends = {
 };
 
 function isAllowed(props: Props, connection: Ends): boolean {
+  if (connection.source === connection.target) return false;
   return isSameKind(
     props.ports,
     connection.source,
@@ -86,11 +102,26 @@ function isAllowed(props: Props, connection: Ends): boolean {
   );
 }
 
+function useFitWhenPlaced(spec: PlantSpec, layout: Layout) {
+  const flow = useReactFlow();
+  const isPlaced = readModules(spec).every((module) => layout[module.id] !== undefined);
+  useEffect(() => {
+    if (!isPlaced) return;
+    const frame = requestAnimationFrame(() => {
+      void flow.fitView({ padding: 0.1 });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [isPlaced, flow]);
+}
+
 function FlowCanvas(props: Props) {
   const flow = useReactFlow();
+  useFitWhenPlaced(props.spec, props.layout);
   return (
     <div
-      className="h-[520px] min-w-0 rounded-card border border-border bg-sunken"
+      className="h-[max(520px,68vh)] min-w-0 rounded-card border border-border bg-sunken"
       onDragOver={(event) => {
         event.preventDefault();
       }}
@@ -106,6 +137,8 @@ function FlowCanvas(props: Props) {
         edges={toEdges(props)}
         nodeTypes={nodeTypes}
         fitView
+        style={flowTheme}
+        minZoom={0.1}
         isValidConnection={(connection) => isAllowed(props, connection)}
         onNodeClick={(_, node) => {
           props.onSelect(node.id);

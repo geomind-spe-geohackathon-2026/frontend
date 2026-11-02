@@ -37,7 +37,12 @@ function validityChip(editor: Editor) {
   const blocking = editor.problems.filter((problem) => problem.code !== "missing_value").length;
   const missing = editor.problems.length - blocking;
   if (editor.isChecking) return <Chip tone="off">checking</Chip>;
-  if (blocking > 0) return <Chip tone="bad">{blocking} problems</Chip>;
+  if (blocking > 0)
+    return (
+      <Chip tone="bad">
+        {blocking} {blocking === 1 ? "problem" : "problems"}
+      </Chip>
+    );
   if (missing > 0) return <Chip tone="warn">{missing} values missing</Chip>;
   return <Chip tone="ok">valid</Chip>;
 }
@@ -238,7 +243,7 @@ function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
 }
 
 function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
-  const editor = usePlantEditor(saved);
+  const editor = usePlantEditor(projectId, saved);
   const queryClient = useQueryClient();
   const { selected, tab, setParam } = usePlantParams();
   const [draft, setDraft] = useState<ParameterDraft | null>(null);

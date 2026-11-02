@@ -15,7 +15,10 @@ export function PalettePanel({ items, onAdd }: Props) {
   );
   const categories = [...new Set(shown.map((item) => item.category))];
   return (
-    <section aria-label="Module palette" className="flex flex-col gap-2">
+    <section
+      aria-label="Module palette"
+      className="flex max-h-[max(520px,68vh)] flex-col gap-2 overflow-y-auto"
+    >
       <label htmlFor="palette-filter" className="text-[12.5px] text-muted">
         Filter modules
       </label>
@@ -40,9 +43,9 @@ export function PalettePanel({ items, onAdd }: Props) {
                   <button
                     type="button"
                     draggable
-                    title={item.summary}
+                    title={`${item.title}: ${item.summary}`}
                     aria-label={`Add ${item.title}`}
-                    className="w-full cursor-grab rounded-control border border-border bg-surface px-2 py-1 text-left hover:border-muted"
+                    className="block w-full cursor-grab truncate rounded-control border border-border bg-surface px-2 py-1 text-left hover:border-muted"
                     onDragStart={(event) => {
                       event.dataTransfer.setData(moduleDragType, item.type);
                     }}

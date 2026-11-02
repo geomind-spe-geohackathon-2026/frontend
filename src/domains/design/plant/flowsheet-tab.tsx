@@ -25,10 +25,11 @@ export type FlowsheetProps = {
 
 function toIssues(editor: FlowsheetProps["editor"]): Issues {
   const connections = readConnections(editor.spec);
+  const ids = readModules(editor.spec).map((module) => module.id);
   const issues: Issues = new Map();
   for (const problem of editor.problems) {
     const tone = problem.code === "missing_value" ? "missing" : "invalid";
-    for (const id of modulesOfProblem(problem.path, connections)) {
+    for (const id of modulesOfProblem(problem.path, connections, ids)) {
       if (issues.get(id) !== "invalid") issues.set(id, tone);
     }
   }
@@ -105,6 +106,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
         <ProblemsPanel
           problems={editor.problems}
           connections={connections}
+          ids={modules.map((module) => module.id)}
           onSelect={props.onSelect}
         />
       </div>
@@ -113,7 +115,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
           {current === undefined ? (
             <p className="text-muted">Select a module to edit it.</p>
           ) : (
-            <Inspector {...props} moduleId={current.id} type={current.type} />
+            <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
           )}
         </CardBody>
       </Card>

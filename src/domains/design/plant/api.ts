@@ -15,7 +15,8 @@ export const plantKeys = {
   palette: () => ["plant", "palette"] as const,
   templates: () => ["plant", "templates"] as const,
   ports: () => ["plant", "ports"] as const,
-  validation: (spec: PlantSpec) => ["plant", "validation", spec] as const,
+  validation: (projectId: string, spec: PlantSpec) =>
+    [...plantKeys.all(projectId), "validation", spec] as const,
 };
 
 /** Query options for the latest flowsheet; a 404 plant_not_found means the project has no plant yet. */
@@ -91,12 +92,17 @@ export const parametersQuery = (projectId: string, module: string) =>
       ),
   });
 
-/** Query options for the server check of a draft spec; it keeps the last answer while a new one loads. */
-export const plantValidationQuery = (spec: PlantSpec) =>
+/** Query options for the server check of a draft spec on the latest case of the project; it keeps the last answer while a new one loads. */
+export const plantValidationQuery = (projectId: string, spec: PlantSpec) =>
   queryOptions({
-    queryKey: plantKeys.validation(spec),
+    queryKey: plantKeys.validation(projectId, spec),
     queryFn: async ({ signal }) =>
-      toData(await api.POST("/plant/flowsheet/validate", { body: { spec }, signal })),
+      toData(
+        await api.POST("/plant/flowsheet/validate", {
+          body: { spec, project: projectId },
+          signal,
+        }),
+      ),
     placeholderData: keepPreviousData,
   });
 

@@ -107,6 +107,8 @@ test("golden path", async ({ page }, info) => {
 
   await page.getByRole("link", { name: "2 Plant" }).click();
   await expect(page.getByRole("tab", { name: "Flowsheet" })).toBeVisible();
+  await expect(page.locator(".react-flow__node").first()).toBeVisible();
+  await expect(page.locator(".react-flow__edge").first()).toBeAttached();
   await shot(page, mode, "plant");
 
   await page.getByRole("link", { name: "3 Study" }).click();
