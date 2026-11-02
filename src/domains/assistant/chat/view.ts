@@ -156,6 +156,7 @@ function resolveRequest(view: View): View {
 }
 
 function keepsRequest(event: RunEvent): boolean {
+  if (event.type === "text.delta") return event.buffered === true;
   return event.type === "request" || event.type === "usage" || event.type === "state.changed";
 }
 
@@ -229,7 +230,13 @@ function reduceFinished(view: View, event: RunEvent & { type: "run.finished" }):
     status: event.status,
     message: event.message ?? null,
   });
-  return { ...next, status: event.status };
+  const agents = Object.fromEntries(
+    Object.entries(next.agents).map(([path, agent]) => [
+      path,
+      { ...agent, state: "done" as const },
+    ]),
+  );
+  return { ...next, agents, status: event.status };
 }
 
 /** Pure reducer of the live run view: the same events always give the same view, live or replayed. */

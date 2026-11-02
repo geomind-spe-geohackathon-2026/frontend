@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer } from "react";
 import type { ApiError } from "@/shared/api/errors";
+import { chatsKey } from "@/shared/sse/chats";
 import { streamEvents } from "@/shared/sse/stream";
 import type { RunEvent } from "@/shared/sse/types";
 import { problemQuery } from "./api";
@@ -54,6 +55,9 @@ export function useRunView(projectId: string, chatId: string | null, runId: stri
       },
       onEvent: (event) => {
         dispatch({ kind: "event", event });
+        if (event.type === "request" || event.type === "run.started") {
+          void queryClient.invalidateQueries({ queryKey: chatsKey(projectId) });
+        }
         if (event.type !== "run.finished" || event.parent !== null) return;
         finished = true;
         void queryClient.invalidateQueries({ queryKey: ["projects", projectId] });

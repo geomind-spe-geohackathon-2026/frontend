@@ -34,6 +34,13 @@ describe("chat page", () => {
     );
   });
 
+  it("opens the latest chat when the project has chats", async () => {
+    const { router } = renderApp({ path: base });
+    await waitFor(() => {
+      expect(router.state.location.pathname).toMatch(/assistant\/chat\/example-chat-\d$/);
+    });
+  });
+
   it("shows the problem state the run built", async () => {
     renderApp({ path: `${base}/example-chat-1` });
     const panel = await screen.findByRole("heading", { name: "What it knows" });
@@ -96,13 +103,13 @@ describe("chat page", () => {
   });
 
   it("starts a new chat from the first message", async () => {
-    const { router } = renderApp({ path: base });
+    const { router } = renderApp({ path: `${base}?new` });
     expect(await screen.findByText(/New chat. Ask anything/)).toBeVisible();
     await sendMessage("A first question");
     await waitFor(() => {
       expect(router.state.location.pathname).toMatch(/assistant\/chat\/example-chat-2$/);
     });
-    expect(await screen.findByText("A first question")).toBeVisible();
+    expect((await screen.findAllByText("A first question")).length).toBeGreaterThan(0);
   });
 
   it("renames a chat in a dialog", async () => {

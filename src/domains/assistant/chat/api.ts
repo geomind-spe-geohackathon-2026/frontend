@@ -1,3 +1,4 @@
+import { chatsKey } from "@/shared/sse/chats";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import type { Answer } from "@/shared/api/types";
@@ -123,7 +124,10 @@ export function useAnswerRun(projectId: string, runId: string) {
           body: input,
         }),
       ),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: runsKey(projectId) }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: chatsKey(projectId) });
+      await queryClient.invalidateQueries({ queryKey: runsKey(projectId) });
+    },
   });
 }
 

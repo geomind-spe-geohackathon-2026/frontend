@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { useRequiredParam } from "@/shared/layout/params";
 import { PageHeader } from "@/shared/layout/page-header";
 import { ErrorNotice } from "@/shared/sse/notice";
+import { chatsQuery } from "@/shared/sse/chats";
 import { messagesQuery } from "./api";
 import { ChatList } from "./chat-list";
 import { ChatWorkspace } from "./workspace";
@@ -27,6 +28,12 @@ function ChatBody({ projectId, chatId }: { projectId: string; chatId: string }) 
 export function ChatPage() {
   const projectId = useRequiredParam("projectId");
   const chatId = useParams().chatId ?? null;
+  const [params] = useSearchParams();
+  const chats = useQuery({ ...chatsQuery(projectId), enabled: chatId === null });
+  const latest = chats.data?.[0];
+  if (chatId === null && !params.has("new") && latest !== undefined) {
+    return <Navigate replace to={`/projects/${projectId}/assistant/chat/${latest.id}`} />;
+  }
   return (
     <>
       <PageHeader title="Chat" />

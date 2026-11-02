@@ -2,9 +2,12 @@ import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import { toDepth, toGroups, toLabel, type Group } from "./agents";
 import { MarkdownText } from "@/shared/ui/markdown-text";
+import { toPretty } from "./pretty";
+import { fromRoute, toRouteLabel } from "./route";
 import type { Block } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
+type TextBlock = Extract<Block, { kind: "text" }>;
 
 const indents = ["", "ml-3", "ml-6"];
 
@@ -24,28 +27,34 @@ function ToolCard({ block }: { block: ToolBlock }) {
           {JSON.stringify(block.input, null, 2)}
         </pre>
         <p className="text-[11.5px] tracking-wide text-muted uppercase">Output</p>
-        <p className={block.error === null ? "" : "text-bad"}>{block.error ?? block.summary}</p>
+        <pre
+          className={`overflow-x-auto font-mono text-[12px] whitespace-pre-wrap ${block.error === null ? "" : "text-bad"}`}
+        >
+          {toPretty(block.error ?? block.summary)}
+        </pre>
       </div>
     </details>
   );
 }
 
-function BlockView({ block }: { block: Block }) {
+function TextView({ block, running }: { block: TextBlock; running: boolean }) {
+  if (block.text === "")
+    return block.open && running ? <p className="text-muted">Thinking</p> : null;
+  const route = fromRoute(block.text);
+  if (route === null) return <MarkdownText text={block.text} />;
+  if (route.kind === "answer") return <MarkdownText text={route.answer} />;
+  return <p className="text-[12px] text-muted">{toRouteLabel(route)}</p>;
+}
+
+function BlockView({ block, running }: { block: Block; running: boolean }) {
   switch (block.kind) {
     case "text":
-      if (block.text === "") return block.open ? <p className="text-muted">Thinking</p> : null;
-      return <MarkdownText text={block.text} />;
+      return <TextView block={block} running={running} />;
     case "tool":
       return <ToolCard block={block} />;
     case "request":
-      return (
-        <p className="rounded-control border border-warn bg-warn-soft px-2.5 py-1.5">
-          {block.request.message}{" "}
-          <span className="text-muted">
-            {block.resolved ? "answered" : "waiting for your answer"}
-          </span>
-        </p>
-      );
+      if (!block.resolved) return null;
+      return <p className="text-[12px] text-muted">Answered: {block.request.message}</p>;
     case "end":
       if (block.status === "done") return null;
       return (
@@ -57,7 +66,7 @@ function BlockView({ block }: { block: Block }) {
   }
 }
 
-function AgentGroup({ group }: { group: Group }) {
+function AgentGroup({ group, running }: { group: Group; running: boolean }) {
   const depth = toDepth(group.agent);
   return (
     <section
@@ -69,18 +78,18 @@ function AgentGroup({ group }: { group: Group }) {
         {depth === 0 ? "" : " · delegated"}
       </p>
       {group.blocks.map((block) => (
-        <BlockView key={block.id} block={block} />
+        <BlockView key={block.id} block={block} running={running} />
       ))}
     </section>
   );
 }
 
 /** The blocks of a run in event order, grouped by the agent that produced them. */
-export function Blocks({ blocks }: { blocks: Block[] }) {
+export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean }) {
   return (
     <div className="space-y-2.5">
       {toGroups(blocks).map((group) => (
-        <AgentGroup key={group.id} group={group} />
+        <AgentGroup key={group.id} group={group} running={running} />
       ))}
     </div>
   );

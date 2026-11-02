@@ -40,7 +40,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
 
   return (
     <>
-      <div className="flex min-h-[420px] min-w-0 flex-col gap-3">
+      <div className="flex min-h-[calc(100vh-15rem)] min-w-0 flex-col gap-3">
         <div className="flex-1">
           <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
         </div>
