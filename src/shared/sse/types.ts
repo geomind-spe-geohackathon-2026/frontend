@@ -19,7 +19,7 @@ export type StateChange = { op: StateOperation; path: string; value?: unknown };
 type Origin = { sequence: number | null; agent: string; parent: string | null };
 
 export type RunEventBody =
-  | { type: "run.started"; run: string; loop: string }
+  | { type: "run.started"; run: string; loop: string | null }
   | { type: "step.started"; index: number; model: string }
   | { type: "text.delta"; index: number; text: string; buffered?: true }
   | { type: "tool.started"; index: number; call_id: string; tool: string; input: unknown }

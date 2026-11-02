@@ -130,7 +130,7 @@ function toStepBody(type: string, fields: Fields): RunEventBody | null {
       return {
         type,
         run: fromRunId(requireString(fields, "run", type)),
-        loop: requireString(fields, "loop", type),
+        loop: optionalString(fields, "loop"),
       };
     case "step.started":
       return {

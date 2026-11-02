@@ -30,6 +30,11 @@ describe("fromEvent", () => {
     });
   });
 
+  it("reads the run.started of a routing run, which has no loop", () => {
+    const routing = JSON.stringify({ agent: "coordinator", parent: "p", run: "r-route" });
+    expect(fromEvent("run.started", routing, "1")).toMatchObject({ run: "r-route", loop: null });
+  });
+
   it("writes the run ids of an event in the dashed form the API uses", () => {
     const hex = "0123456789abcdef0123456789abcdef";
     const dashed = "01234567-89ab-cdef-0123-456789abcdef";
