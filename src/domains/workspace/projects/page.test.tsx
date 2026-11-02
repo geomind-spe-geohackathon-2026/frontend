@@ -21,6 +21,12 @@ describe("projects home", () => {
     );
   });
 
+  it("shows the chat and run counts of a project", async () => {
+    renderApp({ path: "/" });
+    expect(await screen.findByText("3 chats · 5 runs")).toBeVisible();
+    expect(await screen.findByText("0 chats · 0 runs")).toBeVisible();
+  });
+
   it("filters by name from the search box and keeps the search in the URL", async () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();

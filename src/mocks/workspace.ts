@@ -32,6 +32,8 @@ const exampleProjects: Project[] = [
       results: step("empty", "none yet"),
       report: step("empty", "none yet"),
     },
+    chats: 3,
+    runs: 5,
   },
   {
     id: "example-project-2",
@@ -45,6 +47,8 @@ const exampleProjects: Project[] = [
       ...emptyProgress,
       case: step("incomplete", "2 missing"),
     },
+    chats: 0,
+    runs: 0,
   },
 ];
 
@@ -128,6 +132,8 @@ function toNewProject(number: number, name: string, source: Project | undefined)
     updated: now,
     progress:
       source === undefined ? emptyProgress : { ...emptyProgress, case: source.progress.case },
+    chats: 0,
+    runs: 0,
   };
 }
 
@@ -162,6 +168,8 @@ function projectHandlers(projects: Project[]): RequestHandler[] {
         created: now,
         updated: now,
         progress: emptyProgress,
+        chats: 0,
+        runs: 0,
       };
       projects.unshift(project);
       return HttpResponse.json<Project>(project, { status: 201 });

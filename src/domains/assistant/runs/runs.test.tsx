@@ -21,6 +21,13 @@ describe("runs page", () => {
     expect(await screen.findByText(/Project total/)).toHaveTextContent("1 runs");
   });
 
+  it("opens the log when a row is clicked", async () => {
+    const user = userEvent.setup();
+    renderApp({ path: base });
+    await user.click(await screen.findByText("Design the example plant"));
+    expect(await screen.findByRole("heading", { name: /Run/ })).toBeVisible();
+  });
+
   it("says so when the project has no runs", async () => {
     renderApp({ path: "/projects/example-project-2/assistant/runs" });
     expect(await screen.findByText(/No runs yet/)).toBeVisible();

@@ -1605,6 +1605,8 @@ export interface components {
         Project: {
             /** Case Version */
             case_version: number | null;
+            /** Chats */
+            chats: number;
             /**
              * Created
              * Format: date-time
@@ -1621,6 +1623,8 @@ export interface components {
             /** Plant Version */
             plant_version: number | null;
             progress: components["schemas"]["Progress"];
+            /** Runs */
+            runs: number;
             /**
              * Updated
              * Format: date-time

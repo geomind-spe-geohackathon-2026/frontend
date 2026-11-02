@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Quantity } from "@/shared/quantity/quantity";
@@ -39,6 +39,7 @@ function RunsTable({
   items: Run[];
   titles: Map<string, string>;
 }) {
+  const navigate = useNavigate();
   return (
     <table className="w-full border-collapse rounded-card border border-border bg-surface text-left">
       <caption className="sr-only">Runs of this project, newest first</caption>
@@ -53,7 +54,13 @@ function RunsTable({
       </thead>
       <tbody>
         {items.map((run) => (
-          <tr key={run.id} className="border-b border-border last:border-b-0">
+          <tr
+            key={run.id}
+            className="cursor-pointer border-b border-border last:border-b-0 hover:bg-sunken"
+            onClick={() => {
+              void navigate(`/projects/${projectId}/assistant/runs/${run.id}`);
+            }}
+          >
             <td className="px-3 py-2">
               <Link className="text-accent" to={`/projects/${projectId}/assistant/runs/${run.id}`}>
                 {toShortId(run.id)}

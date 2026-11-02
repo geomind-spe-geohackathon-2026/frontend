@@ -10,7 +10,11 @@ function toSummary(progress: Project["progress"]): string {
   return `${next.name}: ${progress[next.key].label}`;
 }
 
-/** One project card: name, owner, last change, the five-step progress bar and the step to work on next. */
+function toCount(count: number, name: string): string {
+  return `${String(count)} ${name}${count === 1 ? "" : "s"}`;
+}
+
+/** One project card: name, owner, last change, its chats and runs, the five-step progress bar and the step to work on next. */
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
@@ -20,6 +24,9 @@ export function ProjectCard({ project }: { project: Project }) {
       <h2 className="text-[15px]">{project.name}</h2>
       <p className="text-muted">
         Owner {project.owner.name} · updated {toDateLabel(project.updated)}
+      </p>
+      <p className="text-muted">
+        {toCount(project.chats, "chat")} · {toCount(project.runs, "run")}
       </p>
       <div className="mt-auto flex flex-col gap-1.5">
         <ProgressBar progress={project.progress} />
