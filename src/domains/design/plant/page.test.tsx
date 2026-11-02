@@ -61,7 +61,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     await findSave();
     expect((await screen.findAllByText("HeatExchanger", {}, slow)).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Add Doublet" })).toBeVisible();
-    expect(await screen.findByText("1 values missing", {}, slow)).toBeVisible();
+    expect(await screen.findByText("1 value missing", {}, slow)).toBeVisible();
     const missing = await screen.findByRole("region", { name: "Missing values" });
     expect(missing).toHaveTextContent("params.hx.approach_temperature");
     expect(screen.getByRole("button", { name: "Save version" })).toBeDisabled();
@@ -308,7 +308,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    await user.click(await screen.findByRole("button", { name: /values missing/ }, slow));
+    await user.click(await screen.findByRole("button", { name: /value missing/ }, slow));
     await user.click(await screen.findByRole("menuitem", { name: "hx.approach_temperature" }));
     expect(await screen.findByLabelText("Module id")).toHaveValue("hx");
     expect(screen.queryByText("unsaved changes")).not.toBeInTheDocument();

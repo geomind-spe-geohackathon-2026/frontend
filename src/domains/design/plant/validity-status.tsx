@@ -48,7 +48,9 @@ function MissingStatus({ editor, graph, selected, onSelect }: Props) {
     <span className="inline-flex items-center gap-1.5">
       <DropdownMenu>
         <DropdownMenuTrigger className="cursor-pointer rounded-pill border-0 bg-transparent p-0">
-          <Chip tone="off">{missing.length} values missing</Chip>
+          <Chip tone="off">
+            {missing.length} {missing.length === 1 ? "value" : "values"} missing
+          </Chip>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="max-h-[60vh] max-w-[min(420px,calc(100vw-32px))] overflow-y-auto">
           {missing.map((problem) => (
