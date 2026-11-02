@@ -106,7 +106,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     const user = userEvent.setup();
     await findSave();
     await user.click(screen.getByRole("button", { name: "Add HeatPump" }));
-    expect(await screen.findByText("1 problems", {}, slow)).toBeVisible();
+    expect(await screen.findByText("1 problem", {}, slow)).toBeVisible();
     expect(screen.getByRole("region", { name: "Problems to fix before saving" })).toHaveTextContent(
       "ports do not match",
     );

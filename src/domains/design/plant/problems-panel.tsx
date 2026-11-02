@@ -41,7 +41,7 @@ export function ProblemsPanel({ problems, connections, ids, onSelect }: Props) {
   const invalid = problems.filter((problem) => problem.code !== "missing_value");
   if (problems.length === 0) return null;
   return (
-    <div className="mt-3 flex flex-col gap-2">
+    <div className="mt-3 flex max-h-60 flex-col gap-2 overflow-y-auto">
       {[
         { title: "Problems to fix before saving", items: invalid, tone: "text-bad" },
         { title: "Missing values", items: missing, tone: "text-warn" },
