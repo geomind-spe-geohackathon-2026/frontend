@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { toFieldMessage } from "@/shared/api/errors";
 import { useRef, useState, type ChangeEvent } from "react";
 import { toDateLabel } from "@/lib/datelabel";
 import { toItems } from "@/shared/api/pagination";
@@ -58,7 +59,7 @@ function UploadButton({ projectId }: { projectId: string }) {
       >
         Upload
       </Button>
-      {upload.error === null ? null : <p role="alert">{upload.error.message}</p>}
+      {upload.error === null ? null : <p role="alert">{toFieldMessage(upload.error)}</p>}
     </>
   );
 }

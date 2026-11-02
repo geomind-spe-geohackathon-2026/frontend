@@ -16,6 +16,7 @@ let step = 0;
 
 async function shot(page: Page, mode: string, name: string): Promise<void> {
   step += 1;
+  await page.waitForTimeout(800);
   const folder = `.tmp/build/screens/${mode}`;
   mkdirSync(folder, { recursive: true });
   await page.screenshot({

@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { toFieldMessage } from "@/shared/api/errors";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
@@ -128,7 +129,7 @@ function NewProjectForm() {
       )}
       {error === null ? null : (
         <p role="alert" className="text-bad">
-          {error.message}
+          {toFieldMessage(error)}
         </p>
       )}
       <div className="flex justify-end gap-2">

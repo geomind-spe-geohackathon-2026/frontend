@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { toFieldMessage } from "@/shared/api/errors";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { projectQuery } from "@/shared/api/projects";
@@ -34,7 +35,7 @@ function RenameForm({ project }: { project: Project }) {
       </Field>
       {rename.error === null ? null : (
         <p role="alert" className="text-bad">
-          {rename.error.message}
+          {toFieldMessage(rename.error)}
         </p>
       )}
       <Button type="submit" variant="primary" disabled={rename.isPending} className="self-start">

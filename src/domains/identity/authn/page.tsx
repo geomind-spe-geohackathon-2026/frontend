@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { toFieldMessage } from "@/shared/api/errors";
 import { useSession } from "@/shared/api/session";
 import { Button } from "@/shared/ui/button";
 import { Field } from "@/shared/ui/field";
@@ -49,7 +50,7 @@ function SignInForm({ target }: { target: string }) {
       </Field>
       {login.error === null ? null : (
         <p role="alert" className="text-bad">
-          {login.error.message}
+          {toFieldMessage(login.error)}
         </p>
       )}
       <Button type="submit" variant="primary" disabled={login.isPending} className="justify-center">

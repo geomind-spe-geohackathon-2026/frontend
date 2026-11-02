@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ApiError } from "@/shared/api/errors";
+import { ApiError, toFieldMessage } from "@/shared/api/errors";
 
 type Props =
   | { status: "loading"; what: string }
@@ -13,7 +13,7 @@ function toFailure(error: unknown): { title: string; text: string } {
       text: "You do not have permission to see this. Ask the project owner or an admin.",
     };
   }
-  if (error instanceof ApiError) return { title: error.code, text: error.message };
+  if (error instanceof ApiError) return { title: error.code, text: toFieldMessage(error) };
   return { title: "error", text: "Something went wrong." };
 }
 

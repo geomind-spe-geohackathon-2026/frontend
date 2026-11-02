@@ -1163,10 +1163,7 @@ export interface components {
         };
         /** Credentials */
         Credentials: {
-            /**
-             * Email
-             * Format: email
-             */
+            /** Email */
             email: string;
             /** Password */
             password: string;

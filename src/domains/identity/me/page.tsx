@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { toFieldMessage } from "@/shared/api/errors";
 import type { FormEvent } from "react";
 import { meQuery } from "@/shared/api/me";
 import type { User } from "@/shared/api/types";
@@ -68,7 +69,7 @@ function PasswordForm() {
           </Field>
           {change.error === null ? null : (
             <p role="alert" className="text-bad">
-              {change.error.message}
+              {toFieldMessage(change.error)}
             </p>
           )}
           <p className="text-muted">You will be signed out everywhere.</p>

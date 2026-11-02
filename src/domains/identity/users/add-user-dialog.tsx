@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { toFieldMessage } from "@/shared/api/errors";
 import type { User } from "@/shared/api/types";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/shared/ui/dialog";
@@ -54,7 +55,7 @@ function AddUserForm({ onCreated }: { onCreated: () => void }) {
       </Field>
       {create.error === null ? null : (
         <p role="alert" className="text-bad">
-          {create.error.message}
+          {toFieldMessage(create.error)}
         </p>
       )}
       <div className="flex justify-end gap-2">

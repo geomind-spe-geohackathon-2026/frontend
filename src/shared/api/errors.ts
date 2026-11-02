@@ -52,3 +52,12 @@ export async function fromResponse(response: Response): Promise<ApiError> {
 export function hasCode(error: unknown, code: string): boolean {
   return error instanceof ApiError && error.code === code;
 }
+
+/** Writes an error as one line: each field of its details with the message, else the error message. */
+export function toFieldMessage(error: Error): string {
+  if (!(error instanceof ApiError)) return error.message;
+  const fields = error.details.fields;
+  if (!isRecord(fields)) return error.message;
+  const lines = Object.entries(fields).map(([name, text]) => `${name}: ${String(text)}`);
+  return lines.length === 0 ? error.message : lines.join("; ");
+}
