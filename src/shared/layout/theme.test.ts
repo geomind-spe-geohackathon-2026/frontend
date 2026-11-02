@@ -20,7 +20,13 @@ describe("theme before first paint", () => {
     expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 
-  it("leaves the system choice to the operating system", () => {
+  it("is light when no theme was chosen", () => {
+    runInThisContext(toBootScript());
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+  });
+
+  it("leaves a chosen system theme to the operating system", () => {
+    window.localStorage.setItem("geomind.theme", "system");
     runInThisContext(toBootScript());
     expect(document.documentElement).not.toHaveAttribute("data-theme");
   });

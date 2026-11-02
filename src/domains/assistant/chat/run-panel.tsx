@@ -1,3 +1,4 @@
+import { toFailedCount } from "./blocks";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toShortId } from "@/lib/shortid";
@@ -62,6 +63,9 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
           <div className="flex items-center justify-between">
             <span className="text-muted">Run {toShortId(runId)}</span>
             <RunStatusChip status={status} />
+            {toFailedCount(view.blocks) === 0 ? null : (
+              <span className="text-[12px] text-bad">{toFailedCount(view.blocks)} failed</span>
+            )}
           </div>
           {run === undefined ? null : (
             <p>

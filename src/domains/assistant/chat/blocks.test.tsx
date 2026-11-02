@@ -40,7 +40,7 @@ describe("Blocks", () => {
     };
     const { container } = render(<Blocks running={false} blocks={[tool]} />);
     expect(container.querySelector("details")).not.toHaveAttribute("open");
-    expect(container.querySelectorAll("pre")[1]?.textContent).toContain("'plants': [\n");
+    expect(container.querySelectorAll("pre")[1]?.textContent).toContain('"plants": [\n');
   });
 
   it("shows a pending request nowhere inline and an answered one as a short marker", () => {

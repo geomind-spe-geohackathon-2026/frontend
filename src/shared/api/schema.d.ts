@@ -1344,6 +1344,11 @@ export interface components {
         };
         /** HealthStatus */
         HealthStatus: {
+            /**
+             * Assistant
+             * @enum {string}
+             */
+            assistant: "model" | "scripted";
             /** Status */
             status: string;
         };

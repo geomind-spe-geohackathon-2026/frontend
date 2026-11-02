@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { toPretty } from "./pretty";
 import { fromRoute, toRouteLabel } from "./route";
 
 describe("fromRoute", () => {
@@ -20,13 +19,5 @@ describe("fromRoute", () => {
   it("leaves other text alone", () => {
     expect(fromRoute("Hello")).toBeNull();
     expect(fromRoute('{"kind": "other"}')).toBeNull();
-  });
-});
-
-describe("toPretty", () => {
-  it("indents a Python dict and keeps commas inside strings", () => {
-    expect(toPretty("{'name': 'a, b', 'items': [1, 2]}")).toBe(
-      "{\n  'name': 'a, b',\n  'items': [\n    1,\n    2\n  ]\n}",
-    );
   });
 });

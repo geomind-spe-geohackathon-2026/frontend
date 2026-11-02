@@ -6,8 +6,8 @@
     <script>
       try {
         var stored = window.localStorage.getItem("geomind.theme");
-        if (stored === "light" || stored === "dark") {
-          document.documentElement.setAttribute("data-theme", stored);
+        if (stored !== "system") {
+          document.documentElement.setAttribute("data-theme", stored === "dark" ? "dark" : "light");
         }
       } catch (error) {
         void error;

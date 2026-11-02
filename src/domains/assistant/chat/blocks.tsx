@@ -2,7 +2,7 @@ import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import { toDepth, toGroups, toLabel, type Group } from "./agents";
 import { MarkdownText } from "@/shared/ui/markdown-text";
-import { toPretty } from "./pretty";
+import { toFailureText, toPretty } from "./pretty";
 import { fromRoute, toRouteLabel } from "./route";
 import type { Block } from "./view";
 
@@ -11,6 +11,11 @@ type TextBlock = Extract<Block, { kind: "text" }>;
 
 const indents = ["", "ml-3", "ml-6"];
 
+/** Counts the tool calls of a run that failed. */
+export function toFailedCount(blocks: Block[]): number {
+  return blocks.filter((block) => block.kind === "tool" && block.state === "failed").length;
+}
+
 function ToolCard({ block }: { block: ToolBlock }) {
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
   return (
@@ -18,7 +23,11 @@ function ToolCard({ block }: { block: ToolBlock }) {
       <summary className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5">
         <Chip tone={tone}>{block.state}</Chip>
         <code className="font-mono">{block.tool}</code>
-        <span className="min-w-0 flex-1 truncate text-muted">{block.error ?? block.summary}</span>
+        <span
+          className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}
+        >
+          {block.error === null ? block.summary : toFailureText(block.error)}
+        </span>
         {block.duration === null ? null : <Quantity value={block.duration} unit="s" />}
       </summary>
       <div className="space-y-2 border-t border-border p-2.5">
@@ -30,8 +39,9 @@ function ToolCard({ block }: { block: ToolBlock }) {
         <pre
           className={`overflow-x-auto font-mono text-[12px] whitespace-pre-wrap ${block.error === null ? "" : "text-bad"}`}
         >
-          {toPretty(block.error ?? block.summary)}
+          {toPretty(block.summary)}
         </pre>
+        {block.error === null ? null : <p className="text-bad">{toFailureText(block.error)}</p>}
       </div>
     </details>
   );
@@ -46,7 +56,15 @@ function TextView({ block, running }: { block: TextBlock; running: boolean }) {
   return <p className="text-[12px] text-muted">{toRouteLabel(route)}</p>;
 }
 
-function BlockView({ block, running }: { block: Block; running: boolean }) {
+function FailedTools({ count }: { count: number }) {
+  return (
+    <p role="status" className="text-bad">
+      Run done with {count} failed {count === 1 ? "tool" : "tools"}
+    </p>
+  );
+}
+
+function BlockView({ block, running, failed }: { block: Block; running: boolean; failed: number }) {
   switch (block.kind) {
     case "text":
       return <TextView block={block} running={running} />;
@@ -56,7 +74,7 @@ function BlockView({ block, running }: { block: Block; running: boolean }) {
       if (!block.resolved) return null;
       return <p className="text-[12px] text-muted">Answered: {block.request.message}</p>;
     case "end":
-      if (block.status === "done") return null;
+      if (block.status === "done") return failed === 0 ? null : <FailedTools count={failed} />;
       return (
         <p role="status" className="text-bad">
           Run {block.status}
@@ -66,7 +84,15 @@ function BlockView({ block, running }: { block: Block; running: boolean }) {
   }
 }
 
-function AgentGroup({ group, running }: { group: Group; running: boolean }) {
+function AgentGroup({
+  group,
+  running,
+  failed,
+}: {
+  group: Group;
+  running: boolean;
+  failed: number;
+}) {
   const depth = toDepth(group.agent);
   return (
     <section
@@ -78,7 +104,7 @@ function AgentGroup({ group, running }: { group: Group; running: boolean }) {
         {depth === 0 ? "" : " · delegated"}
       </p>
       {group.blocks.map((block) => (
-        <BlockView key={block.id} block={block} running={running} />
+        <BlockView key={block.id} block={block} running={running} failed={failed} />
       ))}
     </section>
   );
@@ -86,10 +112,11 @@ function AgentGroup({ group, running }: { group: Group; running: boolean }) {
 
 /** The blocks of a run in event order, grouped by the agent that produced them. */
 export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean }) {
+  const failed = toFailedCount(blocks);
   return (
     <div className="space-y-2.5">
       {toGroups(blocks).map((group) => (
-        <AgentGroup key={group.id} group={group} running={running} />
+        <AgentGroup key={group.id} group={group} running={running} failed={failed} />
       ))}
     </div>
   );
