@@ -1,4 +1,5 @@
-import { toModuleTitle, toTitleLines } from "./flowsheet-svg";
+import { toModuleTitle } from "./flowsheet-sheet";
+import { toTitleLines } from "./flowsheet-svg";
 import { describe, expect, it } from "vitest";
 import type { ModulePorts } from "@/shared/api/types";
 import {

@@ -8,7 +8,7 @@ import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
 import { toOrderedParts } from "./parts";
-import { useFlowsheetSvg } from "./use-flowsheet-svg";
+import { useFlowsheetSvg, type FlowsheetPictures } from "./use-flowsheet-svg";
 import { ReportDocument } from "./report-document";
 import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
@@ -31,7 +31,7 @@ function PreviewBody({
 }: {
   include: ReportPart[];
   preview: UseQueryResult<Report>;
-  flowsheet: string | null;
+  flowsheet: FlowsheetPictures | null;
 }) {
   if (include.length === 0) return <Notice status="empty">Choose at least one section.</Notice>;
   if (preview.isPending) return <Notice status="loading" what="the preview" />;

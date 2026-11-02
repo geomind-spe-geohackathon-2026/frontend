@@ -57,6 +57,7 @@ function toLinks(
 function toOwnGroup(category: string | undefined, links: Link[]): string | null {
   if (category === undefined) return null;
   if (links.some((link) => link.stream === "chilled_water")) return "cooling";
+  if (category === "grids" && links.some((link) => link.stream === "hot_water")) return "heating";
   if (category === "plants" && links.some((link) => link.stream === "brine")) return "subsurface";
   return groupByCategory[category] ?? null;
 }

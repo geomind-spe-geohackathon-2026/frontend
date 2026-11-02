@@ -1,0 +1,428 @@
+{
+  "modules": [
+    {
+      "id": "d0",
+      "type": "Doublet",
+      "category": "plants",
+      "settings": "doublet"
+    },
+    {
+      "id": "d1",
+      "type": "Doublet",
+      "category": "plants",
+      "settings": "doublet"
+    },
+    {
+      "id": "d2",
+      "type": "Doublet",
+      "category": "plants",
+      "settings": "doublet"
+    },
+    {
+      "id": "production_mixers.0",
+      "type": "Mixer",
+      "category": "piping",
+      "settings": "production_mixers.0"
+    },
+    {
+      "id": "production_mixers.1",
+      "type": "Mixer",
+      "category": "piping",
+      "settings": "production_mixers.1"
+    },
+    {
+      "id": "injection_splitters.0",
+      "type": "Splitter",
+      "category": "piping",
+      "settings": "injection_splitters.0"
+    },
+    {
+      "id": "injection_splitters.1",
+      "type": "Splitter",
+      "category": "piping",
+      "settings": "injection_splitters.1"
+    },
+    {
+      "id": "degasser",
+      "type": "Degasser",
+      "category": "treatment",
+      "settings": "degasser"
+    },
+    {
+      "id": "filters.hot",
+      "type": "Filter",
+      "category": "treatment",
+      "settings": "filter"
+    },
+    {
+      "id": "filters.cold",
+      "type": "Filter",
+      "category": "treatment",
+      "settings": "filter"
+    },
+    {
+      "id": "heat_exchanger",
+      "type": "HeatExchanger",
+      "category": "exchangers",
+      "settings": "heat_exchanger"
+    },
+    {
+      "id": "heat_pump",
+      "type": "HeatPump",
+      "category": "heating",
+      "settings": "heat_pump"
+    },
+    {
+      "id": "injection_pump",
+      "type": "InjectionPump",
+      "category": "pumps",
+      "settings": "injection_pump"
+    },
+    {
+      "id": "heating_return_pipe",
+      "type": "Pipe",
+      "category": "piping",
+      "settings": "heating_return_pipe"
+    },
+    {
+      "id": "peak_boiler",
+      "type": "Boiler",
+      "category": "heating",
+      "settings": "peak_boiler"
+    },
+    {
+      "id": "heating_supply_pipe",
+      "type": "Pipe",
+      "category": "piping",
+      "settings": "heating_supply_pipe"
+    },
+    {
+      "id": "heating_consumer",
+      "type": "HeatingGrid",
+      "category": "grids",
+      "settings": "heating_consumer"
+    },
+    {
+      "id": "cooling_return_pipe",
+      "type": "Pipe",
+      "category": "piping",
+      "settings": "cooling_return_pipe"
+    },
+    {
+      "id": "compression_chiller",
+      "type": "HeatPump",
+      "category": "heating",
+      "settings": "compression_chiller"
+    },
+    {
+      "id": "cooling_supply_pipe",
+      "type": "Pipe",
+      "category": "piping",
+      "settings": "cooling_supply_pipe"
+    },
+    {
+      "id": "cooling_consumer",
+      "type": "CoolingGrid",
+      "category": "grids",
+      "settings": "cooling_consumer"
+    },
+    {
+      "id": "gas_grid",
+      "type": "GasGrid",
+      "category": "grids",
+      "settings": "gas_grid"
+    },
+    {
+      "id": "electricity_grid",
+      "type": "ElectricityGrid",
+      "category": "grids",
+      "settings": "electricity_grid"
+    },
+    {
+      "id": "gas_makeup",
+      "type": "GasMakeup",
+      "category": "piping",
+      "settings": "gas_makeup"
+    },
+    {
+      "id": "flare",
+      "type": "Flare",
+      "category": "treatment",
+      "settings": "flare"
+    },
+    {
+      "id": "atmosphere",
+      "type": "Atmosphere",
+      "category": "environment",
+      "settings": "atmosphere"
+    },
+    {
+      "id": "compression_cooler",
+      "type": "Cooler",
+      "category": "exchangers",
+      "settings": "compression_cooler"
+    }
+  ],
+  "connections": [
+    {
+      "source": "degasser.gas_out",
+      "target": "gas_makeup.gas_in",
+      "stream": "gas"
+    },
+    {
+      "source": "gas_grid.gas_out",
+      "target": "gas_makeup.grid_in",
+      "stream": "gas"
+    },
+    {
+      "source": "gas_makeup.fuel_out",
+      "target": "peak_boiler.fuel_in",
+      "stream": "gas"
+    },
+    {
+      "source": "gas_makeup.excess_out",
+      "target": "flare.gas_in",
+      "stream": "gas"
+    },
+    {
+      "source": "d0.supply_out",
+      "target": "production_mixers.0.branch1_in",
+      "stream": null
+    },
+    {
+      "source": "d1.supply_out",
+      "target": "production_mixers.0.branch2_in",
+      "stream": null
+    },
+    {
+      "source": "production_mixers.0.fluid_out",
+      "target": "production_mixers.1.branch1_in",
+      "stream": null
+    },
+    {
+      "source": "d2.supply_out",
+      "target": "production_mixers.1.branch2_in",
+      "stream": null
+    },
+    {
+      "source": "production_mixers.1.fluid_out",
+      "target": "degasser.fluid_in",
+      "stream": "brine"
+    },
+    {
+      "source": "degasser.liquid_out",
+      "target": "filters.hot.fluid_in",
+      "stream": "brine"
+    },
+    {
+      "source": "filters.hot.fluid_out",
+      "target": "heat_exchanger.hot_in",
+      "stream": "brine"
+    },
+    {
+      "source": "heat_exchanger.hot_out",
+      "target": "heat_pump.source_in",
+      "stream": null
+    },
+    {
+      "source": "heat_pump.source_out",
+      "target": "filters.cold.fluid_in",
+      "stream": "brine"
+    },
+    {
+      "source": "filters.cold.fluid_out",
+      "target": "injection_pump.fluid_in",
+      "stream": "brine"
+    },
+    {
+      "source": "injection_pump.fluid_out",
+      "target": "injection_splitters.0.fluid_in",
+      "stream": "brine"
+    },
+    {
+      "source": "injection_splitters.0.branch1_out",
+      "target": "d0.return_in",
+      "stream": null
+    },
+    {
+      "source": "injection_splitters.0.branch2_out",
+      "target": "injection_splitters.1.fluid_in",
+      "stream": null
+    },
+    {
+      "source": "injection_splitters.1.branch1_out",
+      "target": "d1.return_in",
+      "stream": null
+    },
+    {
+      "source": "injection_splitters.1.branch2_out",
+      "target": "d2.return_in",
+      "stream": null
+    },
+    {
+      "source": "heating_return_pipe.fluid_out",
+      "target": "heat_exchanger.cold_in",
+      "stream": null
+    },
+    {
+      "source": "heat_exchanger.cold_out",
+      "target": "heat_pump.sink_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "heat_pump.sink_out",
+      "target": "peak_boiler.fluid_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "heating_supply_pipe.fluid_out",
+      "target": "heating_consumer.supply_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "compression_chiller.source_out",
+      "target": "cooling_supply_pipe.fluid_in",
+      "stream": null
+    },
+    {
+      "source": "cooling_supply_pipe.fluid_out",
+      "target": "cooling_consumer.supply_in",
+      "stream": "chilled_water"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "d0.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "d1.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "d2.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "heat_pump.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "injection_pump.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "compression_chiller.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "heating_consumer.return_out",
+      "target": "heating_return_pipe.fluid_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "cooling_consumer.return_out",
+      "target": "cooling_return_pipe.fluid_in",
+      "stream": "chilled_water"
+    },
+    {
+      "source": "atmosphere.air_out",
+      "target": "heating_return_pipe.air_in",
+      "stream": "air"
+    },
+    {
+      "source": "atmosphere.air_out",
+      "target": "heating_supply_pipe.air_in",
+      "stream": "air"
+    },
+    {
+      "source": "atmosphere.air_out",
+      "target": "cooling_return_pipe.air_in",
+      "stream": "air"
+    },
+    {
+      "source": "atmosphere.air_out",
+      "target": "cooling_supply_pipe.air_in",
+      "stream": "air"
+    },
+    {
+      "source": "peak_boiler.flue_out",
+      "target": "atmosphere.gas_in",
+      "stream": "gas"
+    },
+    {
+      "source": "flare.flue_out",
+      "target": "atmosphere.gas_in",
+      "stream": "gas"
+    },
+    {
+      "source": "flare.loss_out",
+      "target": "atmosphere.heat_in",
+      "stream": "heat"
+    },
+    {
+      "source": "compression_chiller.sink_out",
+      "target": "compression_cooler.fluid_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "compression_cooler.fluid_out",
+      "target": "compression_chiller.sink_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "atmosphere.air_out",
+      "target": "compression_cooler.air_in",
+      "stream": "air"
+    },
+    {
+      "source": "compression_cooler.air_out",
+      "target": "atmosphere.air_in",
+      "stream": "air"
+    },
+    {
+      "source": "electricity_grid.power_out",
+      "target": "compression_cooler.power_in",
+      "stream": "electricity"
+    },
+    {
+      "source": "heating_return_pipe.loss_out",
+      "target": "atmosphere.heat_in",
+      "stream": "heat"
+    },
+    {
+      "source": "heating_supply_pipe.loss_out",
+      "target": "atmosphere.heat_in",
+      "stream": "heat"
+    },
+    {
+      "source": "cooling_return_pipe.loss_out",
+      "target": "atmosphere.heat_in",
+      "stream": "heat"
+    },
+    {
+      "source": "cooling_supply_pipe.loss_out",
+      "target": "atmosphere.heat_in",
+      "stream": "heat"
+    },
+    {
+      "source": "peak_boiler.loss_out",
+      "target": "atmosphere.heat_in",
+      "stream": "heat"
+    },
+    {
+      "source": "peak_boiler.fluid_out",
+      "target": "heating_supply_pipe.fluid_in",
+      "stream": "hot_water"
+    },
+    {
+      "source": "cooling_return_pipe.fluid_out",
+      "target": "compression_chiller.source_in",
+      "stream": null
+    }
+  ]
+}

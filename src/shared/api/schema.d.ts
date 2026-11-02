@@ -1845,6 +1845,8 @@ export interface components {
         };
         /** ReportExport */
         ReportExport: {
+            /** Flowsheet Full Svg */
+            flowsheet_full_svg?: string | null;
             /** Flowsheet Svg */
             flowsheet_svg?: string | null;
             /**
