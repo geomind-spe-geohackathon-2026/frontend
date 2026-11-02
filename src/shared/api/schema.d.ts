@@ -1032,10 +1032,18 @@ export interface components {
         };
         /** Capacity */
         Capacity: {
+            /** Kind */
+            kind: string;
             /** Name */
             name: string;
+            /** Peak */
+            peak: number | null;
+            /** Peak Unit */
+            peak_unit: string;
             /** Reason */
             reason: string | null;
+            /** Share */
+            share: number | null;
             /** Title */
             title: string;
             /** Unit */
@@ -1179,8 +1187,26 @@ export interface components {
         };
         /** Coverage */
         Coverage: {
+            /**
+             * Cooling
+             * @default []
+             */
+            cooling: components["schemas"]["CoverageDay"][];
+            /**
+             * Heating
+             * @default []
+             */
+            heating: components["schemas"]["CoverageDay"][];
+        };
+        /** CoverageDay */
+        CoverageDay: {
+            backup: components["schemas"]["Figure"];
             /** Date */
             date: string;
+            demand: components["schemas"]["Figure"];
+            failed_steps: components["schemas"]["Figure"];
+            geothermal: components["schemas"]["Figure"];
+            short: components["schemas"]["Figure"];
             /**
              * Source
              * @enum {string}
@@ -1227,6 +1253,13 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+        };
+        /** Figure */
+        Figure: {
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number;
         };
         /** Flowsheet */
         Flowsheet: {
@@ -1770,8 +1803,7 @@ export interface components {
             checks: components["schemas"]["Checks"];
             /** Constraints */
             constraints: components["schemas"]["Constraint"][];
-            /** Coverage */
-            coverage: components["schemas"]["Coverage"][] | null;
+            coverage: components["schemas"]["Coverage"] | null;
             /**
              * Created
              * Format: date-time
@@ -1790,6 +1822,8 @@ export interface components {
             plant_version: number | null;
             /** Series */
             series: unknown[];
+            /** Sizes */
+            sizes: components["schemas"]["Capacity"][];
             /** Study */
             study: string | null;
         };

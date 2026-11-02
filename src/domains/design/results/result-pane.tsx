@@ -4,6 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { Notice } from "@/shared/ui/notice";
 import { resultQuery } from "./api";
 import { ConstraintsCard } from "./constraints-card";
+import { CapacityTiles } from "./capacity-tiles";
 import { CoverageCard } from "./coverage-card";
 import { KpiTiles } from "./kpi-tiles";
 
@@ -25,7 +26,10 @@ export function ResultPane({ projectId, resultId }: Props) {
         </Button>
       </div>
       <KpiTiles items={data.kpis} label="Key figures" />
-      {data.capacities.length > 0 ? <KpiTiles items={data.capacities} label="Capacities" /> : null}
+      {data.capacities.length > 0 ? (
+        <CapacityTiles items={data.capacities} label="Capacities" />
+      ) : null}
+      {data.sizes.length > 0 ? <CapacityTiles items={data.sizes} label="Sizes" /> : null}
       <CoverageCard coverage={data.coverage} />
       <ConstraintsCard result={data} />
     </>

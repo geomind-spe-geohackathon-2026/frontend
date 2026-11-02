@@ -15,7 +15,9 @@ describe("ResultsPage", () => {
   it("draws the days strip and the constraint table when coverage exists", async () => {
     renderApp({ path: `${base}/example-result-2` });
     expect(
-      await screen.findByRole("img", { name: /Geothermal 330 days, Backup 35 days/ }),
+      await screen.findByRole("img", {
+        name: /Heating, one cell per day: Geothermal 330 days, Backup 35 days/,
+      }),
     ).toBeVisible();
     const table = screen.getByRole("table", { name: /Constraint checks/ });
     expect(within(table).getByText("not assessed")).toBeVisible();

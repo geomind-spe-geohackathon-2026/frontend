@@ -1,5 +1,13 @@
 export type DaySource = "geothermal" | "backup" | "short";
-export type Day = { date: string; source: DaySource };
+type Energy = { value: number; unit: string };
+export type Day = {
+  date: string;
+  source: DaySource;
+  demand?: Energy;
+  geothermal?: Energy;
+  backup?: Energy;
+  short?: Energy;
+};
 
 type Props = { days: Day[]; title: string };
 
@@ -22,6 +30,21 @@ function toPosition(date: string, firstDay: number): { x: number; y: number } {
   const firstWeekday = new Date(firstDay * 86_400_000).getUTCDay();
   const week = Math.floor((dayNumber - firstDay + firstWeekday) / 7);
   return { x: week * pitch, y: weekday * pitch };
+}
+
+function toEnergy(label: string, energy: Energy | undefined): string[] {
+  if (energy === undefined) return [];
+  return [`${label} ${energy.value.toFixed(1)} ${energy.unit}`];
+}
+
+function toDayTitle(day: Day): string {
+  const parts = [
+    ...toEnergy("demand", day.demand),
+    ...toEnergy("geothermal", day.geothermal),
+    ...toEnergy("backup", day.backup),
+    ...toEnergy("short", day.short),
+  ];
+  return [`${day.date}: ${day.source}`, ...parts].join(", ");
 }
 
 /** One cell per day, coloured by the source that covers it, with a legend and day counts as text. */
@@ -50,7 +73,7 @@ export function DaysStrip({ days, title }: Props) {
           const fill = sources.find((entry) => entry.source === day.source)?.fill ?? "var(--gas)";
           return (
             <rect key={day.date} x={x} y={y} width={cell} height={cell} rx={2} fill={fill}>
-              <title>{`${day.date}: ${day.source}`}</title>
+              <title>{toDayTitle(day)}</title>
             </rect>
           );
         })}

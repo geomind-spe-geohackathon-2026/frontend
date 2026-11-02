@@ -1,4 +1,4 @@
-import { formatFigure, humanise } from "@/shared/quantity/figure";
+import { formatFigure } from "@/shared/quantity/figure";
 import { Card, CardBody } from "@/shared/ui/card";
 import type { Kpi } from "@/shared/api/types";
 
@@ -15,7 +15,7 @@ export function KpiTiles({ items, label }: Props) {
         <li key={item.name} className="min-w-0">
           <Card>
             <CardBody>
-              <div className="break-words text-[12.5px] text-muted">{humanise(item.title)}</div>
+              <div className="break-words text-[12.5px] text-muted">{item.title}</div>
               {item.value === null ? (
                 <div className="text-muted">
                   <div className="text-[15px]">No value</div>

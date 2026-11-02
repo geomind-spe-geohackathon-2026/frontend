@@ -1,16 +1,49 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
 import type { Page } from "@/shared/api/pagination";
-import type { Coverage, Result, ResultComparison, ResultDetail } from "@/shared/api/types";
+import type {
+  Capacity,
+  CoverageDay,
+  Result,
+  ResultComparison,
+  ResultDetail,
+} from "@/shared/api/types";
 import { toErrorResponse } from "./errors";
 import { toRoute } from "./url";
 
-function toYear(): Coverage[] {
+function toFigure(value: number): CoverageDay["demand"] {
+  return { value, unit: "MWh" };
+}
+
+function toYear(): CoverageDay[] {
   const start = Date.UTC(2027, 0, 1);
   return Array.from({ length: 365 }, (_, index) => {
     const date = new Date(start + index * 86_400_000).toISOString().slice(0, 10);
     const down = (index >= 120 && index <= 136) || (index >= 280 && index <= 297);
-    return { date, source: down ? "backup" : "geothermal" };
+    const source = down ? "backup" : "geothermal";
+    return {
+      date,
+      source,
+      demand: toFigure(100),
+      geothermal: toFigure(down ? 40 : 100),
+      backup: toFigure(down ? 60 : 0),
+      short: toFigure(0),
+      failed_steps: { value: 0, unit: "-" },
+    };
   });
+}
+
+function toCapacity(name: string, value: number): Capacity {
+  return {
+    name,
+    title: name,
+    kind: "Boiler",
+    value,
+    unit: "MW",
+    peak: value / 2,
+    peak_unit: "MW",
+    share: 0.5,
+    reason: null,
+  };
 }
 
 const designA: Result = {
@@ -48,7 +81,8 @@ const exampleSummaries: Result[] = [designA, designB];
 const exampleDetails: ResultDetail[] = [
   {
     ...designA,
-    capacities: [{ name: "heat", title: "Heat", value: 18, unit: "MW", reason: null }],
+    capacities: [toCapacity("heat", 18)],
+    sizes: [],
     coverage: null,
     constraints: [
       {
@@ -62,11 +96,9 @@ const exampleDetails: ResultDetail[] = [
   },
   {
     ...designB,
-    capacities: [
-      { name: "heat", title: "Heat", value: 31.2, unit: "MW", reason: null },
-      { name: "cooling", title: "Cooling", value: 10.4, unit: "MW", reason: null },
-    ],
-    coverage: toYear(),
+    capacities: [toCapacity("heat", 31.2), toCapacity("cooling", 10.4)],
+    sizes: [],
+    coverage: { heating: toYear(), cooling: toYear() },
     constraints: [
       {
         name: "return_temperature",

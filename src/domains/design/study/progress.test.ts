@@ -27,7 +27,7 @@ describe("toProgress", () => {
   it("claims no percentage while a study runs at 0 of 1", () => {
     expect(toProgress(study({}))).toEqual({
       kind: "indeterminate",
-      text: "running, progress is shown when it ends",
+      text: "working",
     });
   });
 
