@@ -17,3 +17,28 @@ export function toSharedKpis(results: Result[]): Kpi[] {
 export function findKpi(result: Result, name: string): Kpi | null {
   return result.kpis.find((kpi) => kpi.name === name) ?? null;
 }
+
+export type ComparedPoint = { id: string; label: string; x: number; y: number };
+
+/** Joins designs that sit on the same point into one label, so no labels overprint. */
+export function toMergedPoints(points: ComparedPoint[]): ComparedPoint[] {
+  const merged = new Map<string, { first: ComparedPoint; count: number }>();
+  for (const point of points) {
+    const key = `${point.x.toPrecision(6)}:${point.y.toPrecision(6)}`;
+    const found = merged.get(key);
+    merged.set(key, { first: found?.first ?? point, count: (found?.count ?? 0) + 1 });
+  }
+  return [...merged.values()].map(({ first, count }) => ({
+    ...first,
+    label: count === 1 ? first.label : `${first.label} (+${String(count - 1)})`,
+  }));
+}
+
+/** Finds the design with the lowest figure among those with no failed check. */
+export function toBestId(items: Result[], name: string): string | null {
+  const ranked = items.flatMap((item) => {
+    const value = findKpi(item, name)?.value ?? null;
+    return value === null || item.checks.failed > 0 ? [] : [{ id: item.id, value }];
+  });
+  return ranked.sort((first, second) => first.value - second.value)[0]?.id ?? null;
+}

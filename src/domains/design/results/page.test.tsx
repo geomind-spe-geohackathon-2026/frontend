@@ -37,7 +37,8 @@ describe("ResultsPage", () => {
     const user = userEvent.setup();
     renderApp({ path: base });
     await user.click(await screen.findByRole("tab", { name: "Compare" }));
-    expect(await screen.findByRole("img", { name: /2 designs, best trade-offs/ })).toBeVisible();
-    expect(screen.getAllByText("best trade-off")).toHaveLength(2);
+    expect(await screen.findByRole("img", { name: /2 designs/ })).toBeVisible();
+    expect(screen.queryByText("on the trade-off line")).toBeNull();
+    expect(screen.getAllByText("all passed").length).toBeGreaterThan(0);
   });
 });

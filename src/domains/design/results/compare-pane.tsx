@@ -1,23 +1,63 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Scatter, type ScatterPoint } from "@/shared/charts/scatter";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Field } from "@/shared/ui/field";
 import { Notice } from "@/shared/ui/notice";
 import type { ResultComparison, Kpi, Result } from "@/shared/api/types";
 import { comparisonQuery } from "./api";
-import { findKpi, toSharedKpis } from "./compare";
+import { findKpi, toMergedPoints, toSharedKpis } from "./compare";
 import { CompareTable } from "./compare-table";
 
 type Props = { projectId: string; results: Result[] };
 
+const minimumDesigns = 3;
+
+function toRange(
+  comparison: ResultComparison,
+  id: string,
+  metric: string,
+): [number, number] | undefined {
+  const row = comparison.spreads.find((item) => item.result === id && item.metric === metric);
+  if (row?.p5 === undefined || row.p5 === null || row.p95 === null) return undefined;
+  return [row.p5, row.p95];
+}
+
 function toPoints(comparison: ResultComparison, x: Kpi, y: Kpi): ScatterPoint[] {
-  return comparison.items.flatMap((item) => {
+  const points = comparison.items.flatMap((item) => {
     const xValue = findKpi(item, x.name)?.value ?? null;
     const yValue = findKpi(item, y.name)?.value ?? null;
     if (xValue === null || yValue === null) return [];
     return [{ id: item.id, label: item.name, x: xValue, y: yValue }];
   });
+  return toMergedPoints(points).map((point) => ({
+    ...point,
+    xRange: toRange(comparison, point.id, x.name),
+    yRange: toRange(comparison, point.id, y.name),
+  }));
+}
+
+function toParetoIds(points: ScatterPoint[], pareto: string[]): string[] {
+  return points.length >= minimumDesigns ? pareto : [];
+}
+
+function TestLinks({ projectId, results }: Props) {
+  const tests = results.filter((result) => result.role !== "design");
+  if (tests.length === 0) return null;
+  return (
+    <p className="text-[12.5px] text-muted">
+      Studies of a design under varied inputs:{" "}
+      {tests.map((test) => (
+        <Link
+          key={test.id}
+          to={`/projects/${projectId}/design/results/${test.id}`}
+          className="mr-3 text-accent"
+        >
+          {test.name}
+        </Link>
+      ))}
+    </p>
+  );
 }
 
 function toAxisTitle(kpi: Kpi): string {
@@ -110,17 +150,44 @@ function Controls({ results, kpis, xName, yName, chosen, onParam }: ControlsProp
   );
 }
 
+function ComparisonView({ comparison, x, y }: { comparison: ResultComparison; x: Kpi; y: Kpi }) {
+  const points = toPoints(comparison, x, y);
+  const pareto = toParetoIds(points, comparison.pareto);
+  return (
+    <>
+      <Scatter
+        points={points}
+        paretoIds={pareto}
+        xTitle={toAxisTitle(x)}
+        yTitle={toAxisTitle(y)}
+        title="Comparison of designs"
+      />
+      {pareto.length === 0 ? null : (
+        <p
+          className="text-[12.5px] text-muted"
+          title="No other design here is better on both figures."
+        >
+          The dashed line is the trade-off line.
+        </p>
+      )}
+      <CompareTable comparison={comparison} x={x} y={y} pareto={pareto} />
+    </>
+  );
+}
+
 /** The Compare tab: choose results and two KPIs, see the scatter with the Pareto line and a table. */
 export function ComparePane({ projectId, results }: Props) {
   const [params, setParams] = useSearchParams();
-  const kpis = toSharedKpis(results);
-  const xName = params.get("x") ?? kpis[0]?.name ?? "";
-  const yName = params.get("y") ?? kpis[1]?.name ?? "";
+  const designs = results.filter((result) => result.role === "design");
+  const kpis = toSharedKpis(designs);
+  const has = (name: string) => kpis.some((kpi) => kpi.name === name);
+  const xName = params.get("x") ?? (has("co2") ? "co2" : (kpis[0]?.name ?? ""));
+  const yName = params.get("y") ?? (has("lcts") ? "lcts" : (kpis[1]?.name ?? ""));
   const chosen =
     params
       .get("ids")
       ?.split(",")
-      .filter((id) => id !== "") ?? results.map((entry) => entry.id);
+      .filter((id) => id !== "") ?? designs.map((entry) => entry.id);
   const comparison = useQuery(comparisonQuery(projectId, chosen, xName, yName));
   const x = kpis.find((kpi) => kpi.name === xName) ?? null;
   const y = kpis.find((kpi) => kpi.name === yName) ?? null;
@@ -140,7 +207,7 @@ export function ComparePane({ projectId, results }: Props) {
     <Card>
       <CardBody className="flex flex-col gap-4">
         <Controls
-          results={results}
+          results={designs}
           kpis={kpis}
           xName={xName}
           yName={yName}
@@ -154,15 +221,8 @@ export function ComparePane({ projectId, results }: Props) {
         {comparison.isError ? <Notice status="failed" error={comparison.error} /> : null}
         {comparison.data === undefined ? null : (
           <>
-            <Scatter
-              points={toPoints(comparison.data, x, y)}
-              paretoIds={comparison.data.pareto}
-              xTitle={toAxisTitle(x)}
-              yTitle={toAxisTitle(y)}
-              title="ResultComparison of results"
-            />
-            <p className="text-[12.5px] text-muted">The dashed line joins the best trade-offs.</p>
-            <CompareTable comparison={comparison.data} x={x} y={y} />
+            <ComparisonView comparison={comparison.data} x={x} y={y} />
+            <TestLinks projectId={projectId} results={results} />
           </>
         )}
       </CardBody>

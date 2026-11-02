@@ -59,6 +59,10 @@ const designA: Result = {
   ],
   checks: { passed: 6, failed: 0, not_assessed: 0 },
   created: "2026-01-12T14:03:00Z",
+  role: "design",
+  doublets: 2,
+  depth: 2500,
+  depth_unit: "m",
 };
 
 const designB: Result = {
@@ -74,6 +78,10 @@ const designB: Result = {
   ],
   checks: { passed: 5, failed: 0, not_assessed: 1 },
   created: "2026-01-12T14:10:00Z",
+  role: "design",
+  doublets: 3,
+  depth: 2800,
+  depth_unit: "m",
 };
 
 const exampleSummaries: Result[] = [designA, designB];
@@ -151,7 +159,11 @@ export function resultsHandlers(): RequestHandler[] {
     http.get(toRoute("/design/results/compare"), ({ request }) => {
       const ids = new URL(request.url).searchParams.get("ids")?.split(",") ?? [];
       const items = exampleSummaries.filter((summary) => ids.includes(summary.id));
-      return HttpResponse.json<ResultComparison>({ items, pareto: items.map((item) => item.id) });
+      return HttpResponse.json<ResultComparison>({
+        items,
+        pareto: items.map((item) => item.id),
+        spreads: [],
+      });
     }),
     http.get<{ id: string }>(toRoute("/design/results/:id"), ({ params }) => {
       const detail = exampleDetails.find((entry) => entry.id === params.id);

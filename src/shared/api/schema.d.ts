@@ -1314,6 +1314,25 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** DesignSpread */
+        DesignSpread: {
+            /** Metric */
+            metric: string;
+            /** P5 */
+            p5: number | null;
+            /** P95 */
+            p95: number | null;
+            /**
+             * Result
+             * Format: uuid
+             */
+            result: string;
+            /**
+             * Uncertainty
+             * Format: uuid
+             */
+            uncertainty: string;
+        };
         /** Document */
         Document: {
             /**
@@ -1880,6 +1899,12 @@ export interface components {
              * Format: date-time
              */
             created: string;
+            /** Depth */
+            depth: number | null;
+            /** Depth Unit */
+            depth_unit: string | null;
+            /** Doublets */
+            doublets: number | null;
             /**
              * Id
              * Format: uuid
@@ -1891,6 +1916,11 @@ export interface components {
             name: string;
             /** Plant Version */
             plant_version: number | null;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "design" | "sensitivity" | "uncertainty";
             /** Study */
             study: string | null;
         };
@@ -1900,6 +1930,8 @@ export interface components {
             items: components["schemas"]["Result"][];
             /** Pareto */
             pareto: string[];
+            /** Spreads */
+            spreads: components["schemas"]["DesignSpread"][];
         };
         /** ResultDetail */
         ResultDetail: {
@@ -1916,6 +1948,12 @@ export interface components {
              * Format: date-time
              */
             created: string;
+            /** Depth */
+            depth: number | null;
+            /** Depth Unit */
+            depth_unit: string | null;
+            /** Doublets */
+            doublets: number | null;
             /**
              * Id
              * Format: uuid
@@ -1927,6 +1965,11 @@ export interface components {
             name: string;
             /** Plant Version */
             plant_version: number | null;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "design" | "sensitivity" | "uncertainty";
             /** Series */
             series: unknown[];
             /** Sizes */
@@ -2025,6 +2068,8 @@ export interface components {
             mean: number | null;
             /** Metric */
             metric: string;
+            /** Name */
+            name: string;
             /** P5 */
             p5: number | null;
             /** P50 */

@@ -37,7 +37,9 @@ describe("Scatter", () => {
         title="Compare"
       />,
     );
-    expect(screen.getByRole("img", { name: /2 designs, best trade-offs: Design B/ })).toBeVisible();
+    expect(
+      screen.getByRole("img", { name: /2 designs, on the trade-off line: Design B/ }),
+    ).toBeVisible();
     expect(screen.getByText("LCOH (EUR/MWh)")).toBeVisible();
   });
 });

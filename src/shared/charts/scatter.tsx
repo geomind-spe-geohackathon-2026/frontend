@@ -1,6 +1,13 @@
 import { toLinearScale, toNiceTicks, toPaddedDomain } from "./scale";
 
-export type ScatterPoint = { id: string; label: string; x: number; y: number };
+export type ScatterPoint = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  xRange?: [number, number] | undefined;
+  yRange?: [number, number] | undefined;
+};
 
 type Props = {
   points: ScatterPoint[];
@@ -10,8 +17,8 @@ type Props = {
   title: string;
 };
 
-const width = 560;
-const height = 320;
+const width = 900;
+const height = 360;
 const margin = { top: 16, right: 24, bottom: 48, left: 64 };
 
 function toExtent(values: number[]): [number, number] {
@@ -20,7 +27,7 @@ function toExtent(values: number[]): [number, number] {
 
 function toSummary(points: ScatterPoint[], paretoIds: string[]): string {
   const pareto = points.filter((point) => paretoIds.includes(point.id)).map((point) => point.label);
-  return `${String(points.length)} designs, best trade-offs: ${pareto.join(", ") || "none"}`;
+  return `${String(points.length)} designs, on the trade-off line: ${pareto.join(", ") || "none"}`;
 }
 
 type Layout = {
@@ -33,8 +40,8 @@ type Layout = {
 };
 
 function toLayout(points: ScatterPoint[]): Layout {
-  const [xMin, xMax] = toExtent(points.map((point) => point.x));
-  const [yMin, yMax] = toExtent(points.map((point) => point.y));
+  const [xMin, xMax] = toExtent(points.flatMap((point) => [point.x, ...(point.xRange ?? [])]));
+  const [yMin, yMax] = toExtent(points.flatMap((point) => [point.y, ...(point.yRange ?? [])]));
   return {
     xMin,
     xMax,
@@ -119,6 +126,24 @@ function Marks({
         const onFront = paretoIds.includes(point.id);
         return (
           <g key={point.id}>
+            {point.xRange === undefined ? null : (
+              <line
+                x1={toX(point.xRange[0])}
+                x2={toX(point.xRange[1])}
+                y1={toY(point.y)}
+                y2={toY(point.y)}
+                stroke="var(--muted)"
+              />
+            )}
+            {point.yRange === undefined ? null : (
+              <line
+                x1={toX(point.x)}
+                x2={toX(point.x)}
+                y1={toY(point.yRange[0])}
+                y2={toY(point.yRange[1])}
+                stroke="var(--muted)"
+              />
+            )}
             <circle
               cx={toX(point.x)}
               cy={toY(point.y)}
@@ -139,7 +164,7 @@ function Marks({
   );
 }
 
-/** A scatter of two quantities with a dashed line through the best trade-offs (Pareto set). */
+/** A scatter of two quantities with spread bars and a dashed line through the trade-offs (Pareto set). */
 export function Scatter({ points, paretoIds, xTitle, yTitle, title }: Props) {
   if (points.length === 0) return null;
   const layout = toLayout(points);
@@ -152,7 +177,7 @@ export function Scatter({ points, paretoIds, xTitle, yTitle, title }: Props) {
       role="img"
       aria-label={`${title}: ${toSummary(points, paretoIds)}`}
       viewBox={`0 0 ${String(width)} ${String(height)}`}
-      className="w-full max-w-[640px]"
+      className="w-full"
     >
       <title>{title}</title>
       <Axes layout={layout} xTitle={xTitle} yTitle={yTitle} />
