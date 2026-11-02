@@ -1184,6 +1184,11 @@ export interface components {
             plant_missing: components["schemas"]["Missing"][];
             /** Problems */
             problems: components["schemas"]["Problem"][];
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: components["schemas"]["Missing"][];
         };
         /** ChangePassword */
         ChangePassword: {
@@ -1812,7 +1817,7 @@ export interface components {
              */
             format: "md" | "pdf";
             /** Include */
-            include: ("summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix")[];
+            include: ("summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "capex" | "findings" | "agentlog" | "appendix")[];
             /**
              * Project
              * Format: uuid
@@ -1832,14 +1837,14 @@ export interface components {
              * Key
              * @enum {string}
              */
-            key: "summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix";
+            key: "summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "capex" | "findings" | "agentlog" | "appendix";
             /** Title */
             title: string;
         };
         /** ReportRequest */
         ReportRequest: {
             /** Include */
-            include: ("summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix")[];
+            include: ("summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "capex" | "findings" | "agentlog" | "appendix")[];
             /**
              * Project
              * Format: uuid
@@ -1859,7 +1864,7 @@ export interface components {
              * Key
              * @enum {string}
              */
-            key: "summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix";
+            key: "summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "capex" | "findings" | "agentlog" | "appendix";
             /** Markdown */
             markdown: string;
             /** Title */
@@ -2124,6 +2129,8 @@ export interface components {
             };
             /** Title */
             title: string;
+            /** Use */
+            use: string;
         };
         /** StudyProgress */
         StudyProgress: {

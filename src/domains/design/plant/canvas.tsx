@@ -38,8 +38,9 @@ const largestStartZoom = 1;
 const startMargin = 16;
 const fanWidth = 1.25;
 const fanOpacity = 0.55;
-const overviewZoom = 0.12;
+const overviewZoom = 0.2;
 const fitPadding = 0.04;
+const fitFloor = 0.3;
 const framePrefix = "frame:";
 
 export type Issues = Map<string, "missing" | "invalid">;
@@ -294,7 +295,7 @@ function FlowCanvas(props: Props) {
           nodes={[...toFrameNodes(props), ...toModuleNodes(props)]}
           edges={toEdges(props, hidden)}
           nodeTypes={nodeTypes}
-          fitViewOptions={{ padding: fitPadding }}
+          fitViewOptions={{ padding: fitPadding, minZoom: fitFloor }}
           className="plant-flow"
           minZoom={overviewZoom}
           isValidConnection={(connection) => isAllowed(props, connection)}

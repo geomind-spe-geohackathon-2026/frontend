@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { exampleCaseSchema } from "./example-schema";
-import { formEntries, pickVariant, sectionsOf, unitsOf, withHeader } from "./json-schema";
+import {
+  formEntries,
+  pickVariant,
+  sectionsOf,
+  toRequirementSchema,
+  unitsOf,
+  withHeader,
+} from "./json-schema";
 
 describe("json schema helpers", () => {
   it("takes the sections from the top-level properties that are structured", () => {
@@ -47,5 +54,28 @@ describe("alternatives of a file of its own", () => {
       rate: 1,
     });
     expect(withHeader(economics, "economics", {})).toEqual({});
+  });
+});
+
+describe("requirement choices", () => {
+  const schema = {
+    "x-roles": { boiler: { heat_output: ["MW", "W"], cop: [] } },
+    "x-time-units": ["d", "h"],
+    properties: { quantity: { enum: ["heat_output", "flow"] }, unit: { type: "string" } },
+  };
+
+  it("lists the quantities of the role and the units of the quantity", () => {
+    const narrowed = toRequirementSchema(schema, { on: "boiler", quantity: "heat_output" });
+    expect(narrowed.properties?.quantity?.enum).toEqual(["heat_output", "cop"]);
+    expect(narrowed.properties?.unit?.enum).toEqual(["MW", "W"]);
+  });
+
+  it("gives time units to a duration", () => {
+    const narrowed = toRequirementSchema(schema, { on: "boiler", over: "duration" });
+    expect(narrowed.properties?.unit?.enum).toEqual(["d", "h"]);
+  });
+
+  it("leaves the schema alone without a role", () => {
+    expect(toRequirementSchema(schema, {})).toBe(schema);
   });
 });

@@ -49,5 +49,17 @@ export function useCaseEditor(saved: Case) {
   const isChecking = dirty && (checked.isFetching || settled !== content);
   const plantMissing: MissingValue[] = checked.data?.plant_missing ?? [];
   const hasPlant = checked.data?.has_plant ?? true;
-  return { content, dirty, problems, missing, plantMissing, hasPlant, isChecking, edit, reset };
+  const warnings: MissingValue[] = checked.data?.warnings ?? [];
+  return {
+    content,
+    dirty,
+    problems,
+    missing,
+    plantMissing,
+    hasPlant,
+    warnings,
+    isChecking,
+    edit,
+    reset,
+  };
 }

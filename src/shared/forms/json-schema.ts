@@ -15,6 +15,11 @@ export type JsonSchema = {
   maximum?: number;
   exclusiveMinimum?: number;
   exclusiveMaximum?: number;
+  "x-units"?: string[];
+  "x-limits"?: { min?: number; max?: number; unit?: string };
+  "x-fraction"?: boolean;
+  "x-roles"?: Record<string, Record<string, string[]>>;
+  "x-time-units"?: string[];
 };
 
 export type Problem = { path: string; message: string; code?: string };
@@ -36,10 +41,9 @@ export function isLeaf(schema: JsonSchema): boolean {
   return properties.unit !== undefined || properties.value.type === "number";
 }
 
-/** Tells whether a quantity is a share of one: gemini gives such a value no unit. */
+/** Tells whether a quantity is a share of one, as gemini's schema marks it. */
 export function isFraction(schema: JsonSchema): boolean {
-  const { value, unit } = schema.properties ?? {};
-  return value?.type === "number" && unit === undefined;
+  return schema["x-fraction"] === true;
 }
 
 function fitsType(schema: JsonSchema, value: unknown): boolean {
@@ -83,6 +87,7 @@ export function withHeader(schema: JsonSchema, name: string, value: unknown): un
 
 /** Lists the units a quantity node accepts, from the enum or const of its unit property. */
 export function unitsOf(schema: JsonSchema): string[] {
+  if (schema["x-units"] !== undefined) return schema["x-units"];
   const unit = schema.properties?.unit;
   if (unit === undefined) return typeof schema.unit === "string" ? [schema.unit] : [];
   const options = unit.enum ?? (unit.const === undefined ? [] : [unit.const]);
@@ -91,11 +96,37 @@ export function unitsOf(schema: JsonSchema): string[] {
 
 /** Writes the bounds of a number node as a hint, or nothing when it has none. */
 export function boundsOf(schema: JsonSchema): string | undefined {
-  const low = schema.minimum ?? schema.exclusiveMinimum;
-  const high = schema.maximum ?? schema.exclusiveMaximum;
-  if (low !== undefined && high !== undefined) return `between ${String(low)} and ${String(high)}`;
-  if (low !== undefined) return `at least ${String(low)}`;
-  return high === undefined ? undefined : `at most ${String(high)}`;
+  const limits = schema["x-limits"];
+  if (isFraction(schema)) return undefined;
+  const low = limits?.min ?? schema.minimum ?? schema.exclusiveMinimum;
+  const high = limits?.max ?? schema.maximum ?? schema.exclusiveMaximum;
+  const unit = limits?.unit === undefined ? "" : ` ${limits.unit}`;
+  if (low !== undefined && high !== undefined) {
+    return `between ${String(low)} and ${String(high)}${unit}`;
+  }
+  if (low !== undefined) return `at least ${String(low)}${unit}`;
+  return high === undefined ? undefined : `at most ${String(high)}${unit}`;
+}
+
+/** Narrows a requirement's quantity and unit to what its role and quantity allow. */
+export function toRequirementSchema(schema: JsonSchema, value: unknown): JsonSchema {
+  const roles = schema["x-roles"];
+  const properties = schema.properties;
+  if (roles === undefined || properties === undefined || !isRecord(value)) return schema;
+  const quantities = typeof value.on === "string" ? roles[value.on] : undefined;
+  if (quantities === undefined) return schema;
+  const quantity = typeof value.quantity === "string" ? value.quantity : "";
+  const units = value.over === "duration" ? schema["x-time-units"] : quantities[quantity];
+  return {
+    ...schema,
+    properties: {
+      ...properties,
+      quantity: { ...properties.quantity, enum: Object.keys(quantities) },
+      ...(units === undefined || units.length === 0
+        ? {}
+        : { unit: { ...properties.unit, enum: units } }),
+    },
+  };
 }
 
 /** Makes a readable label from a property name unless the schema has a title. */

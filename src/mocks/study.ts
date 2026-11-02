@@ -19,18 +19,21 @@ const exampleKinds: StudyKind[] = [
   {
     kind: "size",
     title: "Size",
+    use: "method",
     description: "Sizes the plant for the demand.",
     schema: exampleSettings,
   },
   {
     kind: "optimise",
     title: "Optimise",
+    use: "method",
     description: "Searches the design space.",
     schema: exampleSettings,
   },
   {
     kind: "sensitivity",
     title: "Sensitivity",
+    use: "method",
     description: "Varies one input.",
     schema: { title: "None", properties: {} },
   },

@@ -278,6 +278,20 @@ type TabsProps = EditorProps & {
   onTab: (tab: string) => void;
 };
 
+function WarningList({ warnings }: { warnings: MissingValue[] }) {
+  if (warnings.length === 0) return null;
+  return (
+    <ul
+      aria-label="Warnings"
+      className="m-0 mb-3.5 flex list-none flex-col gap-1 rounded-control border border-warn p-2 text-[12.5px] text-warn"
+    >
+      {warnings.map((item) => (
+        <li key={`${item.path}:${item.message}`}>{item.message}</li>
+      ))}
+    </ul>
+  );
+}
+
 function MissingCount({ missing, section }: { missing: MissingValue[]; section: string }) {
   const count = missing.filter(
     (item) => item.path === section || item.path.startsWith(`${section}.`),
@@ -460,6 +474,7 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
         schema={schema}
         onShow={handleShow}
       />
+      <WarningList warnings={editor.warnings} />
       <ProblemList problems={editor.problems} />
       <SaveFailure error={flow.save.error} />
       <SectionTabs {...{ projectId, saved, schema, editor, tab, generation }} onTab={showTab} />

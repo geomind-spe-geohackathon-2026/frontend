@@ -183,6 +183,7 @@ function readHandlers(stored: Store): RequestHandler[] {
         missing: view.missing,
         problems: view.problems,
         plant_missing: [],
+        warnings: [],
         has_plant: true,
       });
     }),

@@ -11,6 +11,7 @@ import {
   isLeaf,
   isRecord,
   labelOf,
+  toRequirementSchema,
   pickVariant,
   unitsOf,
   variantsOf,
@@ -141,7 +142,7 @@ function QuantityField({
       path={path}
       label={label}
       unit={percent ? "%" : undefined}
-      hint={hints?.[toFullPath(prefix, path)] ?? boundsOf(valueSchema)}
+      hint={hints?.[toFullPath(prefix, path)] ?? boundsOf(schema)}
       description={schema.description}
       required={!optional}
     >
@@ -315,7 +316,10 @@ function OptionalGroup({ name, path, label, children }: NodeProps & { children: 
 }
 
 function GroupFields(props: NodeProps) {
-  const { name, path, label, schema, optional = false } = props;
+  const { name, path, label, optional = false } = props;
+  const { control } = useFormContext();
+  const current: unknown = useWatch({ control, name });
+  const schema = toRequirementSchema(props.schema, current);
   if (isFractionGroup(schema) && path !== "") return <FractionGroup {...props} />;
   const entries = formEntries(schema);
   const required = new Set(schema.required ?? []);

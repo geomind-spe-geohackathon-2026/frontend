@@ -135,7 +135,7 @@ export function toElkGraph(
       "elk.spacing.nodeNode": "48",
       "elk.spacing.edgeNode": "24",
       "elk.spacing.edgeEdge": "10",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "90",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "60",
       "elk.layered.spacing.edgeNodeBetweenLayers": "24",
     },
     children: modules.map((module) => ({

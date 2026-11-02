@@ -37,11 +37,13 @@ function KindSelect({
         className="w-full rounded-control border border-border bg-surface px-2.5 py-[7px]"
       >
         <option value="">Choose a kind</option>
-        {kinds.map((entry) => (
-          <option key={entry.kind} value={entry.kind}>
-            {entry.title}
-          </option>
-        ))}
+        {kinds
+          .filter((entry) => entry.use === "method")
+          .map((entry) => (
+            <option key={entry.kind} value={entry.kind}>
+              {entry.title}
+            </option>
+          ))}
       </select>
     </Field>
   );
