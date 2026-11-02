@@ -49,7 +49,26 @@ describe("Blocks", () => {
     const { rerender } = render(<Blocks running blocks={[pending]} />);
     expect(screen.queryByText(/Allow save/)).not.toBeInTheDocument();
     rerender(<Blocks running blocks={[{ ...pending, resolved: true }]} />);
-    expect(screen.getByText("You answered: Allow save?")).toBeVisible();
+    expect(screen.getByText("You answered: Allow save?")).toBeInTheDocument();
+  });
+
+  it("folds the work into one line and keeps a failure that was retried inside it", () => {
+    const failed: Block = {
+      kind: "tool",
+      id: "t1",
+      agent: "coordinator.designer",
+      tool: "size_plant",
+      input: {},
+      state: "failed",
+      summary: "",
+      duration: 0.2,
+      error: "size.doublets.range is missing",
+    };
+    const note = text("b0", 'design loop: {"round": 1}');
+    const { container } = render(<Blocks running={false} blocks={[note, failed]} />);
+    expect(screen.getByText("Worked through 1 step, 1 needed another try")).toBeVisible();
+    expect(container.querySelector("details")).not.toHaveAttribute("open");
+    expect(screen.queryByText(/design loop/)).not.toBeInTheDocument();
   });
 
   it("does not say Thinking once the run is over", () => {

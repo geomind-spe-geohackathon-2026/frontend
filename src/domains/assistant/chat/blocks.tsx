@@ -1,6 +1,5 @@
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
-import { toDepth, toGroups, toLabel, type Group } from "./agents";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { Copy } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -17,8 +16,6 @@ import type { Block } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
 type TextBlock = Extract<Block, { kind: "text" }>;
-
-const indents = ["", "ml-3", "ml-6"];
 
 /** The tool an agent ends with; its text is the answer, shown as the message. */
 export const finishTool = "finish";
@@ -82,108 +79,101 @@ function ToolCard({ block }: { block: ToolBlock }) {
   );
 }
 
-function TextView({ block, running }: { block: TextBlock; running: boolean }) {
-  if (block.text === "")
-    return block.open && running ? <p className="text-muted">Thinking</p> : null;
-  const route = fromRoute(block.text);
-  if (route === null) return <MarkdownText text={block.text} />;
-  return route.kind === "answer" ? <MarkdownText text={route.answer} /> : null;
-}
-
 function toEndText(status: string, message: string | null): string {
-  if (message === null) return `Run ${status}`;
-  return toBudgetStop(message) ?? `Run ${status}: ${message}`;
-}
-
-function FailedTools({ count }: { count: number }) {
+  if (status === "cancelled") return "Run cancelled";
+  const budget = message === null ? null : toBudgetStop(message);
   return (
-    <p role="status" className="text-bad">
-      Done with {count} {count === 1 ? "error" : "errors"}
-    </p>
+    budget ?? "The assistant stopped because of an internal error. The full log has the details."
   );
 }
 
-function ToolSteps({ tools, running }: { tools: ToolBlock[]; running: boolean }) {
-  const failed = tools.some((tool) => tool.state === "failed");
-  const count = tools.length;
+function isHiddenText(text: string): boolean {
+  return text.trim() === "" || /^[a-z]+ loop: \{.*\}$/.test(text.trim());
+}
+
+function toShownText(block: TextBlock): string | null {
+  const route = fromRoute(block.text);
+  if (route !== null) return null;
+  return isHiddenText(block.text) ? null : block.text;
+}
+
+function toAnswer(blocks: Block[]): TextBlock | null {
+  if (blocks.some((block) => block.kind === "tool" && block.tool === finishTool)) return null;
+  const last = blocks.findLast((block) => block.kind === "text" && !block.open);
+  return last?.kind === "text" ? last : null;
+}
+
+function toAnswerText(block: TextBlock): string | null {
+  const route = fromRoute(block.text);
+  if (route !== null) return route.kind === "answer" ? route.answer : null;
+  return isHiddenText(block.text) ? null : block.text;
+}
+
+function isWork(block: Block): boolean {
+  if (block.kind === "tool") return block.tool !== finishTool || block.error !== null;
+  if (block.kind === "request") return block.resolved;
+  return block.kind === "text" && toShownText(block) !== null;
+}
+
+function toLatest(blocks: Block[]): string {
+  const last = blocks.findLast((block) => block.kind === "tool" && block.state === "running");
+  return last?.kind === "tool" ? toToolName(last.tool) : "Thinking";
+}
+
+function toDoneLabel(work: Block[]): string {
+  const steps = work.filter((block) => block.kind === "tool").length;
+  const failed = toFailedCount(work);
+  const label = `Worked through ${String(steps)} ${steps === 1 ? "step" : "steps"}`;
+  return failed === 0 ? label : `${label}, ${String(failed)} needed another try`;
+}
+
+function WorkItem({ block }: { block: Block }) {
+  if (block.kind === "tool") return <ToolCard block={block} />;
+  if (block.kind === "request") {
+    return <p className="text-[12px] text-muted">{toRequestText(block.request.message)}</p>;
+  }
+  if (block.kind !== "text") return null;
   return (
-    <details open={running || failed} className="space-y-1.5">
-      <summary className="cursor-pointer text-[12px] text-muted">
-        {count} {count === 1 ? "step" : "steps"}
-      </summary>
-      {tools.map((tool) => (
-        <ToolCard key={tool.id} block={tool} />
+    <div className="text-muted">
+      <MarkdownText text={block.text} />
+    </div>
+  );
+}
+
+function WorkLog({ work, label }: { work: Block[]; label: string }) {
+  return (
+    <details className="space-y-1.5">
+      <summary className="cursor-pointer text-muted">{label}</summary>
+      {work.map((block) => (
+        <WorkItem key={block.id} block={block} />
       ))}
     </details>
   );
 }
 
-function toRuns(blocks: Block[]): (Block | ToolBlock[])[] {
-  const runs: (Block | ToolBlock[])[] = [];
-  for (const block of blocks) {
-    const last = runs.at(-1);
-    if (block.kind === "tool" && block.tool === finishTool && block.error === null) continue;
-    if (block.kind !== "tool") runs.push(block);
-    else if (Array.isArray(last)) last.push(block);
-    else runs.push([block]);
-  }
-  return runs;
-}
-
-function BlockView({ block, running, failed }: { block: Block; running: boolean; failed: number }) {
-  switch (block.kind) {
-    case "text":
-      return <TextView block={block} running={running} />;
-    case "tool":
-      return null;
-    case "request":
-      if (!block.resolved) return null;
-      return <p className="text-[12px] text-muted">{toRequestText(block.request.message)}</p>;
-    case "end":
-      if (block.status === "done") return failed === 0 ? null : <FailedTools count={failed} />;
-      return (
-        <p role="status" className="text-bad">
-          {toEndText(block.status, block.message)}
-        </p>
-      );
-  }
-}
-
-function AgentGroup({
-  group,
-  running,
-  failed,
-}: {
-  group: Group;
-  running: boolean;
-  failed: number;
-}) {
-  const depth = toDepth(group.agent);
-  return (
-    <section
-      aria-label={`Agent ${group.agent}`}
-      className={`space-y-1.5 ${indents[Math.min(depth, 2)] ?? ""} ${depth === 0 ? "" : "border-l-2 border-border pl-2.5"}`}
-    >
-      {depth === 0 ? null : <p className="text-[12px] text-muted">{toLabel(group.agent)}</p>}
-      {toRuns(group.blocks).map((run) =>
-        Array.isArray(run) ? (
-          <ToolSteps key={run[0]?.id} tools={run} running={running} />
-        ) : (
-          <BlockView key={run.id} block={run} running={running} failed={failed} />
-        ),
-      )}
-    </section>
-  );
-}
-
-/** The blocks of a run in event order, grouped by the agent that produced them. */
+/** A run as one quiet line of work that opens to its steps; only the answer and a stop stand out. */
 export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean }) {
-  const failed = toFailedCount(blocks);
+  const last = running ? null : toAnswer(blocks);
+  const answer = last === null ? null : toAnswerText(last);
+  const work = blocks.filter((block) => isWork(block) && block.id !== last?.id);
+  const end = blocks.find((block) => block.kind === "end");
+  const stopped = end?.kind === "end" && end.status !== "done";
   return (
     <div className="space-y-2.5">
-      {toGroups(blocks).map((group) => (
-        <AgentGroup key={group.id} group={group} running={running} failed={failed} />
-      ))}
+      {running ? (
+        <p role="status" className="text-muted">
+          {toLatest(blocks)}
+        </p>
+      ) : null}
+      {work.length === 0 ? null : (
+        <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />
+      )}
+      {answer === null ? null : <MarkdownText text={answer} />}
+      {stopped ? (
+        <p role="status" className="text-bad">
+          {toEndText(end.status, end.message)}
+        </p>
+      ) : null}
     </div>
   );
 }

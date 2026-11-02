@@ -4,38 +4,38 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function toLabel(value: unknown): string {
+function toLabel(value: unknown): string | null {
   if (typeof value === "string") return value;
   if (isRecord(value)) {
     const text = value.text ?? value.title ?? value.name ?? value.id;
     if (typeof text === "string") return text;
   }
-  return JSON.stringify(value);
+  return null;
+}
+
+function toNames(name: string): string {
+  const words = name.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function Entry({ name, value }: { name: string; value: unknown }) {
-  if (Array.isArray(value)) {
-    return (
-      <div>
-        <dt className="text-muted">{name}</dt>
-        <dd>
-          {value.length === 0 ? (
-            <span className="text-muted">none</span>
-          ) : (
-            <ul className="list-disc pl-4">
-              {value.map((item, position) => (
-                <li key={position}>{toLabel(item)}</li>
-              ))}
-            </ul>
-          )}
-        </dd>
-      </div>
-    );
-  }
+  const labels = (Array.isArray(value) ? value : [value]).map(toLabel);
+  const shown = labels.filter((label) => label !== null);
+  if (shown.length === 0) return null;
   return (
     <div>
-      <dt className="text-muted">{name}</dt>
-      <dd>{toLabel(value)}</dd>
+      <dt className="text-muted">{toNames(name)}</dt>
+      <dd className="m-0 [overflow-wrap:anywhere]">
+        {shown.length === 1 ? (
+          shown[0]
+        ) : (
+          <ul className="list-disc pl-4">
+            {shown.map((label, position) => (
+              <li key={position}>{label}</li>
+            ))}
+          </ul>
+        )}
+      </dd>
     </div>
   );
 }
@@ -63,7 +63,7 @@ function toCaseText(document: unknown): string {
   return isRecord(document) && isRecord(document.case) ? "read" : "not read yet";
 }
 
-const hidden = ["case", "case_origin", "compaction", "version"];
+const hidden = ["case", "case_origin", "compaction", "version", "design", "verification"];
 
 /** Shows what the assistant works from: the project's versions and the notes of this chat. */
 export function ProblemView({
@@ -81,9 +81,16 @@ export function ProblemView({
       <Row name="Case" value={toVersion(project?.case_version)} />
       <Row name="Plant" value={toVersion(project?.plant_version)} />
       <Row name="Case in this chat" value={toCaseText(document)} />
-      {entries.map(([name, value]) => (
-        <Entry key={name} name={name} value={value} />
-      ))}
+      {entries.length === 0 ? null : (
+        <details>
+          <summary className="cursor-pointer text-muted">Notes from this chat</summary>
+          <div className="mt-1.5 space-y-1.5">
+            {entries.map(([name, value]) => (
+              <Entry key={name} name={name} value={value} />
+            ))}
+          </div>
+        </details>
+      )}
     </dl>
   );
 }

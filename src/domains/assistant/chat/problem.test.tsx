@@ -7,9 +7,14 @@ describe("ProblemView", () => {
     render(
       <ProblemView document={{ goal: "Size a plant", design: null, results: [], notes: {} }} />,
     );
-    expect(screen.getByText("goal")).toBeVisible();
+    expect(screen.getByText("Goal")).toBeInTheDocument();
     expect(screen.queryByText("design")).toBeNull();
     expect(screen.queryByText("none")).toBeNull();
+  });
+
+  it("shows no raw objects", () => {
+    render(<ProblemView document={{ results: { lcts: 40 }, goal: "Size a plant" }} />);
+    expect(screen.queryByText(/lcts/)).toBeNull();
   });
 
   it("says what the chat has read", () => {

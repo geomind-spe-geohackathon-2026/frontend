@@ -22,7 +22,7 @@ describe("chat page", () => {
     expect(await screen.findByText("Which plant fits the example problem?")).toBeVisible();
     expect(await screen.findByText("Read case")).toBeInTheDocument();
     expect(screen.getByText("Size plant")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Agent coordinator.designer" })).toBeVisible();
+    expect(screen.getByText(/^Worked through/)).toBeVisible();
     expect(screen.getByRole("link", { name: /Design the example plant/ })).toHaveAttribute(
       "aria-current",
       "page",
@@ -47,7 +47,7 @@ describe("chat page", () => {
     const card = panel.closest("div")?.parentElement;
     expect(card).not.toBeNull();
     await waitFor(() => {
-      expect(within(card ?? document.body).getByText("Plant sized")).toBeVisible();
+      expect(within(card ?? document.body).getByText("Plant sized")).toBeInTheDocument();
     });
   });
 
