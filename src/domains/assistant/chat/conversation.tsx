@@ -12,6 +12,10 @@ type Props = {
   failure: ApiError | null;
 };
 
+function isActive(view: View): boolean {
+  return view.status === "queued" || view.status === "running" || view.status === "waiting";
+}
+
 function UserBubble({ content }: { content: string }) {
   return <p className="rounded-card bg-accent-soft px-3 py-2 whitespace-pre-wrap">{content}</p>;
 }
@@ -37,7 +41,7 @@ export function Conversation({ messages, liveRunId, view, failure }: Props) {
         return (
           <div key={message.id} className="space-y-3">
             <UserBubble content={message.content} />
-            {isLive ? <Blocks blocks={view.blocks} /> : null}
+            {isLive ? <Blocks blocks={view.blocks} running={isActive(view)} /> : null}
           </div>
         );
       })}

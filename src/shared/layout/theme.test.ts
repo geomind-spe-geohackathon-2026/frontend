@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { runInThisContext } from "node:vm";
 import { beforeEach, describe, expect, it } from "vitest";
 
 function toBootScript(): string {
@@ -15,12 +16,12 @@ describe("theme before first paint", () => {
 
   it("applies the remembered theme from an inline script in the page head", () => {
     window.localStorage.setItem("geomind.theme", "light");
-    new Function(toBootScript())();
+    runInThisContext(toBootScript());
     expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 
   it("leaves the system choice to the operating system", () => {
-    new Function(toBootScript())();
+    runInThisContext(toBootScript());
     expect(document.documentElement).not.toHaveAttribute("data-theme");
   });
 });

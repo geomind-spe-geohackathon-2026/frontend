@@ -71,7 +71,7 @@ export function ChatList({ projectId, activeChatId }: Props) {
   return (
     <nav aria-label="Chats" className="space-y-2">
       <Button variant="primary" asChild className="w-full justify-center">
-        <Link to={`/projects/${projectId}/assistant/chat`}>+ New chat</Link>
+        <Link to={`/projects/${projectId}/assistant/chat?new`}>+ New chat</Link>
       </Button>
       {chats.isPending ? <p className="text-muted">Loading chats</p> : null}
       {chats.isError ? <ErrorNotice error={chats.error} what="The chats" /> : null}

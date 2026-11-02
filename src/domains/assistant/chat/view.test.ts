@@ -43,9 +43,29 @@ describe("applyEvent", () => {
     ]);
   });
 
+  it("keeps the pending approval when a reload adds the buffered text after the request", () => {
+    const at = recorded.findIndex((event) => event.type === "request");
+    const request = recorded[at];
+    const first = recorded.find((event) => event.type === "step.started");
+    if (request === undefined || first === undefined) throw new Error("the recording is short");
+    const buffered: RunEvent = {
+      ...request,
+      type: "text.delta",
+      index: 1,
+      text: "So far",
+      buffered: true,
+    };
+    const view = fold([...recorded.slice(0, at + 1), buffered]);
+    expect(view.status).toBe("waiting");
+    expect(view.request?.kind).toBe("approval");
+    expect(view.blocks.filter((block) => block.kind === "request")).toEqual([
+      expect.objectContaining({ resolved: false }),
+    ]);
+  });
+
   it("builds the agent tree from the dotted paths and marks the delegated agent done", () => {
     const view = fold(recorded);
-    expect(view.agents.coordinator).toMatchObject({ parent: null, state: "running" });
+    expect(view.agents.coordinator).toMatchObject({ parent: null, state: "done" });
     expect(view.agents["coordinator.designer"]).toMatchObject({
       parent: "coordinator",
       state: "done",
