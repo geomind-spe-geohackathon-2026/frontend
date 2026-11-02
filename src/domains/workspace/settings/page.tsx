@@ -113,7 +113,7 @@ function ExportRow({ project }: { project: Project }) {
     <div className="flex items-center justify-between gap-3">
       <div>
         <b>Export zip</b>
-        <p className="text-muted">The project with its plant and problem versions.</p>
+        <p className="text-muted">The project with its plant and case versions.</p>
         {exportZip.error === null ? null : <p role="alert">{exportZip.error.message}</p>}
       </div>
       <Button

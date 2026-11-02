@@ -33,7 +33,7 @@ function SourceChoice({
             onChange("empty");
           }}
         />
-        An empty problem
+        An empty case
       </label>
       <label className="flex items-center gap-2">
         <input
@@ -44,7 +44,7 @@ function SourceChoice({
             onChange("copy");
           }}
         />
-        A copy of another project&apos;s problem
+        A copy of another project&apos;s case
       </label>
       <label className="flex items-center gap-2">
         <input
@@ -163,7 +163,7 @@ function NewProjectForm() {
   );
 }
 
-/** The New project dialog: a name for an empty problem or for a copy of another project's problem, or a project zip to import. */
+/** The New project dialog: a name for an empty problem or for a copy of another project's case, or a project zip to import. */
 export function NewProjectDialog({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -51,15 +51,21 @@ describe("SchemaForm", () => {
     expect(screen.queryByText("unit missing")).toBeNull();
   });
 
-  it("keeps an optional group collapsed until it has a value or gemini reports a gap in it", () => {
+  it("keeps a nested optional group collapsed until it has a value or gemini reports a gap in it", () => {
     const schema = {
       type: "object",
       required: [],
       properties: {
-        extra: {
+        outer: {
           type: "object",
-          required: ["kind"],
-          properties: { kind: { enum: ["uniform", "normal"] } },
+          required: [],
+          properties: {
+            extra: {
+              type: "object",
+              required: ["kind"],
+              properties: { kind: { enum: ["uniform", "normal"] } },
+            },
+          },
         },
       },
     };
@@ -67,12 +73,12 @@ describe("SchemaForm", () => {
     expect(screen.getByText("Extra").closest("details")).not.toHaveAttribute("open");
     expect(screen.queryByText("missing")).toBeNull();
     rerender(
-      <SchemaForm schema={schema} initial={{}} onChange={vi.fn()} missing={["extra.kind"]} />,
+      <SchemaForm schema={schema} initial={{}} onChange={vi.fn()} missing={["outer.extra.kind"]} />,
     );
     expect(screen.getByText("Extra").closest("details")).toHaveAttribute("open");
   });
 
-  it("lets the user choose between the alternatives of an anyOf and fills the chosen one", async () => {
+  it("shows the form of an empty anyOf without a chooser", () => {
     const onChange = vi.fn();
     render(
       <SchemaForm
@@ -82,12 +88,22 @@ describe("SchemaForm", () => {
         prefix="economics"
       />,
     );
-    const choice = screen.getByRole("combobox", { name: "Form of the value" });
-    await userEvent.selectOptions(choice, "Details");
+    expect(screen.queryByRole("combobox", { name: "Form of the value" })).toBeNull();
     expect(screen.getByLabelText("Discount rate")).toBeVisible();
-    await userEvent.selectOptions(choice, "Text");
-    await userEvent.type(screen.getByRole("textbox"), "economics.json");
-    expect(onChange).toHaveBeenLastCalledWith("economics.json", []);
+  });
+
+  it("offers the choice for a value that names a file, and leads to the form", async () => {
+    render(
+      <SchemaForm
+        schema={exampleCaseSchema.properties?.economics ?? {}}
+        initial="economics.json"
+        onChange={vi.fn()}
+        prefix="economics"
+      />,
+    );
+    const choice = screen.getByRole("combobox", { name: "Form of the value" });
+    await userEvent.selectOptions(choice, "Fill in here");
+    expect(screen.getByLabelText("Discount rate")).toBeVisible();
   });
 
   it("shows a server problem next to its field", () => {

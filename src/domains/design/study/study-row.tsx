@@ -64,7 +64,7 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
           <Missing key={entry.path} blocks={`${entry.path}: ${entry.message}`} />
         ))}
         <Link to={`${base}/case`} className="text-accent">
-          Fill it in on Problem
+          Fill it in on Case
         </Link>
       </div>
     );

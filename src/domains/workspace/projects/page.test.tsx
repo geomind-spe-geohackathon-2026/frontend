@@ -15,9 +15,9 @@ describe("projects home", () => {
     const card = await screen.findByRole("link", { name: /Example district plant/ });
     expect(card).toHaveAttribute("href", "/projects/example-project-1/overview");
     expect(card).toHaveTextContent("Owner Example Admin");
-    expect(card).toHaveTextContent("Problem: complete");
+    expect(card).toHaveTextContent("Case: complete");
     expect(screen.getByRole("link", { name: /Example campus plant/ })).toHaveTextContent(
-      "Problem: 2 missing",
+      "Case: 2 missing",
     );
   });
 
@@ -101,7 +101,7 @@ describe("projects home", () => {
     expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
   });
 
-  it("creates a project as a copy of another project's problem", async () => {
+  it("creates a project as a copy of another project's case", async () => {
     const received: unknown[] = [];
     server.events.on("request:start", ({ request }) => {
       if (request.method === "POST" && request.url.endsWith("/workspace/projects")) {
@@ -114,7 +114,7 @@ describe("projects home", () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.click(screen.getByRole("radio", { name: "A copy of another project's problem" }));
+    await user.click(screen.getByRole("radio", { name: "A copy of another project's case" }));
     await user.type(screen.getByLabelText("Name"), "Example copy");
     await user.selectOptions(
       await screen.findByLabelText("Project to copy"),
@@ -126,7 +126,7 @@ describe("projects home", () => {
     expect(router.state.location.pathname).toBe("/projects/example-project-3/overview");
   });
 
-  it("shows the server error when the project to copy has no problem", async () => {
+  it("shows the server error when the project to copy has no case", async () => {
     server.use(
       http.post("*/api/v1/workspace/projects", () =>
         HttpResponse.json(
@@ -140,7 +140,7 @@ describe("projects home", () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.click(screen.getByRole("radio", { name: "A copy of another project's problem" }));
+    await user.click(screen.getByRole("radio", { name: "A copy of another project's case" }));
     await user.type(screen.getByLabelText("Name"), "Example copy");
     await user.selectOptions(
       await screen.findByLabelText("Project to copy"),

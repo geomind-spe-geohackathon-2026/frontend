@@ -1,3 +1,4 @@
+import { pagedQuery } from "@/shared/api/pagination";
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData, toFormData } from "@/shared/api/client";
 import { projectKeys } from "@/shared/api/projects";
@@ -86,6 +87,32 @@ function toUploadForm(body: UploadBody): FormData {
 }
 
 /** Mutation that uploads a series file; the answer is the new case version. */
+/** Paged query options for the projects a case can be copied from. */
+export const copySourcesQuery = () =>
+  pagedQuery(["projects", "list", ""], async (cursor, signal) =>
+    toData(
+      await api.GET("/workspace/projects", {
+        params: { query: cursor === null ? {} : { cursor } },
+        signal,
+      }),
+    ),
+  );
+
+/** Mutation that copies another project's latest case into this project. */
+export function useCopyCase(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (source: string) =>
+      toData(
+        await api.POST("/workspace/projects/{project_id}/case/copy", {
+          params: { path: { project_id: projectId } },
+          body: { case_from: source },
+        }),
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects", projectId] }),
+  });
+}
+
 export function useUploadCaseFile(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({

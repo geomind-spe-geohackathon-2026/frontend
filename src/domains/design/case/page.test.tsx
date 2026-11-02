@@ -14,17 +14,17 @@ beforeAll(async () => {
 const withCase = "/projects/example-project-1/design/case";
 const withoutCase = "/projects/example-project-2/design/case";
 
-describe("Problem page", { timeout: 20000 }, () => {
+describe("Case page", { timeout: 20000 }, () => {
   it("builds its tabs from the schema and lists the missing values in a banner", async () => {
     renderApp({ path: withCase });
-    const tabs = await screen.findByRole("tablist", { name: "Sections of the problem" }, slow);
+    const tabs = await screen.findByRole("tablist", { name: "Sections of the case" }, slow);
     const names = within(tabs)
       .getAllByRole("tab")
-      .map((tab) => tab.textContent);
+      .map((tab) => tab.textContent.replace(/\d+$/, ""));
     expect(names).toEqual(["Demand", "Site", "Economics", "Requirements", "Files", "History"]);
     const banner = screen.getByRole("region", { name: "Missing values" });
     expect(banner).toHaveTextContent("2 values missing");
-    expect(banner).toHaveTextContent("economics.gas_price");
+    expect(banner).toHaveTextContent("Economics › Gas price: value, unit missing");
   });
 
   it("marks the missing field, clears the mark when filled and saves a new version", async () => {
@@ -43,8 +43,8 @@ describe("Problem page", { timeout: 20000 }, () => {
     await user.click(
       within(screen.getByRole("dialog")).getByRole("button", { name: "Save version" }),
     );
-    expect(await screen.findByText("Problem v2 saved")).toBeVisible();
-    expect(screen.getByText("Problem v2")).toBeVisible();
+    expect(await screen.findByText("Case v2 saved")).toBeVisible();
+    expect(screen.getByText("Case v2")).toBeVisible();
   });
 
   it("offers a reload when somebody saved a newer version", async () => {
@@ -77,11 +77,11 @@ describe("Problem page", { timeout: 20000 }, () => {
   it("offers to start an empty problem when the project has none", async () => {
     renderApp({ path: withoutCase });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Start the problem" }));
-    expect(await screen.findByText("Problem v1")).toBeVisible();
+    await user.click(await screen.findByRole("button", { name: "Start the case" }));
+    expect(await screen.findByText("Case v1")).toBeVisible();
   });
 
-  it("shows the error state with a retry when the problem cannot be loaded", async () => {
+  it("shows the error state with a retry when the case cannot be loaded", async () => {
     server.use(
       http.get("*/api/v1/design/case", () =>
         HttpResponse.json(
@@ -109,7 +109,7 @@ describe("Problem page", { timeout: 20000 }, () => {
   });
 });
 
-describe("Starting the problem", { timeout: 20000 }, () => {
+describe("Starting the case", { timeout: 20000 }, () => {
   it("sends the header gemini's real schema describes, with the kind", async () => {
     let sent: unknown = null;
     server.use(
@@ -124,7 +124,7 @@ describe("Starting the problem", { timeout: 20000 }, () => {
     );
     renderApp({ path: withoutCase });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Start the problem" }));
+    await user.click(await screen.findByRole("button", { name: "Start the case" }));
     await screen.findByRole("alert");
     expect(sent).toMatchObject({ content: { format: 1, kind: "case" } });
   });
@@ -146,7 +146,7 @@ describe("Starting the problem", { timeout: 20000 }, () => {
     );
     renderApp({ path: withoutCase });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Start the problem" }));
+    await user.click(await screen.findByRole("button", { name: "Start the case" }));
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("case_invalid");
     expect(alert).toHaveTextContent("The case is invalid");

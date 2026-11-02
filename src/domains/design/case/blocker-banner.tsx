@@ -1,12 +1,30 @@
 import { Missing } from "@/shared/quantity/missing";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
+import { labelOf, type JsonSchema } from "@/shared/forms/json-schema";
 import type { MissingValue } from "@/shared/api/types";
 
-type Props = { missing: MissingValue[]; onShow: (path: string) => void };
+type Props = {
+  missing: MissingValue[];
+  schema: JsonSchema;
+  onShow: (path: string) => void;
+};
+
+function nodeAt(schema: JsonSchema, parts: string[]): JsonSchema | undefined {
+  return parts.reduce<JsonSchema | undefined>((node, part) => node?.properties?.[part], schema);
+}
+
+/** Writes a missing path in words: Time: start, end, step missing. */
+export function toMissingText(path: string, schema: JsonSchema): string {
+  const parts = path.split(".");
+  const title = parts.map((part) => labelOf(part, {})).join(" › ");
+  const required = nodeAt(schema, parts)?.required ?? [];
+  const names = required.map((name) => name.replaceAll("_", " ")).join(", ");
+  return names === "" ? `${title}: missing` : `${title}: ${names} missing`;
+}
 
 /** The warning card that lists every missing value with gemini's message and a link to its field. */
-export function BlockerBanner({ missing, onShow }: Props) {
+export function BlockerBanner({ missing, schema, onShow }: Props) {
   if (missing.length === 0) return null;
   return (
     <Card className="mb-3.5 border-warn" role="region" aria-label="Missing values">
@@ -24,9 +42,8 @@ export function BlockerBanner({ missing, onShow }: Props) {
                   onShow(item.path);
                 }}
               >
-                {item.path}
+                {toMissingText(item.path, schema)}
               </Button>
-              <span className="text-muted"> {item.message}</span>
             </li>
           ))}
         </ul>

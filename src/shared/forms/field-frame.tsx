@@ -10,6 +10,7 @@ type Props = {
   path: string;
   label: string;
   unit?: string | undefined;
+  hint?: string | undefined;
   children: (props: { id: string; invalid: boolean; describedBy: string | undefined }) => ReactNode;
 };
 
@@ -35,7 +36,7 @@ function useMessages(name: string, full: string): string[] {
 }
 
 /** Label, control, unit, missing mark and messages of one field; the control comes from the render prop. */
-export function FieldFrame({ name, path, label, unit, children }: Props) {
+export function FieldFrame({ name, path, label, unit, hint, children }: Props) {
   const { prefix, missing } = useFieldContext();
   const { control } = useFormContext();
   const current: unknown = useWatch({ control, name });
@@ -52,6 +53,7 @@ export function FieldFrame({ name, path, label, unit, children }: Props) {
         {unit === undefined || unit === "" ? null : <span className="ml-1">[{unit}]</span>}
       </label>
       {children({ id, invalid, describedBy })}
+      {hint === undefined ? null : <span className="text-[12px] text-muted">{hint}</span>}
       {invalid ? (
         <div id={`${id}-notes`} className="flex flex-col gap-0.5 text-[12px]">
           {isMissing ? (

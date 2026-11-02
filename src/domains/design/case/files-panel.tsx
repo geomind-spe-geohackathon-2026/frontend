@@ -38,7 +38,7 @@ function UploadForm({ projectId, saved, dirty }: Props) {
           }}
         />
       </Field>
-      <Field label="Name in the problem" htmlFor="case-file-name">
+      <Field label="Name in the case" htmlFor="case-file-name">
         <Input
           id="case-file-name"
           value={name}
@@ -62,7 +62,7 @@ function UploadForm({ projectId, saved, dirty }: Props) {
   );
 }
 
-/** The files the problem names, an upload or replace form, and a chart of every series read through gemini. */
+/** The files the case names, an upload or replace form, and a chart of every series read through gemini. */
 export function FilesPanel(props: Props) {
   const { projectId, saved } = props;
   const series = useQuery(caseSeriesQuery(projectId, saved.version));
@@ -73,9 +73,7 @@ export function FilesPanel(props: Props) {
           <h2>Files</h2>
         </CardHeader>
         <CardBody className="flex flex-col gap-3">
-          {saved.files.length === 0 ? (
-            <p className="text-muted">No files in this problem.</p>
-          ) : null}
+          {saved.files.length === 0 ? <p className="text-muted">No files in this case.</p> : null}
           <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
             {saved.files.map((file) => (
               <li key={file.name}>
@@ -98,7 +96,7 @@ export function FilesPanel(props: Props) {
             </p>
           ) : null}
           {series.data?.series.length === 0 ? (
-            <p className="text-muted">No series in this problem.</p>
+            <p className="text-muted">No series in this case.</p>
           ) : null}
           {series.data?.series.map((item, index) => (
             <SeriesChart key={item.name} series={item} colorIndex={index} />

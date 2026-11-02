@@ -929,6 +929,23 @@ export interface paths {
         patch: operations["update_project_api_v1_workspace_projects__project_id__patch"];
         trace?: never;
     };
+    "/workspace/projects/{project_id}/case/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Copy Case Into */
+        post: operations["copy_case_into_api_v1_workspace_projects__project_id__case_copy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workspace/projects/{project_id}/export": {
         parameters: {
             query?: never;
@@ -1079,6 +1096,14 @@ export interface components {
             };
             /** Project */
             project?: string | null;
+        };
+        /** CaseCopy */
+        CaseCopy: {
+            /**
+             * Case From
+             * Format: uuid
+             */
+            case_from: string;
         };
         /** CaseCreate */
         CaseCreate: {
@@ -4158,6 +4183,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ProjectUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Project"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    copy_case_into_api_v1_workspace_projects__project_id__case_copy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseCopy"];
             };
         };
         responses: {

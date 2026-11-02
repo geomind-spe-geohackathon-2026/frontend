@@ -1,14 +1,21 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError, hasCode } from "@/shared/api/errors";
+import { toItems } from "@/shared/api/pagination";
 import { projectQuery } from "@/shared/api/projects";
 import { ConflictDialog } from "@/shared/forms/conflict-dialog";
 import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { SchemaForm } from "@/shared/forms/schema-form";
 import { UnsavedChangesDialog, useUnsavedGuard } from "@/shared/forms/unsaved-guard";
-import { labelOf, sectionsOf, type JsonSchema } from "@/shared/forms/json-schema";
+import {
+  isRecord,
+  labelOf,
+  sectionsOf,
+  withHeader,
+  type JsonSchema,
+} from "@/shared/forms/json-schema";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/shared/ui/button";
@@ -17,12 +24,19 @@ import { Chip } from "@/shared/ui/chip";
 import { Notice } from "@/shared/ui/notice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { showToast } from "@/shared/ui/toast";
-import { caseKeys, caseQuery, caseSchemaQuery, useSaveCase } from "./api";
+import {
+  caseKeys,
+  caseQuery,
+  caseSchemaQuery,
+  copySourcesQuery,
+  useCopyCase,
+  useSaveCase,
+} from "./api";
 import { BlockerBanner } from "./blocker-banner";
 import { FilesPanel } from "./files-panel";
 import { HistoryPanel } from "./history-panel";
 import { toEmptyCase } from "./empty-case";
-import type { Case } from "@/shared/api/types";
+import type { Case, MissingValue } from "@/shared/api/types";
 import type { CaseContent } from "./types";
 import { useCaseEditor } from "./use-case-editor";
 
@@ -72,15 +86,99 @@ function SaveFailure({ error }: { error: unknown }) {
   );
 }
 
+function ImportCase({ onContent }: { onContent: (content: CaseContent) => void }) {
+  const [failure, setFailure] = useState<string | null>(null);
+  async function handleFile(file: File) {
+    try {
+      const content: unknown = JSON.parse(await file.text());
+      if (!isRecord(content)) throw new Error("not an object");
+      setFailure(null);
+      onContent(content);
+    } catch {
+      setFailure(`${file.name} is not a case file`);
+    }
+  }
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="font-medium" htmlFor="case-file">
+        Import a case.json file
+      </label>
+      <input
+        id="case-file"
+        type="file"
+        accept=".json,application/json"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file !== undefined) void handleFile(file);
+        }}
+      />
+      {failure === null ? null : (
+        <p role="alert" className="text-bad">
+          {failure}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CopyCase({ projectId }: { projectId: string }) {
+  const projects = useInfiniteQuery(copySourcesQuery());
+  const copy = useCopyCase(projectId);
+  const [source, setSource] = useState("");
+  const others = toItems(projects.data?.pages).filter(
+    (project) => project.id !== projectId && project.case_version !== null,
+  );
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="font-medium" htmlFor="case-source">
+        Copy from another project
+      </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          id="case-source"
+          className="rounded-control border border-border bg-surface px-2 py-[7px]"
+          value={source}
+          onChange={(event) => {
+            setSource(event.target.value);
+          }}
+        >
+          <option value="">Choose a project</option>
+          {others.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          disabled={source === "" || copy.isPending}
+          onClick={() => {
+            copy.mutate(source);
+          }}
+        >
+          Copy
+        </Button>
+      </div>
+      <SaveFailure error={copy.error} />
+    </div>
+  );
+}
+
+function toStepHint(schema: JsonSchema): string {
+  return sectionsOf(schema)
+    .filter((section) => section !== "initial_state")
+    .map((section) => labelOf(section, schema.properties?.[section] ?? {}))
+    .join(" → ");
+}
+
 function StartProblem({ projectId, schema }: { projectId: string; schema: JsonSchema }) {
   const project = useQuery(projectQuery(projectId));
   const save = useSaveCase(projectId);
   return (
     <Card>
-      <CardBody className="flex flex-col items-start gap-2">
-        <p className="font-medium">This project has no problem yet.</p>
+      <CardBody className="flex flex-col items-start gap-4">
+        <p className="font-medium">This project has no case yet.</p>
         <p className="text-muted">
-          Start an empty problem, then fill in the values the sections ask for.
+          Start empty and fill in the sections in this order: {toStepHint(schema)}.
         </p>
         <Button
           variant="primary"
@@ -89,13 +187,19 @@ function StartProblem({ projectId, schema }: { projectId: string; schema: JsonSc
             if (project.data === undefined) return;
             save.mutate({
               base: null,
-              note: "Started the problem",
+              note: "Started the case",
               content: toEmptyCase(schema, project.data.name),
             });
           }}
         >
-          Start the problem
+          Start the case
         </Button>
+        <CopyCase projectId={projectId} />
+        <ImportCase
+          onContent={(content) => {
+            save.mutate({ base: null, note: "Imported a case file", content });
+          }}
+        />
         <SaveFailure error={save.error} />
       </CardBody>
     </Card>
@@ -131,7 +235,7 @@ function useSaveFlow(projectId: string, saved: Case, onDiscard: () => void) {
         onSuccess: (next) => {
           setIsNoting(false);
           discard();
-          showToast(`Problem v${String(next.version)} saved`);
+          showToast(`Case v${String(next.version)} saved`);
         },
         onError: (error) => {
           setIsNoting(false);
@@ -164,14 +268,27 @@ type TabsProps = EditorProps & {
   onTab: (tab: string) => void;
 };
 
+function MissingCount({ missing, section }: { missing: MissingValue[]; section: string }) {
+  const count = missing.filter(
+    (item) => item.path === section || item.path.startsWith(`${section}.`),
+  ).length;
+  if (count === 0) return null;
+  return (
+    <Chip tone="warn" className="ml-1.5" aria-hidden="true">
+      {count}
+    </Chip>
+  );
+}
+
 function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
   const sections = sectionsOf(schema);
   return (
     <Tabs value={tab} onValueChange={onTab}>
-      <TabsList aria-label="Sections of the problem">
+      <TabsList aria-label="Sections of the case">
         {sections.map((section) => (
           <TabsTrigger key={section} value={section}>
             {labelOf(section, schema.properties?.[section] ?? {})}
+            <MissingCount missing={editor.missing} section={section} />
           </TabsTrigger>
         ))}
         <TabsTrigger value={filesTab}>Files</TabsTrigger>
@@ -187,7 +304,8 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
             missing={editor.missing.map((item) => item.path)}
             problems={editor.problems}
             onChange={(value, problems) => {
-              editor.edit(section, value, problems);
+              const shown = withHeader(schema.properties?.[section] ?? {}, section, value);
+              editor.edit(section, shown, problems);
             }}
           />
         </TabsContent>
@@ -213,7 +331,8 @@ type ActionsProps = {
 function CaseActions({ version, dirty, canSave, onDiscard, onSave }: ActionsProps) {
   return (
     <>
-      <Chip tone="off">Problem v{version}</Chip>
+      <Chip tone="off">Case v{version}</Chip>
+      {dirty ? <span className="text-[12px] text-warn">unsaved changes</span> : null}
       <Button disabled={!dirty} onClick={onDiscard}>
         Discard changes
       </Button>
@@ -245,7 +364,7 @@ function SaveDialogs({
       />
       <ConflictDialog
         open={flow.hasConflict}
-        what="problem"
+        what="case"
         onKeep={() => {
           flow.setHasConflict(false);
         }}
@@ -278,7 +397,7 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
   return (
     <>
       <PageHeader
-        title="1 · Problem"
+        title="1 · Case"
         description="Everything the design needs that is not the plant."
         actions={
           <CaseActions
@@ -292,7 +411,7 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
           />
         }
       />
-      <BlockerBanner missing={editor.missing} onShow={handleShow} />
+      <BlockerBanner missing={editor.missing} schema={schema} onShow={handleShow} />
       <ProblemList problems={editor.problems} />
       <SaveFailure error={flow.save.error} />
       <SectionTabs {...{ projectId, saved, schema, editor, tab, generation }} onTab={showTab} />
@@ -302,21 +421,17 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
   );
 }
 
-/** The 1 · Problem page: sections from gemini's case schema, forms with units, validation and versions. */
+/** The 1 · Case page: sections from gemini's case schema, forms with units, validation and versions. */
 export function CasePage() {
   const projectId = useRequiredParam("projectId");
   const schema = useQuery(caseSchemaQuery());
   const saved = useQuery(caseQuery(projectId));
-  const header = <PageHeader title="1 · Problem" />;
+  const header = <PageHeader title="1 · Case" />;
   if (schema.isError) {
     return (
       <>
         {header}
-        <LoadError
-          error={schema.error}
-          what="problem schema"
-          onRetry={() => void schema.refetch()}
-        />
+        <LoadError error={schema.error} what="case schema" onRetry={() => void schema.refetch()} />
       </>
     );
   }
@@ -324,7 +439,7 @@ export function CasePage() {
     return (
       <>
         {header}
-        <LoadError error={saved.error} what="problem" onRetry={() => void saved.refetch()} />
+        <LoadError error={saved.error} what="case" onRetry={() => void saved.refetch()} />
       </>
     );
   }
@@ -333,7 +448,7 @@ export function CasePage() {
       <>
         {header}
         <p className="text-muted" role="status">
-          Loading the problem…
+          Loading the case…
         </p>
       </>
     );

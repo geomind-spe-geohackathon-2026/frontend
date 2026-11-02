@@ -12,7 +12,7 @@ export function PageHeader({ title, description, actions }: Props) {
           <p className="mt-0.5 max-w-[70ch] text-muted">{description}</p>
         )}
       </div>
-      {actions === undefined ? null : <div className="flex flex-wrap gap-2">{actions}</div>}
+      {actions === undefined ? null : <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }

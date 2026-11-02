@@ -10,7 +10,7 @@ export const designSteps: {
   {
     key: "case",
     number: 1,
-    name: "Problem",
+    name: "Case",
     route: "design/case",
     description: "Demand, site, constraints, prices",
   },

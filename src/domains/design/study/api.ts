@@ -59,7 +59,7 @@ export function useCreateStudy(projectId: string) {
   });
 }
 
-/** Mutation that starts a blocked study once the problem is completed. */
+/** Mutation that starts a blocked study once the case is completed. */
 export function useStartStudy(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({

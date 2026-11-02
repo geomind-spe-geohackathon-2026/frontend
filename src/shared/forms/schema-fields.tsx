@@ -2,12 +2,15 @@ import { Plus, Trash2, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { toChildPath, toFullPath, useFieldContext } from "./field-context";
 import { FieldFrame, isReported } from "./field-frame";
 import {
+  formEntries,
   isLeaf,
   isRecord,
   labelOf,
+  offersChoice,
   pickVariant,
   unitsOf,
   variantsOf,
@@ -23,19 +26,35 @@ export type NodeProps = {
   optional?: boolean;
 };
 
+function TextPart({ id, name, label }: { id?: string; name: string; label: string }) {
+  const { control, setValue } = useFormContext();
+  const value: unknown = useWatch({ control, name });
+  return (
+    <Input
+      {...(id === undefined ? {} : { id })}
+      aria-label={label}
+      placeholder={label.split(" ")[0]}
+      value={typeof value === "string" ? value : ""}
+      onChange={(event) => {
+        const next = event.target.value === "" ? undefined : event.target.value;
+        setValue(name, next, { shouldDirty: true, shouldValidate: true });
+      }}
+    />
+  );
+}
+
 const selectClass =
   "rounded-control border border-border bg-surface px-2 py-[7px] aria-invalid:border-warn";
 
 function SeriesReference({ name, path, label }: NodeProps) {
-  const { control } = useFormContext();
-  const reference: unknown = useWatch({ control, name });
-  const file = isRecord(reference) ? reference : {};
   return (
     <FieldFrame name={name} path={path} label={label}>
       {({ id }) => (
-        <p id={id} className="rounded-control bg-sunken px-2.5 py-[7px]">
-          {String(file.file)} / {String(file.column)} {String(file.unit)}
-        </p>
+        <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)] gap-1">
+          <TextPart id={id} name={`${name}.file`} label={`File of ${label}`} />
+          <TextPart name={`${name}.column`} label={`Column of ${label}`} />
+          <TextPart name={`${name}.unit`} label={`Unit of ${label}`} />
+        </div>
       )}
     </FieldFrame>
   );
@@ -46,15 +65,18 @@ function UnitControl({
   label,
   units,
   invalid,
+  hidden,
 }: {
   name: string;
   label: string;
   units: string[];
   invalid: boolean;
+  hidden: boolean;
 }) {
   const { control, setValue } = useFormContext();
   const unit: unknown = useWatch({ control, name });
   if (units.length === 0) return null;
+  if (hidden) return null;
   return (
     <select
       aria-label={`Unit of ${label}`}
@@ -102,6 +124,7 @@ function QuantityField({ name, path, label, schema }: NodeProps) {
               label={label}
               units={units}
               invalid={invalid || lacksUnit}
+              hidden={!invalid && (!isRecord(quantity) || quantity.value === undefined)}
             />
           </div>
           {lacksUnit ? (
@@ -222,7 +245,7 @@ function OptionalGroup({ name, path, label, children }: NodeProps & { children: 
     isReported(missing, full) || problems.some((problem) => problem.path.startsWith(full));
   return (
     <details
-      open={hasContent(value) || needsAttention}
+      open={hasContent(value) || needsAttention || !path.includes(".")}
       className="rounded-card border border-border p-3"
     >
       <summary className="cursor-pointer text-[12.5px] text-muted">{label}</summary>
@@ -233,7 +256,7 @@ function OptionalGroup({ name, path, label, children }: NodeProps & { children: 
 
 function GroupFields(props: NodeProps) {
   const { name, path, label, schema, optional = false } = props;
-  const entries = Object.entries(schema.properties ?? {});
+  const entries = formEntries(schema);
   const required = new Set(schema.required ?? []);
   const child = ([key, childSchema]: [string, JsonSchema]) => (
     <FieldNode
@@ -273,8 +296,8 @@ function toVariantLabel(variant: JsonSchema): string {
   if (variant.title !== undefined) return variant.title;
   if (isLeaf(variant)) return "Value";
   if (variant.properties?.file !== undefined) return "Series from a file";
-  if (variant.type === "string") return "Text";
-  return "Details";
+  if (variant.type === "string") return "Name of a file";
+  return "Fill in here";
 }
 
 function VariantField(props: NodeProps) {
@@ -285,6 +308,9 @@ function VariantField(props: NodeProps) {
   const fitting = variants.indexOf(pickVariant(props.schema, current));
   const active = chosen ?? Math.max(0, fitting);
   const variant = variants[active] ?? {};
+  if (chosen === null && !offersChoice(props.schema, current)) {
+    return <FieldNode {...props} schema={variant} />;
+  }
   return (
     <div className="flex flex-col gap-2">
       <select

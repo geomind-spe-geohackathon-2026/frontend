@@ -10,7 +10,7 @@ const tones: Record<Tone, string> = {
   warn: "bg-warn-soft text-warn",
   bad: "bg-bad-soft text-bad",
   info: "bg-accent-soft text-accent",
-  off: "bg-sunken text-muted",
+  off: "border border-border bg-surface text-muted",
 };
 
 /** A status chip: the text carries the meaning, the tone only supports it. */

@@ -21,7 +21,7 @@ export function HistoryPanel({ projectId, current }: { projectId: string; curren
   return (
     <Card>
       <table className="w-full border-collapse">
-        <caption className="sr-only">Saved versions of the problem</caption>
+        <caption className="sr-only">Saved versions of the case</caption>
         <thead>
           <tr className="text-left text-muted">
             <th scope="col" className="p-2.5">

@@ -1,44 +1,60 @@
+import {
+  Activity,
+  ChartColumn,
+  ClipboardList,
+  FileText,
+  Files,
+  FlaskConical,
+  Gauge,
+  LayoutDashboard,
+  MessageSquare,
+  ScrollText,
+  Settings,
+  ShieldCheck,
+  Workflow,
+  type LucideIcon,
+} from "lucide-react";
 import type { Project } from "@/shared/api/types";
 
 export type ProgressKey = keyof Project["progress"];
 
-export type NavItem = { to: string; label: string; progress?: ProgressKey };
+export type NavItem = { to: string; label: string; icon: LucideIcon; progress?: ProgressKey };
 
 export type NavGroup = { label: string | null; items: NavItem[]; disabled?: boolean };
 
 export const projectNav: NavGroup[] = [
-  { label: null, items: [{ to: "overview", label: "Overview" }] },
+  { label: null, items: [{ to: "overview", label: "Overview", icon: LayoutDashboard }] },
   {
     label: "Assistant",
     items: [
-      { to: "assistant/chat", label: "Chat" },
-      { to: "assistant/runs", label: "Runs and logs" },
+      { to: "assistant/chat", label: "Chat", icon: MessageSquare },
+      { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
     ],
   },
   {
     label: "Design",
     items: [
-      { to: "design/case", label: "1 Problem", progress: "case" },
-      { to: "design/plant", label: "2 Plant", progress: "plant" },
-      { to: "design/study", label: "3 Study", progress: "study" },
-      { to: "design/results", label: "4 Results", progress: "results" },
-      { to: "design/report", label: "Report", progress: "report" },
+      { to: "design/case", label: "1 Case", progress: "case", icon: ClipboardList },
+      { to: "design/plant", label: "2 Plant", progress: "plant", icon: Workflow },
+      { to: "design/study", label: "3 Study", progress: "study", icon: FlaskConical },
+      { to: "design/results", label: "4 Results", progress: "results", icon: ChartColumn },
+      { to: "design/report", label: "Report", progress: "report", icon: FileText },
     ],
   },
   {
     label: "Operation",
     disabled: true,
     items: [
-      { to: "operation/series", label: "Time series" },
-      { to: "operation/wells", label: "Well performance" },
-      { to: "operation/integrity", label: "Integrity" },
+      { to: "operation/series", label: "Time series", icon: Activity },
+      { to: "operation/wells", label: "Well performance", icon: Gauge },
+      { to: "operation/integrity", label: "Integrity", icon: ShieldCheck },
     ],
   },
 ];
 
 export const projectFooterNav: NavItem[] = [
-  { to: "documents", label: "Documents" },
-  { to: "settings", label: "Project settings" },
+  { to: "documents", label: "Documents", icon: Files },
+  { to: "settings", label: "Project settings", icon: Settings },
 ];
 
 export type Crumb = { label: string; to?: string };

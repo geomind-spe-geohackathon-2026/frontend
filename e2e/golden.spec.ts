@@ -95,7 +95,7 @@ test("golden path", async ({ page }, info) => {
   await page.getByRole("row").nth(1).getByRole("link").first().click();
   await shot(page, mode, "run-log");
 
-  await page.getByRole("link", { name: "1 Problem" }).click();
+  await page.getByRole("link", { name: "1 Case" }).click();
   await expect(page.getByText(/\d+ values? missing/)).toBeVisible();
   await shot(page, mode, "problem-missing");
   if (mode === "mock") await page.getByRole("tab", { name: "Economics" }).click();
@@ -106,7 +106,7 @@ test("golden path", async ({ page }, info) => {
   await expect(page.getByText(/\d+ values? missing/)).toBeHidden();
   await page.getByRole("button", { name: "Save version" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Save version" }).click();
-  await expect(page.getByText(/Problem v\d+ saved/)).toBeVisible();
+  await expect(page.getByText(/Case v\d+ saved/)).toBeVisible();
   await shot(page, mode, "problem-filled");
 
   await page.getByRole("link", { name: "2 Plant" }).click();
@@ -170,7 +170,7 @@ test("a new empty project starts its problem", async ({ page }, info) => {
   await page.goto("/projects");
   await signIn(page, login.email, login.password);
   await createEmpty(page, "پروژه خالی");
-  await page.getByRole("link", { name: "1 Problem" }).click();
-  await page.getByRole("button", { name: "Start the problem" }).click();
-  await expect(page.getByText("Problem v1")).toBeVisible();
+  await page.getByRole("link", { name: "1 Case" }).click();
+  await page.getByRole("button", { name: "Start the case" }).click();
+  await expect(page.getByText("Case v1")).toBeVisible();
 });

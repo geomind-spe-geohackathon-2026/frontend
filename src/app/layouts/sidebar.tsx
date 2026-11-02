@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { projectFooterNav, projectNav, type NavItem } from "@/app/nav";
 import type { Project, ProgressStep } from "@/shared/api/types";
@@ -17,12 +17,22 @@ const dotTone: Record<ProgressStep["state"], string> = {
 const linkClass =
   "flex w-full items-center gap-2 rounded-control px-2 py-1.5 text-left text-text no-underline hover:bg-surface";
 
+function toMissing(step: ProgressStep | undefined): ReactNode {
+  const count = /(\d+) missing/.exec(step?.label ?? "")?.[1];
+  if (count === undefined) return null;
+  return (
+    <span className="rounded-pill bg-warn-soft px-1.5 text-[10.5px] font-medium text-warn">
+      {count}
+    </span>
+  );
+}
+
 function StatusDot({ step }: { step: ProgressStep }) {
   return (
     <>
       <span
         aria-hidden="true"
-        className={cn("ml-auto size-2 flex-none rounded-full", dotTone[step.state])}
+        className={cn("size-2 flex-none rounded-full", dotTone[step.state])}
       />
       <span className="sr-only">{step.label}</span>
     </>
@@ -38,7 +48,9 @@ function Item({ item, project }: { item: NavItem; project: Project }) {
         cn(linkClass, isActive && "bg-accent-soft font-medium text-accent")
       }
     >
-      {item.label}
+      <item.icon aria-hidden="true" className="size-4 flex-none" />
+      <span className="min-w-0 flex-1">{item.label}</span>
+      {toMissing(progress)}
       {progress === undefined ? null : <StatusDot step={progress} />}
     </NavLink>
   );
@@ -51,8 +63,9 @@ function DisabledItem({ item }: { item: NavItem }) {
       disabled
       className={cn(linkClass, "cursor-not-allowed text-muted opacity-70 hover:bg-transparent")}
     >
-      {item.label}
-      <span className="ml-auto rounded-pill border border-border bg-surface px-1.5 py-px text-[10px]">
+      <item.icon aria-hidden="true" className="size-4 flex-none" />
+      <span className="min-w-0 flex-1">{item.label}</span>
+      <span className="rounded-pill border border-border bg-surface px-1.5 py-px text-[10px]">
         later
       </span>
     </button>

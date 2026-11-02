@@ -11,7 +11,9 @@ function join(path: string, name: string): string {
 }
 
 function collect(schema: JsonSchema, value: unknown, path: string, found: string[]): void {
-  const target = variantsOf(schema).length > 0 ? pickVariant(schema, value) : schema;
+  const hasVariants = variantsOf(schema).length > 0;
+  if (hasVariants && value === undefined) return;
+  const target = hasVariants ? pickVariant(schema, value) : schema;
   if (isLeaf(target) || target.properties === undefined) return;
   const required = new Set(target.required ?? []);
   for (const [name, child] of Object.entries(target.properties)) {

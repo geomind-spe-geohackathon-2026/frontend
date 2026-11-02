@@ -87,7 +87,7 @@ describe("shell levels", () => {
     expect(await screen.findByRole("heading", { name: "Overview" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe(`${base}/overview`);
     const sidebar = screen.getByRole("navigation", { name: "Project" });
-    expect(within(sidebar).getByRole("link", { name: /1 Problem/ })).toBeInTheDocument();
+    expect(within(sidebar).getByRole("link", { name: /1 Case/ })).toBeInTheDocument();
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(within(crumbs).getByText("Example district plant")).toBeInTheDocument();
   });
@@ -157,7 +157,7 @@ describe("project routes", () => {
     ["assistant/chat/chat-1", "Chat"],
     ["assistant/runs", "Runs and logs"],
     ["assistant/runs/run-1", "Run log"],
-    ["design/case", "1 · Problem"],
+    ["design/case", "1 · Case"],
     ["design/plant", "2 · Plant"],
     ["design/study", "3 · Study"],
     ["design/results", "4 · Results"],
