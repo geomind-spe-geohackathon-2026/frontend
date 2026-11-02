@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { prune } from "./document";
-import { fieldContext, toFullPath } from "./field-context";
+import { fieldContext } from "./field-context";
 import type { JsonSchema, Problem } from "./json-schema";
-import { findMissing } from "./missing";
 import { createSchemaResolver, formRoot, validateDocument } from "./resolver";
 import { FieldNode } from "./schema-fields";
 
@@ -31,7 +30,6 @@ export function SchemaForm({
     resolver,
     mode: "onTouched",
   });
-  const [current, setCurrent] = useState(initial);
   const { subscribe } = form;
   useEffect(
     () =>
@@ -39,17 +37,12 @@ export function SchemaForm({
         formState: { values: true },
         callback: ({ values }) => {
           const next = prune(values[formRoot]);
-          setCurrent(next);
           onChange(next, validateDocument(schema, next));
         },
       }),
     [subscribe, onChange, schema],
   );
-  const known = useMemo(
-    () => [...missing, ...findMissing(schema, current).map((path) => toFullPath(prefix, path))],
-    [missing, schema, current, prefix],
-  );
-  const context = useMemo(() => ({ prefix, missing: known, problems }), [prefix, known, problems]);
+  const context = useMemo(() => ({ prefix, missing, problems }), [prefix, missing, problems]);
   return (
     <fieldContext.Provider value={context}>
       <FormProvider {...form}>

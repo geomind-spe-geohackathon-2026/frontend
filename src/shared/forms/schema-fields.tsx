@@ -1,12 +1,27 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, TriangleAlert } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/shared/ui/button";
-import { toChildPath } from "./field-context";
-import { FieldFrame } from "./field-frame";
-import { isLeaf, isRecord, labelOf, pickVariant, unitsOf, type JsonSchema } from "./json-schema";
+import { toChildPath, toFullPath, useFieldContext } from "./field-context";
+import { FieldFrame, isReported } from "./field-frame";
+import {
+  isLeaf,
+  isRecord,
+  labelOf,
+  pickVariant,
+  unitsOf,
+  variantsOf,
+  type JsonSchema,
+} from "./json-schema";
 import { ScalarControl } from "./scalar-control";
 
-export type NodeProps = { name: string; path: string; label: string; schema: JsonSchema };
+export type NodeProps = {
+  name: string;
+  path: string;
+  label: string;
+  schema: JsonSchema;
+  optional?: boolean;
+};
 
 const selectClass =
   "rounded-control border border-border bg-surface px-2 py-[7px] aria-invalid:border-warn";
@@ -39,9 +54,7 @@ function UnitControl({
 }) {
   const { control, setValue } = useFormContext();
   const unit: unknown = useWatch({ control, name });
-  const only = units[0];
-  if (units.length <= 1)
-    return only === undefined ? null : <span className="px-1.5 text-muted">{only}</span>;
+  if (units.length === 0) return null;
   return (
     <select
       aria-label={`Unit of ${label}`}
@@ -49,7 +62,10 @@ function UnitControl({
       className={selectClass}
       value={typeof unit === "string" ? unit : ""}
       onChange={(event) => {
-        setValue(name, event.target.value, { shouldDirty: true, shouldValidate: true });
+        setValue(name, event.target.value === "" ? undefined : event.target.value, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
       }}
     >
       {typeof unit === "string" && units.includes(unit) ? null : <option value="" />}
@@ -63,28 +79,38 @@ function UnitControl({
 }
 
 function QuantityField({ name, path, label, schema }: NodeProps) {
-  const { getValues, setValue } = useFormContext();
+  const { control } = useFormContext();
+  const quantity: unknown = useWatch({ control, name });
   const units = unitsOf(schema);
   const valueSchema = schema.properties?.value ?? {};
-  const fillUnit = () => {
-    const existing: unknown = getValues(`${name}.unit`);
-    const first = units[0];
-    if (existing === undefined && first !== undefined) setValue(`${name}.unit`, first);
-  };
+  const lacksUnit =
+    isRecord(quantity) && quantity.value !== undefined && quantity.unit === undefined;
   return (
     <FieldFrame name={name} path={path} label={label}>
       {({ id, invalid, describedBy }) => (
-        <div className="flex items-center gap-1">
-          <ScalarControl
-            id={id}
-            name={`${name}.value`}
-            schema={valueSchema}
-            invalid={invalid}
-            describedBy={describedBy}
-            onFirstValue={fillUnit}
-          />
-          <UnitControl name={`${name}.unit`} label={label} units={units} invalid={invalid} />
-        </div>
+        <>
+          <div className="flex items-center gap-1">
+            <ScalarControl
+              id={id}
+              name={`${name}.value`}
+              schema={valueSchema}
+              invalid={invalid}
+              describedBy={describedBy}
+            />
+            <UnitControl
+              name={`${name}.unit`}
+              label={label}
+              units={units}
+              invalid={invalid || lacksUnit}
+            />
+          </div>
+          {lacksUnit ? (
+            <span className="inline-flex items-center gap-1 text-[12px] text-warn">
+              <TriangleAlert aria-hidden="true" className="size-3.5" />
+              unit missing
+            </span>
+          ) : null}
+        </>
       )}
     </FieldFrame>
   );
@@ -146,8 +172,69 @@ function ListField({ name, path, label, schema }: NodeProps) {
   );
 }
 
-function GroupFields({ name, path, label, schema }: NodeProps) {
+function ChoiceListField({ name, path, label, schema }: NodeProps) {
+  const { control, setValue } = useFormContext();
+  const current: unknown = useWatch({ control, name });
+  const chosen = Array.isArray(current) ? current : [];
+  const options = schema.items?.enum ?? [];
+  const toggle = (option: unknown, checked: boolean) => {
+    const next = checked ? [...chosen, option] : chosen.filter((item) => item !== option);
+    setValue(name, next.length === 0 ? undefined : next, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+  return (
+    <FieldFrame name={name} path={path} label={label}>
+      {({ id }) => (
+        <div id={id} role="group" aria-label={label} className="flex flex-wrap gap-x-3 gap-y-1">
+          {options.map((option) => {
+            const text = String(option);
+            return (
+              <label key={text} className="inline-flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={chosen.includes(option)}
+                  onChange={(event) => {
+                    toggle(option, event.target.checked);
+                  }}
+                />
+                {text}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </FieldFrame>
+  );
+}
+
+function hasContent(value: unknown): boolean {
+  return isRecord(value) ? Object.keys(value).length > 0 : value !== undefined;
+}
+
+function OptionalGroup({ name, path, label, children }: NodeProps & { children: ReactNode }) {
+  const { control } = useFormContext();
+  const { prefix, missing, problems } = useFieldContext();
+  const value: unknown = useWatch({ control, name });
+  const full = toFullPath(prefix, path);
+  const needsAttention =
+    isReported(missing, full) || problems.some((problem) => problem.path.startsWith(full));
+  return (
+    <details
+      open={hasContent(value) || needsAttention}
+      className="rounded-card border border-border p-3"
+    >
+      <summary className="cursor-pointer text-[12.5px] text-muted">{label}</summary>
+      <div className="mt-2.5 flex flex-col gap-2.5">{children}</div>
+    </details>
+  );
+}
+
+function GroupFields(props: NodeProps) {
+  const { name, path, label, schema, optional = false } = props;
   const entries = Object.entries(schema.properties ?? {});
+  const required = new Set(schema.required ?? []);
   const child = ([key, childSchema]: [string, JsonSchema]) => (
     <FieldNode
       key={key}
@@ -155,6 +242,7 @@ function GroupFields({ name, path, label, schema }: NodeProps) {
       path={toChildPath(path, key)}
       label={labelOf(key, childSchema)}
       schema={childSchema}
+      optional={!required.has(key)}
     />
   );
   const isInline = (childSchema: JsonSchema) =>
@@ -172,6 +260,7 @@ function GroupFields({ name, path, label, schema }: NodeProps) {
     </>
   );
   if (path === "") return <div className="flex flex-col gap-3">{body}</div>;
+  if (optional) return <OptionalGroup {...props}>{body}</OptionalGroup>;
   return (
     <fieldset className="flex flex-col gap-2.5 rounded-card border border-border p-3">
       <legend className="px-1 text-[12.5px] text-muted">{label}</legend>
@@ -180,17 +269,57 @@ function GroupFields({ name, path, label, schema }: NodeProps) {
   );
 }
 
+function toVariantLabel(variant: JsonSchema): string {
+  if (variant.title !== undefined) return variant.title;
+  if (isLeaf(variant)) return "Value";
+  if (variant.properties?.file !== undefined) return "Series from a file";
+  if (variant.type === "string") return "Text";
+  return "Details";
+}
+
+function VariantField(props: NodeProps) {
+  const { control, setValue } = useFormContext();
+  const current: unknown = useWatch({ control, name: props.name });
+  const [chosen, setChosen] = useState<number | null>(null);
+  const variants = variantsOf(props.schema);
+  const fitting = variants.indexOf(pickVariant(props.schema, current));
+  const active = chosen ?? Math.max(0, fitting);
+  const variant = variants[active] ?? {};
+  return (
+    <div className="flex flex-col gap-2">
+      <select
+        aria-label={`Form of ${props.label === "" ? "the value" : props.label}`}
+        className={selectClass}
+        value={active}
+        onChange={(event) => {
+          setChosen(Number(event.target.value));
+          setValue(props.name, undefined, { shouldDirty: true, shouldValidate: true });
+        }}
+      >
+        {variants.map((option, index) => (
+          <option key={toVariantLabel(option)} value={index}>
+            {toVariantLabel(option)}
+          </option>
+        ))}
+      </select>
+      <FieldNode {...props} schema={variant} />
+    </div>
+  );
+}
+
 /** Draws the right control for a schema node: quantity, scalar, series reference, group or list. */
 export function FieldNode(props: NodeProps) {
-  const { control } = useFormContext();
-  const current: unknown = useWatch({ control, name: props.name });
-  const schema = pickVariant(props.schema, current);
-  const shown = { ...props, schema };
+  if (variantsOf(props.schema).length > 1) return <VariantField {...props} />;
+  const shown = { ...props, schema: pickVariant(props.schema, undefined) };
+  const { schema } = shown;
   if (isLeaf(schema)) return <QuantityField {...shown} />;
   if (schema.properties?.file !== undefined) return <SeriesReference {...shown} />;
   if (schema.properties !== undefined) return <GroupFields {...shown} />;
   if (schema.type === "array" && isRecord(schema.items) && schema.items.properties !== undefined) {
     return <ListField {...shown} />;
+  }
+  if (schema.type === "array" && schema.items?.enum !== undefined) {
+    return <ChoiceListField {...shown} />;
   }
   if (
     schema.enum !== undefined ||

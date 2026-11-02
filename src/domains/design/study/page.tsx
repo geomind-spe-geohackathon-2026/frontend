@@ -5,9 +5,10 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/shared/ui/button";
 import { Notice } from "@/shared/ui/notice";
-import { studiesQuery, useCancelStudy, useStartStudy } from "./api";
+import { hasActiveStudy, studiesQuery, useCancelStudy, useStartStudy } from "./api";
 import { NewStudyDialog } from "./new-study-dialog";
 import { StudyTable } from "./study-table";
+import { useRefreshOnFinish } from "./use-refresh-on-finish";
 
 /** The 3 · Study page: studies of the project with progress, status, result links and a New study dialog. */
 export function StudyPage() {
@@ -18,6 +19,7 @@ export function StudyPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const items = toItems(studies.data?.pages);
   const mutationError = start.error ?? cancel.error;
+  useRefreshOnFinish(projectId, hasActiveStudy(items));
 
   return (
     <>

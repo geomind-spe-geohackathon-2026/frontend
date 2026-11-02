@@ -17,22 +17,77 @@ describe("SchemaForm", () => {
     expect(container.querySelectorAll("form")).toHaveLength(1);
   });
 
-  it("shows a label, a unit and a missing mark for an empty required quantity", () => {
-    render(<SchemaForm schema={siteSchema} initial={{}} onChange={vi.fn()} prefix="site" />);
+  it("marks a field missing only when gemini reports its path", () => {
+    render(
+      <SchemaForm
+        schema={siteSchema}
+        initial={{}}
+        onChange={vi.fn()}
+        prefix="site"
+        missing={["site.ground.gradient.value"]}
+      />,
+    );
     expect(screen.getByLabelText("Gradient")).toHaveValue(null);
     expect(screen.getByRole("combobox", { name: "Unit of Gradient" })).toHaveValue("");
-    expect(screen.getByText("missing")).toBeVisible();
+    expect(screen.getAllByText("missing")).toHaveLength(1);
   });
 
-  it("reports the typed value with the first unit and drops the missing mark", async () => {
+  it("marks nothing missing when gemini reports nothing", () => {
+    render(<SchemaForm schema={siteSchema} initial={{}} onChange={vi.fn()} prefix="site" />);
+    expect(screen.queryByText("missing")).toBeNull();
+  });
+
+  it("does not choose a unit when a value is typed, and shows the unit as missing", async () => {
     const onChange = vi.fn();
     render(<SchemaForm schema={siteSchema} initial={{}} onChange={onChange} prefix="site" />);
     await userEvent.type(screen.getByLabelText("Gradient"), "30");
-    expect(onChange).toHaveBeenLastCalledWith(
-      { ground: { gradient: { value: 30, unit: "K/km" } } },
-      [],
+    expect(onChange).toHaveBeenLastCalledWith({ ground: { gradient: { value: 30 } } }, []);
+    expect(screen.getByRole("combobox", { name: "Unit of Gradient" })).toHaveValue("");
+    expect(screen.getByText("unit missing")).toBeVisible();
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: "Unit of Gradient" }),
+      "K/km",
     );
+    expect(screen.queryByText("unit missing")).toBeNull();
+  });
+
+  it("keeps an optional group collapsed until it has a value or gemini reports a gap in it", () => {
+    const schema = {
+      type: "object",
+      required: [],
+      properties: {
+        extra: {
+          type: "object",
+          required: ["kind"],
+          properties: { kind: { enum: ["uniform", "normal"] } },
+        },
+      },
+    };
+    const { rerender } = render(<SchemaForm schema={schema} initial={{}} onChange={vi.fn()} />);
+    expect(screen.getByText("Extra").closest("details")).not.toHaveAttribute("open");
     expect(screen.queryByText("missing")).toBeNull();
+    rerender(
+      <SchemaForm schema={schema} initial={{}} onChange={vi.fn()} missing={["extra.kind"]} />,
+    );
+    expect(screen.getByText("Extra").closest("details")).toHaveAttribute("open");
+  });
+
+  it("lets the user choose between the alternatives of an anyOf and fills the chosen one", async () => {
+    const onChange = vi.fn();
+    render(
+      <SchemaForm
+        schema={exampleCaseSchema.properties?.economics ?? {}}
+        initial={undefined}
+        onChange={onChange}
+        prefix="economics"
+      />,
+    );
+    const choice = screen.getByRole("combobox", { name: "Form of the value" });
+    await userEvent.selectOptions(choice, "Details");
+    expect(screen.getByLabelText("Discount rate")).toBeVisible();
+    await userEvent.selectOptions(choice, "Text");
+    await userEvent.type(screen.getByRole("textbox"), "economics.json");
+    expect(onChange).toHaveBeenLastCalledWith("economics.json", []);
   });
 
   it("shows a server problem next to its field", () => {
@@ -46,6 +101,19 @@ describe("SchemaForm", () => {
       />,
     );
     expect(screen.getByText("unit is not a gradient")).toBeVisible();
+  });
+
+  it("offers a list of choices as checkboxes and reports the chosen ones", async () => {
+    const schema = {
+      type: "object",
+      properties: {
+        metrics: { type: "array", minItems: 1, items: { type: "string", enum: ["lcts", "co2"] } },
+      },
+    };
+    const onChange = vi.fn();
+    render(<SchemaForm schema={schema} initial={{}} onChange={onChange} />);
+    await userEvent.click(screen.getByRole("checkbox", { name: "co2" }));
+    expect(onChange).toHaveBeenLastCalledWith({ metrics: ["co2"] }, []);
   });
 
   it("adds and removes list items", async () => {

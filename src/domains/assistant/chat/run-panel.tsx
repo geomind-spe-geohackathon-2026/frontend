@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toShortId } from "@/lib/shortid";
 import type { Run } from "@/shared/api/types";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
@@ -59,7 +60,7 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
       <Card>
         <CardBody className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-muted">Run {runId}</span>
+            <span className="text-muted">Run {toShortId(runId)}</span>
             <RunStatusChip status={status} />
           </div>
           {run === undefined ? null : (

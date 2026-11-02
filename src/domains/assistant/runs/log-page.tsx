@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
+import { toShortId } from "@/lib/shortid";
 import { useRequiredParam } from "@/shared/layout/params";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Quantity } from "@/shared/quantity/quantity";
@@ -62,7 +63,7 @@ function LogHeader({ projectId, run }: { projectId: string; run: Run }) {
         All runs
       </Link>
       <PageHeader
-        title={`Run ${run.id}`}
+        title={`Run ${toShortId(run.id)}`}
         actions={
           <>
             <Button
