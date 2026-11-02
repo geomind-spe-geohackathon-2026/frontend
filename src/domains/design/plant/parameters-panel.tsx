@@ -14,13 +14,16 @@ import {
   type FieldEdit,
   type ParameterField,
 } from "./parameter-fields";
+import { toRanges, type RangeEdit } from "./parameter-range";
 import { ParameterRow } from "./parameter-row";
 import type { Parameters } from "@/shared/api/types";
 
 export type ParameterDraft = {
   module: string;
   edits: Record<string, FieldEdit>;
+  rangeEdits: Record<string, RangeEdit>;
   params: Record<string, unknown>;
+  ranges: ReturnType<typeof toRanges>;
   blocked: boolean;
 };
 
@@ -40,22 +43,27 @@ type RowsProps = {
   fields: ParameterField[];
   data: Parameters;
   edits: Record<string, FieldEdit>;
+  rangeEdits: Record<string, RangeEdit>;
   onEdit: (name: string, edit: FieldEdit | null) => void;
+  onRange: (name: string, edit: RangeEdit | null) => void;
 };
 
 function toDraft(
   module: string,
   fields: ParameterField[],
   edits: Record<string, FieldEdit>,
+  rangeEdits: Record<string, RangeEdit>,
 ): ParameterDraft | null {
   const results = Object.entries(edits).flatMap(([name, edit]) => {
     const field = fields.find((item) => item.name === name);
     return field === undefined ? [] : [[name, toFieldResult(field, edit)] as const];
   });
-  if (results.length === 0) return null;
+  if (results.length === 0 && Object.keys(rangeEdits).length === 0) return null;
   return {
     module,
     edits,
+    rangeEdits,
+    ranges: toRanges(rangeEdits),
     params: Object.fromEntries(results.map(([name, result]) => [name, result.value])),
     blocked: results.some(([, result]) => result.problem !== null),
   };
@@ -66,7 +74,12 @@ function toServerMessage(error: ApiError): string {
   return typeof detail === "string" ? detail : `${error.code}: ${error.message}`;
 }
 
-function ParameterRows({ fields, data, edits, onEdit }: RowsProps) {
+function withEdit<Edit>(edits: Record<string, Edit>, name: string, edit: Edit | null) {
+  const others = Object.fromEntries(Object.entries(edits).filter(([key]) => key !== name));
+  return edit === null ? others : { ...others, [name]: edit };
+}
+
+function ParameterRows({ fields, data, edits, rangeEdits, onEdit, onRange }: RowsProps) {
   return (
     <div className="flex flex-col gap-3">
       {fields.map((field) => (
@@ -77,6 +90,9 @@ function ParameterRows({ fields, data, edits, onEdit }: RowsProps) {
           edit={edits[field.name]}
           isMissing={data.missing.includes(field.local)}
           searchable={data.ranges.includes(field.local)}
+          search={data.search[field.local]}
+          rangeEdit={rangeEdits[field.name]}
+          onRange={onRange}
           onEdit={onEdit}
         />
       ))}
@@ -97,7 +113,9 @@ function GroupRows({ projectId, path, ...rows }: GroupProps) {
 
 function ParameterGroup({ group, ...props }: GroupProps & { group: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const isEdited = props.fields.some((field) => props.edits[field.name] !== undefined);
+  const isEdited = props.fields.some(
+    (field) => props.edits[field.name] !== undefined || props.rangeEdits[field.name] !== undefined,
+  );
   return (
     <details
       className="rounded-card border border-border p-2.5"
@@ -123,7 +141,8 @@ function useParameterSave(props: Props, edited: ParameterDraft | null) {
   const [isNoting, setIsNoting] = useState(false);
   const submit = (note: string) => {
     if (edited === null) return;
-    const input = { base: props.version, module: props.moduleId, params: edited.params, note };
+    const { params, ranges } = edited;
+    const input = { base: props.version, module: props.moduleId, params, ranges, note };
     save.mutate(input, {
       onSuccess: (saved) => {
         setIsNoting(false);
@@ -139,22 +158,32 @@ function useParameterSave(props: Props, edited: ParameterDraft | null) {
   return { save, isNoting, setIsNoting, submit };
 }
 
-function ParameterEditor(props: EditorProps) {
-  const { moduleId, draft, onDraft, data } = props;
+function useDraftEdits(props: EditorProps, fields: ParameterField[]) {
+  const { moduleId, draft, onDraft } = props;
   const edited = draft?.module === moduleId ? draft : null;
   const edits = edited?.edits ?? {};
-  const fields = toParameterFields(data.schema);
-  const { save, isNoting, setIsNoting, submit } = useParameterSave(props, edited);
-  const handleEdit = (name: string, edit: FieldEdit | null) => {
-    const others = Object.fromEntries(Object.entries(edits).filter(([key]) => key !== name));
-    onDraft(toDraft(moduleId, fields, edit === null ? others : { ...others, [name]: edit }));
+  const rangeEdits = edited?.rangeEdits ?? {};
+  const onEdit = (name: string, edit: FieldEdit | null) => {
+    const next = withEdit(edits, name, edit);
+    onDraft(toDraft(moduleId, fields, next, rangeEdits));
   };
+  const onRange = (name: string, edit: RangeEdit | null) => {
+    onDraft(toDraft(moduleId, fields, edits, withEdit(rangeEdits, name, edit)));
+  };
+  return { edited, rows: { edits, rangeEdits, onEdit, onRange } };
+}
+
+function ParameterEditor(props: EditorProps) {
+  const { moduleId, data } = props;
+  const fields = toParameterFields(data.schema);
+  const { edited, rows } = useDraftEdits(props, fields);
+  const { save, isNoting, setIsNoting, submit } = useParameterSave(props, edited);
   const cannotSave = edited === null || edited.blocked || props.structureDirty || save.isPending;
   if (fields.length === 0) return <p className="text-muted">This module has no parameters.</p>;
   const own = fields.filter((field) => field.group === "");
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      <ParameterRows fields={own} data={data} edits={edits} onEdit={handleEdit} />
+      <ParameterRows fields={own} data={data} {...rows} />
       {toGroups(fields).map((group) => (
         <ParameterGroup
           key={group}
@@ -162,8 +191,7 @@ function ParameterEditor(props: EditorProps) {
           projectId={props.projectId}
           path={`${moduleId}.${group}`}
           fields={fields.filter((field) => field.group === group)}
-          edits={edits}
-          onEdit={handleEdit}
+          {...rows}
         />
       ))}
       {save.error instanceof ApiError ? (

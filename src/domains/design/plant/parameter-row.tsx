@@ -2,6 +2,10 @@ import { TriangleAlert } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { toFieldResult, toFieldText, toRangeText } from "./parameter-fields";
 import type { FieldEdit, ParameterField } from "./parameter-fields";
+import { ParameterRange, type RangeEdit } from "./parameter-range";
+import type { Parameters } from "@/shared/api/types";
+
+type Search = Parameters["search"][string];
 
 type Props = {
   field: ParameterField;
@@ -9,7 +13,10 @@ type Props = {
   edit: FieldEdit | undefined;
   isMissing: boolean;
   searchable: boolean;
+  search: Search | undefined;
+  rangeEdit: RangeEdit | undefined;
   onEdit: (name: string, edit: FieldEdit | null) => void;
+  onRange: (name: string, edit: RangeEdit | null) => void;
 };
 
 const selectClass =
@@ -130,7 +137,8 @@ function Notes({ field, searchable }: { field: ParameterField; searchable: boole
 }
 
 /** One module parameter: its value, its unit, the allowed range and gemini's description. */
-export function ParameterRow({ field, stored, edit, isMissing, searchable, onEdit }: Props) {
+export function ParameterRow(props: Props) {
+  const { field, stored, edit, isMissing, searchable, search, rangeEdit, onEdit, onRange } = props;
   const storedText = toFieldText(field, stored);
   const text = edit?.text ?? storedText;
   const unit = edit?.unit ?? field.unit;
@@ -178,7 +186,10 @@ export function ParameterRow({ field, stored, edit, isMissing, searchable, onEdi
           {problem === null ? null : <span className="text-bad">{problem}</span>}
         </p>
       ) : null}
-      <Notes field={field} searchable={searchable} />
+      <Notes field={field} searchable={searchable && search === undefined} />
+      {search === undefined ? null : (
+        <ParameterRange field={field} search={search} edit={rangeEdit} onEdit={onRange} />
+      )}
     </div>
   );
 }

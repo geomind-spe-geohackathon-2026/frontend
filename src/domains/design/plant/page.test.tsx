@@ -47,7 +47,8 @@ const geminiParameters = {
   },
   values: { dispatch: null, thermal_conductance: 1500, pressure_drop: null },
   missing: [],
-  ranges: ["thermal_conductance"],
+  ranges: ["thermal_conductance", "pressure_drop"],
+  search: { thermal_conductance: { min: 500, max: 2000, unit: "W/K" } },
   history: [],
 };
 
@@ -160,11 +161,43 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(screen.getByText("missing")).toBeVisible();
   });
 
-  it("says which values a study can search", async () => {
+  it("says which values a study can search, and shows the range of those that have a value", async () => {
     server.use(http.get("*/api/v1/plant/parameters", () => HttpResponse.json(geminiParameters)));
     renderApp({ path: `${withPlant}?module=hx` });
     const hints = await screen.findAllByText("A study can search this value.", {}, slow);
     expect(hints).toHaveLength(1);
+    const low = screen.getByRole("spinbutton", { name: /^Min of the search range/ });
+    expect(low).toHaveValue(500);
+  });
+
+  it("saves an edited search range, and clearing both ends removes it", async () => {
+    const saved: unknown[] = [];
+    server.use(
+      http.get("*/api/v1/plant/parameters", () => HttpResponse.json(geminiParameters)),
+      http.post("*/api/v1/plant/parameters", async ({ request }) => {
+        saved.push(await request.json());
+        return HttpResponse.json(
+          { error: { code: "conflict", message: "newer", details: { latest: 4 } } },
+          { status: 409 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderApp({ path: `${withPlant}?module=hx` });
+    const low = await screen.findByRole("spinbutton", { name: /^Min of the search/ }, slow);
+    const high = screen.getByRole("spinbutton", { name: /^Max of the search/ });
+    await user.clear(low);
+    await user.clear(high);
+    await user.click(screen.getByRole("button", { name: "Save parameters" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.type(within(dialog).getByRole("textbox"), "open");
+    await user.click(within(dialog).getByRole("button", { name: /Save/ }));
+    await waitFor(() => {
+      expect(saved).toHaveLength(1);
+    });
+    expect(saved[0]).toMatchObject({
+      ranges: { thermal_conductance: { min: null, max: null } },
+    });
   });
 
   it("draws gemini's parameters as value, unit and range, never as a form chooser", async () => {

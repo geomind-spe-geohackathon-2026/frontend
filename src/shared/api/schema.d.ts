@@ -1699,6 +1699,10 @@ export interface components {
             schema: {
                 [key: string]: unknown;
             };
+            /** Search */
+            search: {
+                [key: string]: components["schemas"]["SearchRange"];
+            };
             /** Type */
             type: string;
             /** Values */
@@ -1741,6 +1745,13 @@ export interface components {
              * Format: uuid
              */
             project: string;
+            /**
+             * Ranges
+             * @default {}
+             */
+            ranges: {
+                [key: string]: components["schemas"]["RangeUpdate"];
+            };
             /** Valid From */
             valid_from?: string | null;
         };
@@ -1821,6 +1832,13 @@ export interface components {
             budget?: components["schemas"]["Budget"] | null;
             /** Name */
             name?: string | null;
+        };
+        /** RangeUpdate */
+        RangeUpdate: {
+            /** Max */
+            max?: number | null;
+            /** Min */
+            min?: number | null;
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -2049,6 +2067,15 @@ export interface components {
             answer: components["schemas"]["Approval"] | components["schemas"]["Reply"];
             /** Request */
             request: string;
+        };
+        /** SearchRange */
+        SearchRange: {
+            /** Max */
+            max: number | null;
+            /** Min */
+            min: number | null;
+            /** Unit */
+            unit: string | null;
         };
         /** Series */
         Series: {
