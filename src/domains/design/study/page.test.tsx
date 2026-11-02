@@ -41,8 +41,8 @@ describe("StudyPage", () => {
     expect(create).toBeDisabled();
     await user.selectOptions(await within(dialog).findByLabelText("Kind"), "size");
     await user.type(within(dialog).getByLabelText("Name"), "My study");
-    await user.type(within(dialog).getByLabelText("Number of runs *"), "5");
-    expect(within(dialog).getByLabelText("Horizon (a)")).toHaveValue(null);
+    await user.type(within(dialog).getByLabelText("Number of runs"), "5");
+    expect(within(dialog).getByLabelText(/^Horizon/)).toHaveValue(null);
     await user.click(create);
     expect(await screen.findByRole("row", { name: /My study/ })).toBeVisible();
   });

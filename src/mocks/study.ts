@@ -1,9 +1,10 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { NewStudy, SettingsSchema, Study, StudyKind, StudyList } from "@/shared/api/design";
+import type { NewStudy, Study, StudyKind, StudyList } from "@/shared/api/design";
+import type { JsonSchema } from "@/shared/forms/json-schema";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
 
-const exampleSettings: SettingsSchema = {
+const exampleSettings: JsonSchema = {
   title: "Example study settings",
   required: ["runs"],
   properties: {

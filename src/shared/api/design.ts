@@ -1,3 +1,5 @@
+import type { JsonSchema } from "@/shared/forms/json-schema";
+
 export type StudyStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked";
 
 export type MissingInput = { path: string; message: string };
@@ -22,25 +24,11 @@ export type Study = {
 
 export type StudyList = { items: Study[]; next: string | null };
 
-export type SchemaProperty = {
-  type?: "number" | "integer" | "string" | "boolean";
-  title?: string;
-  description?: string;
-  unit?: string;
-  enum?: string[];
-};
-
-export type SettingsSchema = {
-  title?: string;
-  properties?: Record<string, SchemaProperty>;
-  required?: string[];
-};
-
 export type StudyKind = {
   kind: string;
   title: string;
   description: string;
-  schema: SettingsSchema;
+  schema: JsonSchema;
 };
 
 export type NewStudy = {

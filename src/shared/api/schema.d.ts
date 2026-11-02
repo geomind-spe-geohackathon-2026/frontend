@@ -73,6 +73,9 @@ export interface components {
       loop: string;
       started: string;
       ended: string | null;
+      usage: { input_tokens: number; output_tokens: number; cost: number };
+      request: unknown;
+      error: { code: string; message: string } | null;
     };
     RunList: { items: components["schemas"]["Run"][]; next: string | null };
   };

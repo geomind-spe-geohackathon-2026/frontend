@@ -4,8 +4,9 @@ import { DialogClose } from "@/shared/ui/dialog";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Notice } from "@/shared/ui/notice";
-import { toUnfilled, type RawSettings } from "./settings";
-import { SettingsForm } from "./settings-form";
+import { SchemaForm } from "@/shared/forms/schema-form";
+import { isRecord, type Problem } from "@/shared/forms/json-schema";
+import { findMissing } from "@/shared/forms/missing";
 import type { NewStudy, StudyKind } from "@/shared/api/design";
 
 type Props = {
@@ -46,25 +47,47 @@ function KindSelect({
   );
 }
 
+function NameField({ value, onValue }: { value: string; onValue: (value: string) => void }) {
+  return (
+    <Field label="Name" htmlFor="study-name">
+      <Input
+        id="study-name"
+        value={value}
+        onChange={(event) => {
+          onValue(event.target.value);
+        }}
+      />
+    </Field>
+  );
+}
+
 /** The body of the New study dialog: kind, name and the settings its schema asks for. */
 export function NewStudyForm({ projectId, kinds, error, pending, onSubmit }: Props) {
   const [kind, setKind] = useState("");
   const [name, setName] = useState("");
-  const [settings, setSettings] = useState<Record<string, unknown>>({});
-  const [raw, setRaw] = useState<RawSettings>({});
+  const [value, setValue] = useState<unknown>({});
+  const [problems, setProblems] = useState<Problem[]>([]);
   const selected = kinds.find((entry) => entry.kind === kind) ?? null;
   const ready =
-    selected !== null && name.trim() !== "" && toUnfilled(selected.schema, raw).length === 0;
+    selected !== null &&
+    name.trim() !== "" &&
+    problems.length === 0 &&
+    findMissing(selected.schema, value).length === 0;
 
   function handleKind(next: string): void {
     setKind(next);
-    setSettings({});
-    setRaw({});
+    setValue({});
+    setProblems([]);
   }
 
   function handleSubmit(): void {
     if (!ready) return;
-    onSubmit({ project: projectId, kind, name: name.trim(), settings });
+    onSubmit({
+      project: projectId,
+      kind,
+      name: name.trim(),
+      settings: isRecord(value) ? value : {},
+    });
   }
 
   return (
@@ -77,22 +100,15 @@ export function NewStudyForm({ projectId, kinds, error, pending, onSubmit }: Pro
     >
       <KindSelect kinds={kinds} value={kind} onValue={handleKind} />
       {selected === null ? null : <p className="text-muted">{selected.description}</p>}
-      <Field label="Name" htmlFor="study-name">
-        <Input
-          id="study-name"
-          value={name}
-          onChange={(event) => {
-            setName(event.target.value);
-          }}
-        />
-      </Field>
+      <NameField value={name} onValue={setName} />
       {selected === null ? null : (
-        <SettingsForm
+        <SchemaForm
           key={selected.kind}
           schema={selected.schema}
-          onChange={(nextSettings, nextRaw) => {
-            setSettings(nextSettings);
-            setRaw(nextRaw);
+          initial={{}}
+          onChange={(nextValue, nextProblems) => {
+            setValue(nextValue);
+            setProblems(nextProblems);
           }}
         />
       )}
