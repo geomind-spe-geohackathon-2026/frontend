@@ -53,14 +53,9 @@ export function SchemaForm({
   return (
     <fieldContext.Provider value={context}>
       <FormProvider {...form}>
-        <form
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault();
-          }}
-        >
+        <div>
           <FieldNode name={formRoot} path="" label="" schema={schema} />
-        </form>
+        </div>
       </FormProvider>
     </fieldContext.Provider>
   );

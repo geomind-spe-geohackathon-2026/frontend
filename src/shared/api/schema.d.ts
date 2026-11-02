@@ -1043,6 +1043,8 @@ export interface components {
             content: {
                 [key: string]: unknown;
             };
+            /** Project */
+            project?: string | null;
         };
         /** CaseCreate */
         CaseCreate: {

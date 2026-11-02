@@ -7,6 +7,16 @@ import { SchemaForm } from "./schema-form";
 const siteSchema = exampleCaseSchema.properties?.site ?? {};
 
 describe("SchemaForm", () => {
+  it("renders no form element, so it can sit inside a form", () => {
+    const { container } = render(
+      <form>
+        <SchemaForm schema={siteSchema} initial={{}} onChange={vi.fn()} prefix="site" />
+      </form>,
+    );
+    expect(container.querySelectorAll("form form")).toHaveLength(0);
+    expect(container.querySelectorAll("form")).toHaveLength(1);
+  });
+
   it("shows a label, a unit and a missing mark for an empty required quantity", () => {
     render(<SchemaForm schema={siteSchema} initial={{}} onChange={vi.fn()} prefix="site" />);
     expect(screen.getByLabelText("Gradient")).toHaveValue(null);

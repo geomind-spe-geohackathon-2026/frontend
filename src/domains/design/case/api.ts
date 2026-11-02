@@ -10,7 +10,8 @@ export const caseKeys = {
   versions: (projectId: string) => [...caseKeys.all(projectId), "versions"] as const,
   series: (projectId: string, version: number) =>
     [...caseKeys.all(projectId), "series", version] as const,
-  validation: (content: CaseContent) => ["case", "validation", content] as const,
+  validation: (projectId: string, content: CaseContent) =>
+    ["case", "validation", projectId, content] as const,
 };
 
 /** Query options for the latest case of a project; a 404 case_not_found means it has none yet. */
@@ -53,11 +54,13 @@ export const caseSeriesQuery = (projectId: string, version: number) =>
   });
 
 /** Query options for the server check of a draft; it keeps the last answer while a new one loads. */
-export const caseValidationQuery = (content: CaseContent, enabled: boolean) =>
+export const caseValidationQuery = (projectId: string, content: CaseContent, enabled: boolean) =>
   queryOptions({
-    queryKey: caseKeys.validation(content),
+    queryKey: caseKeys.validation(projectId, content),
     queryFn: async ({ signal }) =>
-      toData(await api.POST("/design/case/validate", { body: { content }, signal })),
+      toData(
+        await api.POST("/design/case/validate", { body: { content, project: projectId }, signal }),
+      ),
     enabled,
     placeholderData: keepPreviousData,
   });

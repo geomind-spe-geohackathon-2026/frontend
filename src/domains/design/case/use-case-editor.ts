@@ -29,7 +29,7 @@ export function useCaseEditor(saved: Case) {
   const content = state.draft ?? saved.content;
   const dirty = state.draft !== null && !isEqualDocument(state.draft, saved.content);
   const settled = useDebouncedValue(content, validationDelayMs);
-  const checked = useQuery(caseValidationQuery(settled, dirty));
+  const checked = useQuery(caseValidationQuery(saved.project, settled, dirty));
   const server = dirty ? checked.data : saved;
   const formProblems = Object.entries(state.sectionProblems).flatMap(([section, problems]) =>
     prefixed(section, problems),
