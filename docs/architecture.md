@@ -46,6 +46,8 @@ Pages are lazy loaded. A feature fills its own `page.tsx` and keeps the exported
 
 `src/shared/api/schema.d.ts` is generated. Until the backend writes `openapi.json` it is a small hand-kept placeholder. The script strips an `/api/v1` prefix from path keys, so both spellings work. API type names are mapped in one place, `shared/api/types.ts`.
 
+Until `gen:api` runs, a domain may declare the contract routes that the placeholder lacks in `domains/<domain>/paths.ts` with `declare module "@/shared/api/schema"` (interface merging; use a path key not yet in the placeholder, for example `{id}` instead of `{project_id}`). Mocks derive their body types from `paths`, because mocks may not import features. Remove these files after the first real generation.
+
 ## Mock and real mode
 
 `VITE_API_MODE=mock|real`. Mock is the default only in `npm run dev`; `main.tsx` imports `mocks/browser` behind `import.meta.env.DEV`, so a production build drops MSW and the fixtures, and `scripts/check-bundle.mjs` (part of `npm run build`) fails if they come back.
