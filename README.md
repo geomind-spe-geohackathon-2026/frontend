@@ -17,6 +17,17 @@ The golden path runs in both modes with `npm run e2e`. The real project needs th
 
 A production build (`npm run build`) always uses the real API and contains no mock code; the build fails if it does.
 
+## Docker
+
+`compose.yml` builds the app and serves it with nginx behind the Traefik of `../infrastructure`, at `https://geomind.team`. It needs the external `traefik` network.
+
+```
+docker compose config -q
+docker compose up -d --build
+```
+
+The API address is `VITE_API_URL` in `.env.production`, which only `vite build` reads, so `npm run dev` keeps its local proxy. Rebuild the image after changing it.
+
 ## Commands
 
 | Command           | What it does                                                                                        |
