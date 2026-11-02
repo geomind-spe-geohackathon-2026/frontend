@@ -7,7 +7,8 @@ export type SeriesSource = {
   time: unknown;
   uploadBlocked: boolean;
   read: (file: string) => Promise<string>;
-  upload: (file: File) => void;
+  upload: (file: File, field: string) => void;
+  takePicked: (field: string) => string | undefined;
 };
 
 export type FieldContext = {
@@ -16,6 +17,8 @@ export type FieldContext = {
   problems: readonly Problem[];
   series?: SeriesSource | undefined;
   describeItem?: ((item: unknown) => string | null) | undefined;
+  hints?: Record<string, string> | undefined;
+  hideRange?: boolean | undefined;
 };
 
 export const fieldContext = createContext<FieldContext>({ prefix: "", missing: [], problems: [] });

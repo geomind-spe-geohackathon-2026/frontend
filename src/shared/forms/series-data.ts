@@ -2,7 +2,6 @@ import { isRecord } from "./json-schema";
 
 export type SeriesPoint = { time: string; value: number };
 export type SeriesTable = { columns: string[]; rows: string[][] };
-export type SeriesStats = { count: number; peak: number; low: number; hours: number; sum: number };
 
 const timeColumn = /^(time|date|datetime|timestamp)$/i;
 
@@ -27,26 +26,6 @@ export function toPoints(table: SeriesTable, column: string): SeriesPoint[] {
     const value = Number(row[index]);
     return Number.isNaN(value) ? [] : [{ time: row[Math.max(time, 0)] ?? "", value }];
   });
-}
-
-function stepHours(points: SeriesPoint[]): number {
-  const [first, second] = points;
-  if (first === undefined || second === undefined) return 0;
-  return (Date.parse(second.time) - Date.parse(first.time)) / 3_600_000;
-}
-
-/** Sums up a series: peak, lowest value, count, and the sum over time at its own step. */
-export function toStats(points: SeriesPoint[]): SeriesStats {
-  const values = points.map((point) => point.value);
-  const hours = stepHours(points);
-  const sum = values.reduce((total, value) => total + value, 0) * (Number.isNaN(hours) ? 0 : hours);
-  return {
-    count: values.length,
-    peak: values.length === 0 ? 0 : Math.max(...values),
-    low: values.length === 0 ? 0 : Math.min(...values),
-    hours,
-    sum,
-  };
 }
 
 const unitHours: Record<string, number> = { s: 1 / 3600, min: 1 / 60, h: 1, d: 24 };

@@ -13,6 +13,7 @@ type Props = {
   hint?: string | undefined;
   description?: string | undefined;
   required?: boolean;
+  wide?: boolean;
   children: (props: { id: string; invalid: boolean; describedBy: string | undefined }) => ReactNode;
 };
 
@@ -37,6 +38,39 @@ function useMessages(name: string, full: string): string[] {
   return [...fromForm, ...fromServer];
 }
 
+function FieldLabel({
+  id,
+  label,
+  unit,
+  description,
+  required,
+}: {
+  id: string;
+  label: string;
+  unit: string | undefined;
+  description: string | undefined;
+  required: boolean;
+}) {
+  return (
+    <div className="flex h-[18px] items-center gap-1">
+      <label
+        htmlFor={id}
+        title={label}
+        className={`truncate text-[12.5px] text-muted ${required ? "after:ml-0.5 after:text-warn after:content-['*']" : ""}`}
+      >
+        {label}
+        {unit === undefined || unit === "" ? null : <span className="ml-1">[{unit}]</span>}
+      </label>
+      {description === undefined ? null : (
+        <span title={description} className="flex-none text-muted">
+          <Info aria-hidden="true" className="size-3" />
+          <span className="sr-only">{description}</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 /** Label, control, unit, missing mark and messages of one field; the control comes from the render prop. */
 export function FieldFrame({
   name,
@@ -46,6 +80,7 @@ export function FieldFrame({
   hint,
   description,
   required = false,
+  wide = false,
   children,
 }: Props) {
   const { prefix, missing } = useFieldContext();
@@ -58,23 +93,11 @@ export function FieldFrame({
   const invalid = isMissing || messages.length > 0;
   const describedBy = invalid ? `${id}-notes` : undefined;
   return (
-    <div className="flex min-w-0 flex-col gap-1" data-missing={isMissing}>
-      <div className="flex h-[18px] items-center gap-1">
-        <label
-          htmlFor={id}
-          title={label}
-          className={`truncate text-[12.5px] text-muted ${required ? "after:ml-0.5 after:text-warn after:content-['*']" : ""}`}
-        >
-          {label}
-          {unit === undefined || unit === "" ? null : <span className="ml-1">[{unit}]</span>}
-        </label>
-        {description === undefined ? null : (
-          <span title={description} className="flex-none text-muted">
-            <Info aria-hidden="true" className="size-3" />
-            <span className="sr-only">{description}</span>
-          </span>
-        )}
-      </div>
+    <div
+      className={`flex min-w-0 flex-col gap-1 ${wide ? "col-span-full" : ""}`}
+      data-missing={isMissing}
+    >
+      <FieldLabel {...{ id, label, unit, description, required }} />
       {children({ id, invalid, describedBy })}
       {hint === undefined ? null : <span className="text-[12px] text-muted">{hint}</span>}
       {invalid ? (

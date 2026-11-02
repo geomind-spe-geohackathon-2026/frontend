@@ -1,18 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
-import { Sparkline } from "@/shared/charts/sparkline";
+import { TimeSeriesChart } from "@/shared/charts/time-series-chart";
+import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { useFieldContext, type SeriesSource } from "./field-context";
-import { expectedSteps, toPoints, toStats, toTable, valueColumns } from "./series-data";
+import { expectedSteps, toPoints, toTable, valueColumns } from "./series-data";
 
 type Props = { id: string; name: string; label: string; units: string[] };
 
 const selectClass = "min-w-0 rounded-control border border-border bg-surface px-2 py-[7px]";
-
-function toFigure(value: number): string {
-  return new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(value);
-}
 
 function useField(name: string): [string, (next: string) => void] {
   const { control, setValue } = useFormContext();
@@ -32,7 +30,7 @@ function Options({ options, value }: { options: string[]; value: string }) {
       {value === "" || options.includes(value) ? null : <option value={value}>{value}</option>}
       {options.map((option) => (
         <option key={option} value={option}>
-          {option}
+          {option.split("/").at(-1)}
         </option>
       ))}
     </>
@@ -51,49 +49,87 @@ function SeriesPreview({
   time: unknown;
 }) {
   const points = toPoints(toTable(text), column);
-  const stats = toStats(points);
   const expected = expectedSteps(time);
-  const energy = unit.endsWith("W") ? `, total ${toFigure(stats.sum)} ${unit}h` : "";
   return (
     <div className="flex flex-col gap-1 rounded-control bg-sunken p-2">
-      <Sparkline values={points.map((point) => point.value)} label={`Preview of ${column}`} />
-      <p className="flex justify-between text-[11.5px] text-muted">
-        <span>{points[0]?.time.slice(0, 10)}</span>
-        <span>{points.at(-1)?.time.slice(0, 10)}</span>
-      </p>
-      <p className="text-[12px] text-muted">
-        Peak {toFigure(stats.peak)} {unit}, lowest {toFigure(stats.low)} {unit}
-        {energy}, {stats.count} rows
-        {expected === null ? "" : `, the case's time has ${String(expected)} steps`}
-      </p>
-      {expected === null || expected === stats.count ? null : (
+      <TimeSeriesChart title={column} unit={unit} points={points} />
+      {expected === null || expected === points.length ? null : (
         <p className="inline-flex items-center gap-1 text-[12px] text-warn">
           <TriangleAlert aria-hidden="true" className="size-3.5" />
-          The file does not match the case&apos;s time
+          {points.length} rows, but the case&apos;s time has {expected} steps
         </p>
       )}
     </div>
   );
 }
 
-function FileUpload({ source, label }: { source: SeriesSource; label: string }) {
+function FileUpload({
+  source,
+  label,
+  field,
+}: {
+  source: SeriesSource;
+  label: string;
+  field: string;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+  const [over, setOver] = useState(false);
   if (source.uploadBlocked) {
     return <p className="text-[12px] text-muted">Save your changes to upload a file here.</p>;
   }
   return (
-    <label className="text-[12px] text-muted">
-      Upload a CSV{" "}
+    <div
+      role="group"
+      aria-label={`Upload a file for ${label}`}
+      className={`flex flex-wrap items-center gap-2 rounded-control border border-dashed p-2 ${over ? "border-accent" : "border-border"}`}
+      onDragOver={(event) => {
+        event.preventDefault();
+        setOver(true);
+      }}
+      onDragLeave={() => {
+        setOver(false);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        setOver(false);
+        const file = event.dataTransfer.files[0];
+        if (file !== undefined) source.upload(file, field);
+      }}
+    >
       <input
+        ref={input}
         type="file"
         accept=".csv,text/csv"
-        aria-label={`Upload a file for ${label}`}
+        aria-label={`CSV file for ${label}`}
+        className="sr-only"
+        tabIndex={-1}
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file !== undefined) source.upload(file);
+          if (file !== undefined) source.upload(file, field);
         }}
       />
-    </label>
+      <Button
+        onClick={() => {
+          input.current?.click();
+        }}
+      >
+        <Upload aria-hidden="true" className="size-3.5" />
+        Upload CSV
+      </Button>
+      <span className="text-[12px] text-muted">Saved to Case &gt; Files, then selected here</span>
+    </div>
   );
+}
+
+function usePicked(
+  source: SeriesSource | undefined,
+  field: string,
+  setFile: (next: string) => void,
+) {
+  useEffect(() => {
+    const picked = source?.takePicked(field);
+    if (picked !== undefined) setFile(picked);
+  }, [source, field, setFile]);
 }
 
 function Choice({
@@ -115,6 +151,7 @@ function Choice({
       aria-label={label}
       className={selectClass}
       value={value}
+      title={value}
       onChange={(event) => {
         onChange(event.target.value);
       }}
@@ -136,6 +173,11 @@ export function SeriesPicker({ id, name, label, units }: Props) {
     enabled: source?.files.includes(file) === true,
   });
   const columns = content.data === undefined ? [] : valueColumns(toTable(content.data));
+  const [only] = columns;
+  usePicked(source, name, setFile);
+  useEffect(() => {
+    if (column === "" && columns.length === 1 && only !== undefined) setColumn(only);
+  }, [column, columns.length, only, setColumn]);
   if (source === undefined) {
     return (
       <Input
@@ -150,7 +192,7 @@ export function SeriesPicker({ id, name, label, units }: Props) {
   }
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)] gap-1">
+      <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,3fr)_minmax(5rem,1fr)] gap-1">
         <Choice
           id={id}
           label={`File of ${label}`}
@@ -166,7 +208,7 @@ export function SeriesPicker({ id, name, label, units }: Props) {
         />
         <Choice label={`Unit of ${label}`} options={units} value={unit} onChange={setUnit} />
       </div>
-      <FileUpload source={source} label={label} />
+      <FileUpload source={source} label={label} field={name} />
       {content.data === undefined || column === "" ? null : (
         <SeriesPreview text={content.data} column={column} unit={unit} time={source.time} />
       )}

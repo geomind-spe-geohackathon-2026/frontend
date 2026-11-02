@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError, hasCode } from "@/shared/api/errors";
 import { toItems } from "@/shared/api/pagination";
@@ -47,6 +47,10 @@ import { useCaseEditor } from "./use-case-editor";
 const REQUIREMENTS = "requirements";
 const REQUIREMENTS_HINT =
   "After a run each requirement shows pass or fail under Results and in the report, and Optimise counts a broken one as infeasible.";
+const FIELD_HINTS = {
+  "site.reservoir.temperature":
+    "Leave empty to compute it from the surface temperature and the gradient",
+};
 const filesTab = "files";
 const historyTab = "history";
 
@@ -287,19 +291,42 @@ function MissingCount({ missing, section }: { missing: MissingValue[]; section: 
   );
 }
 
-function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
-  const sections = sectionsOf(schema);
+function useSeriesSource(
+  projectId: string,
+  saved: Case,
+  time: unknown,
+  dirty: boolean,
+): SeriesSource {
   const upload = useUploadCaseFile(projectId);
-  const series: SeriesSource = {
+  const picked = useRef(new Map<string, string>());
+  return {
     scope: `${projectId}-${String(saved.version)}`,
     files: saved.files.map((file) => file.name),
-    time: editor.content.time,
-    uploadBlocked: editor.dirty,
+    time,
+    uploadBlocked: dirty,
     read: (file) => readCaseFile(projectId, saved.version, file),
-    upload: (file) => {
-      upload.mutate({ base: saved.version, name: `data/${file.name}`, file });
+    upload: (file, field) => {
+      const name = `data/${file.name}`;
+      upload.mutate(
+        { base: saved.version, name, file },
+        {
+          onSuccess: () => {
+            picked.current.set(field, name);
+          },
+        },
+      );
+    },
+    takePicked: (field) => {
+      const name = picked.current.get(field);
+      picked.current.delete(field);
+      return name;
     },
   };
+}
+
+function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
+  const sections = sectionsOf(schema);
+  const series = useSeriesSource(projectId, saved, editor.content.time, editor.dirty);
   return (
     <Tabs value={tab} onValueChange={onTab}>
       <TabsList aria-label="Sections of the case">
@@ -324,6 +351,8 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
             problems={editor.problems}
             series={series}
             describeItem={toRequirementText}
+            hints={FIELD_HINTS}
+            hideRange
             onChange={(value, problems) => {
               const shown = withHeader(schema.properties?.[section] ?? {}, section, value);
               editor.edit(section, shown, problems);

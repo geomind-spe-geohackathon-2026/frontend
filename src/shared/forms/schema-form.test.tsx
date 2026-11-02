@@ -88,7 +88,7 @@ describe("SchemaForm", () => {
         prefix="economics"
       />,
     );
-    expect(screen.queryByRole("combobox", { name: "Form of the value" })).toBeNull();
+    expect(screen.queryByRole("radiogroup", { name: "Form of the value" })).toBeNull();
     expect(screen.getByLabelText("Discount rate")).toBeVisible();
   });
 
@@ -101,8 +101,7 @@ describe("SchemaForm", () => {
         prefix="economics"
       />,
     );
-    const choice = screen.getByRole("combobox", { name: "Form of the value" });
-    await userEvent.selectOptions(choice, "Fill in here");
+    await userEvent.click(screen.getByRole("radio", { name: "Fill in here" }));
     expect(screen.getByLabelText("Discount rate")).toBeVisible();
   });
 

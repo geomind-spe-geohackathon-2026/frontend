@@ -9,6 +9,7 @@ type Props = {
   invalid: boolean;
   describedBy: string | undefined;
   label?: string;
+  words?: boolean;
 };
 
 const selectClass =
@@ -24,16 +25,22 @@ function optionLabel(option: unknown): string {
   return typeof option === "string" || typeof option === "number" ? String(option) : "";
 }
 
+function toWord(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1).replaceAll("_", " ");
+}
+
 function EnumControl({
   common,
   options,
   current,
   update,
+  words,
 }: {
   common: Record<string, unknown>;
   options: unknown[];
   current: unknown;
   update: (next: unknown) => void;
+  words: boolean;
 }) {
   return (
     <select
@@ -47,7 +54,7 @@ function EnumControl({
       <option value="" />
       {options.map((option) => (
         <option key={optionLabel(option)} value={optionLabel(option)}>
-          {optionLabel(option)}
+          {words ? toWord(optionLabel(option)) : optionLabel(option)}
         </option>
       ))}
     </select>
@@ -55,7 +62,7 @@ function EnumControl({
 }
 
 /** One input for a scalar schema: number, text, checkbox or select; clearing it removes the value. */
-export function ScalarControl({ id, name, schema, invalid, describedBy, label }: Props) {
+export function ScalarControl({ id, name, schema, invalid, describedBy, label, words }: Props) {
   const { control, setValue } = useFormContext();
   const current: unknown = useWatch({ control, name });
   const update = (next: unknown) => {
@@ -68,7 +75,15 @@ export function ScalarControl({ id, name, schema, invalid, describedBy, label }:
     ...(label === undefined ? {} : { "aria-label": label }),
   };
   if (schema.enum !== undefined) {
-    return <EnumControl common={common} options={schema.enum} current={current} update={update} />;
+    return (
+      <EnumControl
+        common={common}
+        options={schema.enum}
+        current={current}
+        update={update}
+        words={words === true}
+      />
+    );
   }
   if (schema.type === "boolean") {
     return (

@@ -6,11 +6,23 @@ import { ApiError } from "@/shared/api/errors";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Chip } from "@/shared/ui/chip";
+import { isRecord, labelOf } from "@/shared/forms/json-schema";
 import { caseSeriesQuery, useUploadCaseFile } from "./api";
 import { SeriesChart } from "./series-chart";
 import type { Case } from "@/shared/api/types";
 
 type Props = { projectId: string; saved: Case; dirty: boolean };
+
+function findUses(node: unknown, path: string[], name: string): string[] {
+  if (!isRecord(node)) return [];
+  if (node.file === name) return [path.map((part) => labelOf(part, {})).join(" › ")];
+  return Object.entries(node).flatMap(([key, child]) => findUses(child, [...path, key], name));
+}
+
+function toUses(content: unknown, name: string): string {
+  const uses = findUses(content, [], name);
+  return uses.length === 0 ? "not used yet" : `used by ${uses.join(", ")}`;
+}
 
 function UploadForm({ projectId, saved, dirty }: Props) {
   const [file, setFile] = useState<File | null>(null);
@@ -74,10 +86,13 @@ export function FilesPanel(props: Props) {
         </CardHeader>
         <CardBody className="flex flex-col gap-3">
           {saved.files.length === 0 ? <p className="text-muted">No files in this case.</p> : null}
-          <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+          <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
             {saved.files.map((file) => (
               <li key={file.name}>
                 <Chip tone="ok">{file.name} loaded</Chip>
+                <span className="ml-1 text-[12px] text-muted">
+                  {toUses(saved.content, file.name)}
+                </span>
               </li>
             ))}
           </ul>
@@ -98,8 +113,8 @@ export function FilesPanel(props: Props) {
           {series.data?.series.length === 0 ? (
             <p className="text-muted">No series in this case.</p>
           ) : null}
-          {series.data?.series.map((item, index) => (
-            <SeriesChart key={item.name} series={item} colorIndex={index} />
+          {series.data?.series.map((item) => (
+            <SeriesChart key={item.name} series={item} />
           ))}
         </CardBody>
       </Card>

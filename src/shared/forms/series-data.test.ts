@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expectedSteps, toPoints, toStats, toTable, valueColumns } from "./series-data";
+import { expectedSteps, toPoints, toTable, valueColumns } from "./series-data";
 
 const text = "time,heat,cold\n2027-01-01T00:00:00Z,2,1\n2027-01-02T00:00:00Z,4,0\n";
 
@@ -8,9 +8,11 @@ describe("series data", () => {
     expect(valueColumns(toTable(text))).toEqual(["heat", "cold"]);
   });
 
-  it("reads a column and sums it at its own step", () => {
-    const stats = toStats(toPoints(toTable(text), "heat"));
-    expect(stats).toMatchObject({ count: 2, peak: 4, low: 2, hours: 24, sum: 144 });
+  it("reads a column with its times", () => {
+    expect(toPoints(toTable(text), "heat")).toEqual([
+      { time: "2027-01-01T00:00:00Z", value: 2 },
+      { time: "2027-01-02T00:00:00Z", value: 4 },
+    ]);
   });
 
   it("counts the steps of a case's time", () => {

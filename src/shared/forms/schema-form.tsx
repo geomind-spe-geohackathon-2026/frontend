@@ -15,6 +15,8 @@ type Props = {
   problems?: readonly Problem[];
   series?: SeriesSource | undefined;
   describeItem?: ((item: unknown) => string | null) | undefined;
+  hints?: Record<string, string> | undefined;
+  hideRange?: boolean;
 };
 
 /** A form generated from a JSON schema: units, missing marks, ajv checks; reports every change. */
@@ -27,6 +29,8 @@ export function SchemaForm({
   problems = [],
   series,
   describeItem,
+  hints,
+  hideRange,
 }: Props) {
   const resolver = useMemo(() => createSchemaResolver(schema), [schema]);
   const form = useForm({
@@ -47,8 +51,8 @@ export function SchemaForm({
     [subscribe, onChange, schema],
   );
   const context = useMemo(
-    () => ({ prefix, missing, problems, series, describeItem }),
-    [prefix, missing, problems, series, describeItem],
+    () => ({ prefix, missing, problems, series, describeItem, hints, hideRange }),
+    [prefix, missing, problems, series, describeItem, hints, hideRange],
   );
   return (
     <fieldContext.Provider value={context}>
