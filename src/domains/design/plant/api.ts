@@ -2,7 +2,12 @@ import { keepPreviousData, queryOptions, useMutation, useQueryClient } from "@ta
 import { api, toData } from "@/shared/api/client";
 import { projectKeys } from "@/shared/api/projects";
 import type { Layout } from "@/shared/api/layout";
-import type { PlantSpec, SaveFlowsheetInput, SaveParametersInput } from "./types";
+import type {
+  PlantSpec,
+  SaveFlowsheetInput,
+  SaveParametersInput,
+  SavePlantRangesInput,
+} from "./types";
 
 export const plantKeys = {
   all: (projectId: string) => ["projects", projectId, "plant"] as const,
@@ -92,6 +97,19 @@ export const parametersQuery = (projectId: string, module: string) =>
       ),
   });
 
+/** Query options for what a study can search that no module holds, such as the number of doublets. */
+export const plantSearchQuery = (projectId: string) =>
+  queryOptions({
+    queryKey: [...plantKeys.all(projectId), "plant-search"],
+    queryFn: async ({ signal }) =>
+      toData(
+        await api.GET("/plant/parameters/plant", {
+          params: { query: { project: projectId } },
+          signal,
+        }),
+      ),
+  });
+
 /** Query options for the server check of a draft spec on the latest case of the project; it keeps the last answer while a new one loads. */
 export const plantValidationQuery = (projectId: string, spec: PlantSpec) =>
   queryOptions({
@@ -128,6 +146,19 @@ export function useSaveLayout(projectId: string) {
       toData(await api.PUT("/plant/flowsheet/layout", { body: { project: projectId, ...input } })),
     onSuccess: (saved) => {
       queryClient.setQueryData(plantKeys.flowsheet(projectId), saved);
+    },
+  });
+}
+
+/** Mutation that saves the plant-level search ranges as a new plant version. */
+export function useSavePlantRanges(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: SavePlantRangesInput) =>
+      toData(await api.POST("/plant/parameters/plant", { body: { project: projectId, ...input } })),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: plantKeys.all(projectId) });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
     },
   });
 }

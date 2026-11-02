@@ -2,10 +2,7 @@ import { TriangleAlert } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { toFieldResult, toFieldText, toRangeText } from "./parameter-fields";
 import type { FieldEdit, ParameterField } from "./parameter-fields";
-import { ParameterRange, type RangeEdit } from "./parameter-range";
-import type { Parameters } from "@/shared/api/types";
-
-type Search = Parameters["search"][string];
+import { ParameterRange, type RangeEdit, type Search } from "./parameter-range";
 
 type Props = {
   field: ParameterField;
@@ -131,7 +128,29 @@ function Notes({ field, searchable }: { field: ParameterField; searchable: boole
         </span>
       )}
       {field.description}
-      {searchable ? <span className="block">A study can search this value.</span> : null}
+      {searchable ? <span className="block">Set a value first to allow a range.</span> : null}
+    </p>
+  );
+}
+
+function Problem({
+  id,
+  missing,
+  problem,
+}: {
+  id: string;
+  missing: boolean;
+  problem: string | null;
+}) {
+  return (
+    <p id={id} className="text-[12px]">
+      {missing ? (
+        <span className="inline-flex items-center gap-1 text-warn">
+          <TriangleAlert aria-hidden="true" className="size-3.5" />
+          missing
+        </span>
+      ) : null}
+      {problem === null ? null : <span className="text-bad">{problem}</span>}
     </p>
   );
 }
@@ -148,6 +167,7 @@ export function ParameterRow(props: Props) {
   const invalid = shownMissing || problem !== null;
   const describedBy = invalid ? `${id}-note` : undefined;
   const change = (nextText: string, nextUnit: string | null) => {
+    if (nextUnit !== unit && rangeEdit !== undefined) onRange(field.name, null);
     const same = nextText === storedText && nextUnit === field.unit;
     onEdit(field.name, same ? null : { text: nextText, unit: nextUnit });
   };
@@ -175,20 +195,17 @@ export function ParameterRow(props: Props) {
           }}
         />
       </div>
-      {invalid ? (
-        <p id={`${id}-note`} className="text-[12px]">
-          {shownMissing ? (
-            <span className="inline-flex items-center gap-1 text-warn">
-              <TriangleAlert aria-hidden="true" className="size-3.5" />
-              missing
-            </span>
-          ) : null}
-          {problem === null ? null : <span className="text-bad">{problem}</span>}
-        </p>
-      ) : null}
+      {invalid ? <Problem id={`${id}-note`} missing={shownMissing} problem={problem} /> : null}
       <Notes field={field} searchable={searchable && search === undefined} />
       {search === undefined ? null : (
-        <ParameterRange field={field} search={search} edit={rangeEdit} onEdit={onRange} />
+        <ParameterRange
+          name={field.name}
+          label={field.label}
+          search={search}
+          unit={unit}
+          edit={rangeEdit}
+          onEdit={onRange}
+        />
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { PlantRanges } from "./plant-ranges";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Canvas, type Issues } from "./canvas";
 import { ModuleInspector } from "./module-inspector";
@@ -112,7 +113,14 @@ export function FlowsheetTab(props: FlowsheetProps) {
       <Card>
         <CardBody className="flex flex-col gap-4">
           {current === undefined ? (
-            <p className="text-muted">Select a module to edit it.</p>
+            <>
+              <p className="text-muted">Select a module to edit it.</p>
+              <PlantRanges
+                projectId={props.projectId}
+                version={props.saved.version}
+                structureDirty={props.editor.dirty}
+              />
+            </>
           ) : (
             <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
           )}

@@ -790,6 +790,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/plant/parameters/plant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Plant Search */
+        get: operations["get_plant_search_api_v1_plant_parameters_plant_get"];
+        put?: never;
+        /** Save Plant Ranges */
+        post: operations["save_plant_ranges_api_v1_plant_parameters_plant_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reporting/design/export": {
         parameters: {
             query?: never;
@@ -1755,6 +1773,44 @@ export interface components {
             /** Valid From */
             valid_from?: string | null;
         };
+        /** PlantRangesUpdate */
+        PlantRangesUpdate: {
+            /** Base */
+            base: number | null;
+            /** Note */
+            note: string;
+            /**
+             * Project
+             * Format: uuid
+             */
+            project: string;
+            /** Ranges */
+            ranges: {
+                [key: string]: components["schemas"]["RangeUpdate"];
+            };
+        };
+        /** PlantSearch */
+        PlantSearch: {
+            /** Search */
+            search: {
+                [key: string]: components["schemas"]["PlantSearchRange"];
+            };
+        };
+        /** PlantSearchRange */
+        PlantSearchRange: {
+            /** Max */
+            max: number | null;
+            /** Min */
+            min: number | null;
+            /** Unit */
+            unit: string | null;
+            /** Units */
+            units: {
+                [key: string]: components["schemas"]["RangeEnds"];
+            };
+            /** Value */
+            value: unknown;
+        };
         /** PortKind */
         PortKind: {
             /** Kind */
@@ -1833,12 +1889,21 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** RangeEnds */
+        RangeEnds: {
+            /** Max */
+            max: number | null;
+            /** Min */
+            min: number | null;
+        };
         /** RangeUpdate */
         RangeUpdate: {
             /** Max */
             max?: number | null;
             /** Min */
             min?: number | null;
+            /** Unit */
+            unit?: string | null;
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -2076,6 +2141,10 @@ export interface components {
             min: number | null;
             /** Unit */
             unit: string | null;
+            /** Units */
+            units: {
+                [key: string]: components["schemas"]["RangeEnds"];
+            };
         };
         /** Series */
         Series: {
@@ -4073,6 +4142,70 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ParametersFill"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Version"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plant_search_api_v1_plant_parameters_plant_get: {
+        parameters: {
+            query: {
+                project: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlantSearch"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_plant_ranges_api_v1_plant_parameters_plant_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlantRangesUpdate"];
             };
         };
         responses: {

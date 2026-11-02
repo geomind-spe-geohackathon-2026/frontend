@@ -48,7 +48,14 @@ const geminiParameters = {
   values: { dispatch: null, thermal_conductance: 1500, pressure_drop: null },
   missing: [],
   ranges: ["thermal_conductance", "pressure_drop"],
-  search: { thermal_conductance: { min: 500, max: 2000, unit: "W/K" } },
+  search: {
+    thermal_conductance: {
+      min: 500,
+      max: 2000,
+      unit: "W/K",
+      units: { "W/K": { min: 500, max: 2000 }, "kW/K": { min: 0.5, max: 2 } },
+    },
+  },
   history: [],
 };
 
@@ -164,10 +171,48 @@ describe("Plant page", { timeout: 20000 }, () => {
   it("says which values a study can search, and shows the range of those that have a value", async () => {
     server.use(http.get("*/api/v1/plant/parameters", () => HttpResponse.json(geminiParameters)));
     renderApp({ path: `${withPlant}?module=hx` });
-    const hints = await screen.findAllByText("A study can search this value.", {}, slow);
+    const hints = await screen.findAllByText("Set a value first to allow a range.", {}, slow);
     expect(hints).toHaveLength(1);
     const low = screen.getByRole("spinbutton", { name: /^Min of the search range/ });
     expect(low).toHaveValue(500);
+  });
+
+  it("saves the plant's own search ranges from the Plant section", async () => {
+    const saved: unknown[] = [];
+    const entry = { min: 1, max: 3, unit: null, units: {}, value: 2 };
+    server.use(
+      http.get("*/api/v1/plant/parameters/plant", () =>
+        HttpResponse.json({
+          search: {
+            "size.doublets": entry,
+            gradient: { min: null, max: null, unit: null, units: {}, value: null },
+          },
+        }),
+      ),
+      http.post("*/api/v1/plant/parameters/plant", async ({ request }) => {
+        saved.push(await request.json());
+        return HttpResponse.json(
+          { error: { code: "conflict", message: "newer", details: { latest: 4 } } },
+          { status: 409 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderApp({ path: withPlant });
+    const high = await screen.findByRole("spinbutton", { name: /^Max of the search/ }, slow);
+    expect(screen.getByText("Set a value first to allow a range.")).toBeVisible();
+    await user.clear(high);
+    await user.type(high, "2");
+    await user.click(screen.getByRole("button", { name: "Save ranges" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.type(within(dialog).getByRole("textbox"), "fewer");
+    await user.click(within(dialog).getByRole("button", { name: /Save/ }));
+    await waitFor(() => {
+      expect(saved).toHaveLength(1);
+    });
+    expect(saved[0]).toMatchObject({
+      ranges: { "size.doublets": { min: 1, max: 2, unit: null } },
+    });
   });
 
   it("saves an edited search range, and clearing both ends removes it", async () => {
@@ -196,7 +241,7 @@ describe("Plant page", { timeout: 20000 }, () => {
       expect(saved).toHaveLength(1);
     });
     expect(saved[0]).toMatchObject({
-      ranges: { thermal_conductance: { min: null, max: null } },
+      ranges: { thermal_conductance: { min: null, max: null, unit: "W/K" } },
     });
   });
 

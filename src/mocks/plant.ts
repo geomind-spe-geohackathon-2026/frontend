@@ -280,6 +280,7 @@ function readHandlers(store: Store): RequestHandler[] {
       if (found === undefined) return toErrorResponse(404, "plant_not_found", "No such version");
       return HttpResponse.json<Flowsheet>(toFlowsheet(project, found));
     }),
+    http.get(toRoute("/plant/parameters/plant"), () => HttpResponse.json({ search: {} })),
     http.get(toRoute("/plant/parameters"), ({ request }) => {
       const query = new URL(request.url).searchParams;
       const current = latest(query.get("project") ?? "");
