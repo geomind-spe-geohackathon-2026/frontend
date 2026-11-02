@@ -5,6 +5,7 @@ import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { labelOf } from "@/shared/forms/json-schema";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { showToast } from "@/shared/ui/toast";
 import { plantSearchQuery, useSavePlantRanges } from "./api";
 import { ParameterRange, toRanges, type RangeEdit } from "./parameter-range";
@@ -18,44 +19,68 @@ function toLabel(path: string): string {
 }
 
 function toValueText(entry: Entry): string {
-  const value = typeof entry.value === "number" ? String(entry.value) : "";
-  return entry.unit === null ? value : `${value} ${entry.unit}`;
+  return typeof entry.value === "number" ? String(entry.value) : "";
 }
 
-function Row({
-  path,
-  entry,
-  edit,
-  onEdit,
-}: {
+type RowProps = {
   path: string;
   entry: Entry;
+  value: string | undefined;
   edit: RangeEdit | undefined;
+  onValue: (name: string, text: string | null) => void;
   onEdit: (name: string, edit: RangeEdit | null) => void;
-}) {
+};
+
+function Row({ path, entry, value, edit, onValue, onEdit }: RowProps) {
   const label = toLabel(path);
-  if (entry.value === null) {
-    return (
-      <div className="flex flex-col gap-0.5">
-        <p className="text-[12.5px] font-medium">{label}</p>
-        <p className="text-[11.5px] text-muted">Set a value first to allow a range.</p>
-      </div>
-    );
-  }
+  const stored = toValueText(entry);
+  const id = `plant-${path}`;
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-[12.5px] font-medium">
-        {label} <span className="font-normal text-muted">{toValueText(entry)}</span>
-      </p>
-      <ParameterRange
-        name={path}
-        label={label}
-        search={entry}
-        unit={entry.unit}
-        edit={edit}
-        onEdit={onEdit}
-      />
+      <label htmlFor={id} className="text-[12.5px] font-medium">
+        {label}
+      </label>
+      <div className="flex min-w-0 items-center gap-1">
+        <Input
+          id={id}
+          type="number"
+          step="any"
+          className="min-w-0 flex-1"
+          value={value ?? stored}
+          onChange={(event) => {
+            const text = event.target.value;
+            onValue(path, text === stored ? null : text);
+          }}
+        />
+        {entry.unit === null ? null : (
+          <span className="shrink-0 text-[12.5px] text-muted">{entry.unit}</span>
+        )}
+      </div>
+      {entry.value === null ? (
+        <p className="text-[11.5px] text-muted">Set a value first to allow a range.</p>
+      ) : (
+        <ParameterRange
+          name={path}
+          label={label}
+          search={entry}
+          unit={entry.unit}
+          edit={edit}
+          onEdit={onEdit}
+        />
+      )}
     </div>
+  );
+}
+
+function withoutKey<Item>(items: Record<string, Item>, name: string) {
+  return Object.fromEntries(Object.entries(items).filter(([key]) => key !== name));
+}
+
+function toValues(texts: Record<string, string>, search: PlantSearch["search"]) {
+  return Object.fromEntries(
+    Object.entries(texts).flatMap(([path, text]) =>
+      text.trim() === "" ? [] : [[path, { value: Number(text), unit: search[path]?.unit ?? null }]],
+    ),
   );
 }
 
@@ -65,39 +90,52 @@ function toMessage(error: unknown): string | null {
   return typeof detail === "string" ? detail : error.message;
 }
 
-/** The search ranges of the plant itself, such as the number of doublets, which no module holds. */
-export function PlantRanges({ projectId, version, structureDirty }: Props) {
-  const search = useQuery(plantSearchQuery(projectId));
-  const save = useSavePlantRanges(projectId);
+function usePlantSave(props: Props, data: PlantSearch["search"]) {
+  const save = useSavePlantRanges(props.projectId);
   const [edits, setEdits] = useState<Record<string, RangeEdit>>({});
+  const [texts, setTexts] = useState<Record<string, string>>({});
   const [isNoting, setIsNoting] = useState(false);
-  if (search.isPending) return <p className="text-muted">Loading the plant…</p>;
-  if (search.isError) {
-    return <LoadError error={search.error} what="plant" onRetry={() => void search.refetch()} />;
-  }
-  const entries = Object.entries(search.data.search);
-  if (entries.length === 0) return null;
-  const handleEdit = (name: string, edit: RangeEdit | null) => {
-    const others = Object.fromEntries(Object.entries(edits).filter(([key]) => key !== name));
+  const onEdit = (name: string, edit: RangeEdit | null) => {
+    const others = withoutKey(edits, name);
     setEdits(edit === null ? others : { ...others, [name]: edit });
+  };
+  const onValue = (name: string, text: string | null) => {
+    const others = withoutKey(texts, name);
+    setTexts(text === null ? others : { ...others, [name]: text });
   };
   const submit = (note: string) => {
     const onSuccess = (saved: { number: number }) => {
       setIsNoting(false);
       setEdits({});
+      setTexts({});
       showToast(`Plant v${String(saved.number)} saved`);
     };
     const onError = () => {
       setIsNoting(false);
     };
-    save.mutate({ base: version, ranges: toRanges(edits), note }, { onSuccess, onError });
+    const input = { values: toValues(texts, data), ranges: toRanges(edits), note };
+    save.mutate({ base: props.version, ...input }, { onSuccess, onError });
   };
-  const message = toMessage(save.error);
+  const isUnchanged = Object.keys(edits).length === 0 && Object.keys(texts).length === 0;
+  return { save, edits, texts, isNoting, setIsNoting, isUnchanged, onEdit, onValue, submit };
+}
+
+function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) {
+  const form = usePlantSave(props, data);
+  const message = toMessage(form.save.error);
   return (
     <section aria-label="Plant" className="flex min-w-0 flex-col gap-3">
       <h2>Plant</h2>
-      {entries.map(([path, entry]) => (
-        <Row key={path} path={path} entry={entry} edit={edits[path]} onEdit={handleEdit} />
+      {Object.entries(data).map(([path, entry]) => (
+        <Row
+          key={path}
+          path={path}
+          entry={entry}
+          value={form.texts[path]}
+          edit={form.edits[path]}
+          onValue={form.onValue}
+          onEdit={form.onEdit}
+        />
       ))}
       {message === null ? null : (
         <p role="alert" className="text-bad">
@@ -107,21 +145,32 @@ export function PlantRanges({ projectId, version, structureDirty }: Props) {
       <Button
         variant="primary"
         className="self-start"
-        disabled={Object.keys(edits).length === 0 || structureDirty || save.isPending}
+        disabled={form.isUnchanged || props.structureDirty || form.save.isPending}
         onClick={() => {
-          setIsNoting(true);
+          form.setIsNoting(true);
         }}
       >
-        Save ranges
+        Save plant
       </Button>
       <NoteDialog
-        open={isNoting}
-        pending={save.isPending}
-        onSave={submit}
+        open={form.isNoting}
+        pending={form.save.isPending}
+        onSave={form.submit}
         onClose={() => {
-          setIsNoting(false);
+          form.setIsNoting(false);
         }}
       />
     </section>
   );
+}
+
+/** The values and search ranges of the plant itself, such as the number of doublets, which no module holds. */
+export function PlantRanges(props: Props) {
+  const search = useQuery(plantSearchQuery(props.projectId));
+  if (search.isPending) return <p className="text-muted">Loading the plant…</p>;
+  if (search.isError) {
+    return <LoadError error={search.error} what="plant" onRetry={() => void search.refetch()} />;
+  }
+  if (Object.keys(search.data.search).length === 0) return null;
+  return <PlantForm {...props} data={search.data.search} />;
 }

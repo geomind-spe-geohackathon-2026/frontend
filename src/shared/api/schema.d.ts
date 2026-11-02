@@ -1784,9 +1784,19 @@ export interface components {
              * Format: uuid
              */
             project: string;
-            /** Ranges */
+            /**
+             * Ranges
+             * @default {}
+             */
             ranges: {
                 [key: string]: components["schemas"]["RangeUpdate"];
+            };
+            /**
+             * Values
+             * @default {}
+             */
+            values: {
+                [key: string]: components["schemas"]["ValueUpdate"];
             };
         };
         /** PlantSearch */
@@ -2433,6 +2443,13 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** ValueUpdate */
+        ValueUpdate: {
+            /** Unit */
+            unit?: string | null;
+            /** Value */
+            value: number;
         };
         /** Version */
         Version: {

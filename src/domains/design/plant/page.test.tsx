@@ -177,7 +177,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(low).toHaveValue(500);
   });
 
-  it("saves the plant's own search ranges from the Plant section", async () => {
+  it("saves the plant's own values and search ranges from the Plant section", async () => {
     const saved: unknown[] = [];
     const entry = { min: 1, max: 3, unit: null, units: {}, value: 2 };
     server.use(
@@ -203,7 +203,11 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(screen.getByText("Set a value first to allow a range.")).toBeVisible();
     await user.clear(high);
     await user.type(high, "2");
-    await user.click(screen.getByRole("button", { name: "Save ranges" }));
+    const count = screen.getByRole("spinbutton", { name: "Doublets" });
+    expect(count).toHaveValue(2);
+    await user.clear(count);
+    await user.type(count, "1");
+    await user.click(screen.getByRole("button", { name: "Save plant" }));
     const dialog = await screen.findByRole("dialog");
     await user.type(within(dialog).getByRole("textbox"), "fewer");
     await user.click(within(dialog).getByRole("button", { name: /Save/ }));
@@ -211,6 +215,7 @@ describe("Plant page", { timeout: 20000 }, () => {
       expect(saved).toHaveLength(1);
     });
     expect(saved[0]).toMatchObject({
+      values: { "size.doublets": { value: 1, unit: null } },
       ranges: { "size.doublets": { min: 1, max: 2, unit: null } },
     });
   });
