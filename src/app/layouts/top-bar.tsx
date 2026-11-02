@@ -1,3 +1,4 @@
+import { Logo } from "@/shared/ui/logo";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Crumb } from "@/app/nav";
@@ -11,9 +12,9 @@ export function TopBar({ crumbs, children }: Props) {
     <header className="flex min-h-[50px] flex-wrap items-center gap-2.5 border-b border-border bg-surface px-4 py-2">
       <Link
         to="/projects"
-        className="flex items-center gap-2 text-[15px] font-semibold text-text no-underline"
+        className="flex items-center gap-1.5 text-[15px] font-semibold text-text no-underline"
       >
-        <span aria-hidden="true" className="size-[18px] rounded-full bg-hot" />
+        <Logo />
         Geomind
       </Link>
       <nav aria-label="Breadcrumb">

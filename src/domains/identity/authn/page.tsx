@@ -1,3 +1,4 @@
+import { Logo } from "@/shared/ui/logo";
 import type { FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toFieldMessage } from "@/shared/api/errors";
@@ -72,7 +73,7 @@ export function SignInPage() {
     <main className="grid flex-1 place-items-center bg-gradient-to-b from-sunken to-surface p-6">
       <div className="flex w-[min(380px,100%)] flex-col gap-3.5">
         <div className="flex items-center gap-2 text-xl font-semibold">
-          <span aria-hidden="true" className="size-[18px] rounded-full bg-hot" />
+          <Logo />
           Geomind
         </div>
         <h1 className="sr-only">Sign in</h1>
