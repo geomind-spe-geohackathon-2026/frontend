@@ -18,6 +18,7 @@ const collect = (pick: (domain: DomainRoutes) => RouteObject[] | undefined): Rou
 export const routes: RouteObject[] = [
   {
     errorElement: <RouteError />,
+    hydrateFallbackElement: <p className="p-6 text-muted">Loading</p>,
     children: [
       ...collect((domain) => domain.public),
       {

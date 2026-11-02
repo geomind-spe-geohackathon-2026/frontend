@@ -41,7 +41,7 @@ Direction is one way: `shared` -> `domains/*/*` -> `app` (bulletproof-react).
 - A feature imports only from `shared` and from itself. Never from another feature, not even a type. If two features need it, move it to `shared`.
 - `app` composes features (routes). Features do not know about routes beyond their own links.
 - Import files directly, no barrel `index.ts` files.
-- Enforce with ESLint `import/no-restricted-paths` (one zone per feature, plus shared and app zones). A broken rule fails `npm run check`.
+- Enforced by `tests/rules/boundaries.test.ts` (layer rules, one feature never imports another, no barrels). A broken rule fails `npm run check`.
 
 ## 3. TypeScript strict
 
