@@ -171,3 +171,17 @@
     cursor: pointer;
   }
 }
+
+.react-flow.plant-flow {
+  --xy-background-color: var(--sunken);
+  --xy-background-pattern-dots-color: var(--border);
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--accent-soft);
+  --xy-controls-button-color: var(--text);
+  --xy-controls-button-color-hover: var(--text);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-box-shadow: none;
+  --xy-attribution-background-color: var(--surface);
+  --xy-edge-label-background-color: var(--surface);
+  --xy-edge-label-color: var(--muted);
+}
