@@ -94,8 +94,9 @@ test("golden path", async ({ page }, info) => {
   await expect(page.getByText(/\d+ values? missing/)).toBeVisible();
   await shot(page, mode, "problem-missing");
   if (mode === "mock") await page.getByRole("tab", { name: "Economics" }).click();
-  for (const label of mode === "real" ? ["Thickness"] : ["Gas price", "Discount rate"]) {
-    await page.getByLabel(label).first().fill("5");
+  const fills = mode === "real" ? { Thickness: "100" } : { "Gas price": "5", "Discount rate": "5" };
+  for (const [label, value] of Object.entries(fills)) {
+    await page.getByLabel(label).first().fill(value);
   }
   await expect(page.getByText(/\d+ values? missing/)).toBeHidden();
   await page.getByRole("button", { name: "Save version" }).click();
@@ -113,18 +114,25 @@ test("golden path", async ({ page }, info) => {
   await page.getByLabel("Name").fill("Golden study");
   await shot(page, mode, "study-dialog");
   await page.getByRole("button", { name: /^(Start|Create)/ }).click();
-  await expect(page.getByText("done").first()).toBeVisible({ timeout: 240_000 });
+  await expect(page.getByRole("row", { name: /Golden study/ })).toContainText("done", {
+    timeout: 240_000,
+  });
   await shot(page, mode, "study");
 
   await page.getByRole("link", { name: "4 Results" }).click();
+  await expect(page.getByText(/Loading results/)).toBeHidden();
   await expect(page.getByText("No results yet")).toBeHidden();
   await shot(page, mode, "results");
 
   await page.getByRole("link", { name: /^Report/ }).click();
+  await expect(page.getByText(/Loading/)).toBeHidden();
   await shot(page, mode, "report");
   for (const format of ["Markdown", "PDF"]) {
     const download = page.waitForEvent("download");
-    await page.getByRole("button", { name: new RegExp(format) }).first().click();
+    await page
+      .getByRole("button", { name: new RegExp(format) })
+      .first()
+      .click();
     const file = await download;
     expect(file.suggestedFilename().toLowerCase()).toContain(format === "PDF" ? "pdf" : "md");
   }
@@ -133,12 +141,17 @@ test("golden path", async ({ page }, info) => {
   await page.getByLabel("Name").fill("پروژه نمونه");
   await page.getByRole("button", { name: "Save name" }).click();
   await page.getByRole("link", { name: /^Report/ }).click();
+  const title = mode === "real" ? /پروژه نمونه/ : /Example report/;
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
   const persian = page.waitForEvent("download");
   await page.getByRole("button", { name: /PDF/ }).first().click();
   expect((await persian).suggestedFilename().toLowerCase()).toContain("pdf");
   await shot(page, mode, "report-persian");
 
-  await page.getByRole("button", { name: /^A$|account|user menu/i }).first().click();
+  await page
+    .getByRole("button", { name: /^A$|account|user menu/i })
+    .first()
+    .click();
   await shot(page, mode, "user-menu");
   await page.getByRole("menuitem", { name: /sign out/i }).click();
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeAttached();

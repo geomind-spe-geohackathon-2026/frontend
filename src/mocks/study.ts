@@ -84,7 +84,7 @@ function toInitial(): Study[] {
 
 const pollsToFinish = 2;
 
-/** Example study routes: a running study that ends after two polls, a blocked one, create, start and cancel. */
+/** Example study routes: a running study, a created one too, that ends after two polls, a blocked one, create (running), start and cancel. */
 export function studyHandlers(): RequestHandler[] {
   const studies = toInitial();
   const polls = new Map<string, number>();
@@ -125,6 +125,7 @@ export function studyHandlers(): RequestHandler[] {
         kind: body.kind,
         name: body.name,
         settings: body.settings,
+        status: "running",
       });
       studies.push(study);
       return HttpResponse.json<Study>(study, { status: 201 });
