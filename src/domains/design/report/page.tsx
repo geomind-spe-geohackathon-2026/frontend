@@ -11,19 +11,21 @@ export function ReportPage() {
   const projectId = useRequiredParam("projectId");
   const results = useQuery(reportResultsQuery(projectId));
   const runs = useQuery(reportRunsQuery(projectId));
-  if (results.isPending) return <Notice status="loading" what="results" />;
-  if (results.isError) return <Notice status="failed" error={results.error} />;
-  if (results.data.length === 0) {
+  if (results.isPending || results.isError || results.data.length === 0) {
     return (
       <>
         <PageHeader title="Report" />
-        <Notice status="empty">
-          There is no result to report on.{" "}
-          <Link className="text-accent" to={`/projects/${projectId}/design/study`}>
-            Run a study
-          </Link>{" "}
-          first.
-        </Notice>
+        {results.isPending ? <Notice status="loading" what="results" /> : null}
+        {results.isError ? <Notice status="failed" error={results.error} /> : null}
+        {results.data?.length === 0 ? (
+          <Notice status="empty">
+            There is no result to report on.{" "}
+            <Link className="text-accent" to={`/projects/${projectId}/design/study`}>
+              Run a study
+            </Link>{" "}
+            first.
+          </Notice>
+        ) : null}
       </>
     );
   }
