@@ -18,6 +18,7 @@ export type JsonSchema = {
   "x-units"?: string[];
   "x-limits"?: { min?: number; max?: number; unit?: string };
   "x-fraction"?: boolean;
+  "x-date"?: boolean;
   "x-roles"?: Record<string, Record<string, string[]>>;
   "x-time-units"?: string[];
 };

@@ -15,6 +15,7 @@ type Props = {
 };
 
 const displayDigits = 4;
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const selectClass =
   "w-full rounded-control border border-border bg-surface px-2.5 py-[7px] aria-invalid:border-warn";
 
@@ -22,6 +23,11 @@ function toNumber(text: string): number | undefined {
   if (text.trim() === "") return undefined;
   const number = Number(text);
   return Number.isNaN(number) ? undefined : number;
+}
+
+function isDateValue(schema: JsonSchema, current: unknown): boolean {
+  if (schema["x-date"] !== true) return false;
+  return current === undefined || (typeof current === "string" && datePattern.test(current));
 }
 
 function optionLabel(option: unknown): string {
@@ -178,7 +184,7 @@ export function ScalarControl({
   return (
     <Input
       {...common}
-      type="text"
+      type={isDateValue(schema, current) ? "date" : "text"}
       value={typeof current === "string" || typeof current === "number" ? current : ""}
       onChange={(event) => {
         const text = event.target.value;

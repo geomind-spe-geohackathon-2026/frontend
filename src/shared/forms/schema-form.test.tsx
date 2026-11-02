@@ -17,6 +17,20 @@ describe("SchemaForm", () => {
     expect(container.querySelectorAll("form")).toHaveLength(1);
   });
 
+  it("asks for a date with a date field, and keeps a stored time of day as text", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        start: { type: "string", "x-date": true },
+        end: { type: "string", "x-date": true },
+      },
+    };
+    const initial = { start: "2027-01-01", end: "2027-06-01T12:00:00" };
+    render(<SchemaForm schema={schema} initial={initial} onChange={vi.fn()} prefix="time" />);
+    expect(screen.getByLabelText(/Start/)).toHaveAttribute("type", "date");
+    expect(screen.getByLabelText(/End/)).toHaveAttribute("type", "text");
+  });
+
   it("marks a field missing only when gemini reports its path", () => {
     render(
       <SchemaForm

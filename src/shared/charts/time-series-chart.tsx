@@ -194,6 +194,7 @@ export function TimeSeriesChart({ title, subtitle, unit, points }: Props) {
           role="img"
           aria-label={`${title} in ${unit}, ${String(rows.length)} points`}
           viewBox={`0 0 ${String(width)} ${String(height)}`}
+          preserveAspectRatio="xMinYMid meet"
           className="h-auto max-h-[260px] w-full"
         >
           <Axes frame={frame} unit={unit} />
