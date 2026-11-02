@@ -103,6 +103,19 @@ describe("SchemaForm", () => {
     expect(screen.getByText("unit is not a gradient")).toBeVisible();
   });
 
+  it("offers a list of choices as checkboxes and reports the chosen ones", async () => {
+    const schema = {
+      type: "object",
+      properties: {
+        metrics: { type: "array", minItems: 1, items: { type: "string", enum: ["lcts", "co2"] } },
+      },
+    };
+    const onChange = vi.fn();
+    render(<SchemaForm schema={schema} initial={{}} onChange={onChange} />);
+    await userEvent.click(screen.getByRole("checkbox", { name: "co2" }));
+    expect(onChange).toHaveBeenLastCalledWith({ metrics: ["co2"] }, []);
+  });
+
   it("adds and removes list items", async () => {
     const schema = exampleCaseSchema.properties?.requirements ?? {};
     const onChange = vi.fn();

@@ -172,6 +172,43 @@ function ListField({ name, path, label, schema }: NodeProps) {
   );
 }
 
+function ChoiceListField({ name, path, label, schema }: NodeProps) {
+  const { control, setValue } = useFormContext();
+  const current: unknown = useWatch({ control, name });
+  const chosen = Array.isArray(current) ? current : [];
+  const options = schema.items?.enum ?? [];
+  const toggle = (option: unknown, checked: boolean) => {
+    const next = checked ? [...chosen, option] : chosen.filter((item) => item !== option);
+    setValue(name, next.length === 0 ? undefined : next, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+  return (
+    <FieldFrame name={name} path={path} label={label}>
+      {({ id }) => (
+        <div id={id} role="group" aria-label={label} className="flex flex-wrap gap-x-3 gap-y-1">
+          {options.map((option) => {
+            const text = String(option);
+            return (
+              <label key={text} className="inline-flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={chosen.includes(option)}
+                  onChange={(event) => {
+                    toggle(option, event.target.checked);
+                  }}
+                />
+                {text}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </FieldFrame>
+  );
+}
+
 function hasContent(value: unknown): boolean {
   return isRecord(value) ? Object.keys(value).length > 0 : value !== undefined;
 }
@@ -280,6 +317,9 @@ export function FieldNode(props: NodeProps) {
   if (schema.properties !== undefined) return <GroupFields {...shown} />;
   if (schema.type === "array" && isRecord(schema.items) && schema.items.properties !== undefined) {
     return <ListField {...shown} />;
+  }
+  if (schema.type === "array" && schema.items?.enum !== undefined) {
+    return <ChoiceListField {...shown} />;
   }
   if (
     schema.enum !== undefined ||
