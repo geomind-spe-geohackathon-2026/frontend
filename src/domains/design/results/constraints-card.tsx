@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
 import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/types";
@@ -71,7 +72,7 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
         {result.constraints.length === 0 ? (
           <p className="text-muted">No constraint checks in this result.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <TableScroll label="Constraint checks">
             <table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
               <caption className="sr-only">Constraint checks of {result.name}</caption>
               <thead>
@@ -95,7 +96,7 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         )}
       </CardBody>
     </Card>

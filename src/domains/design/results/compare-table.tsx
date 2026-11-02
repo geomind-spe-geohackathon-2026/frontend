@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
@@ -33,7 +34,7 @@ const headClass = "text-[12.5px] font-medium text-muted";
 export function CompareTable({ comparison, x, y, pareto }: Props) {
   const best = toBestId(comparison.items, y.name);
   return (
-    <div className="overflow-x-auto">
+    <TableScroll label="Compared designs">
       <table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
         <caption className="sr-only">Compared designs</caption>
         <thead>
@@ -78,6 +79,6 @@ export function CompareTable({ comparison, x, y, pareto }: Props) {
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }

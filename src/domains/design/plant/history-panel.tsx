@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { useQuery } from "@tanstack/react-query";
 import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
@@ -24,38 +25,40 @@ export function HistoryPanel({ projectId, current, onRestore }: Props) {
   }
   return (
     <Card>
-      <table className="w-full border-collapse">
-        <caption className="sr-only">Saved versions of the plant</caption>
-        <thead>
-          <tr className="text-left text-muted">
-            <th scope="col" className="p-2.5">
-              Version
-            </th>
-            <th scope="col" className="p-2.5">
-              Note
-            </th>
-            <th scope="col" className="p-2.5">
-              Saved by
-            </th>
-            <th scope="col" className="p-2.5">
-              Saved
-            </th>
-            <th scope="col" className="p-2.5">
-              <span className="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {versions.data.map((version) => (
-            <VersionRow
-              key={version.number}
-              version={version}
-              current={current}
-              onRestore={onRestore}
-            />
-          ))}
-        </tbody>
-      </table>
+      <TableScroll label="Saved versions">
+        <table className="w-full border-collapse">
+          <caption className="sr-only">Saved versions of the plant</caption>
+          <thead>
+            <tr className="text-left text-muted">
+              <th scope="col" className="p-2.5">
+                Version
+              </th>
+              <th scope="col" className="p-2.5">
+                Note
+              </th>
+              <th scope="col" className="p-2.5">
+                Saved by
+              </th>
+              <th scope="col" className="p-2.5">
+                Saved
+              </th>
+              <th scope="col" className="p-2.5">
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {versions.data.map((version) => (
+              <VersionRow
+                key={version.number}
+                version={version}
+                current={current}
+                onRestore={onRestore}
+              />
+            ))}
+          </tbody>
+        </table>
+      </TableScroll>
     </Card>
   );
 }

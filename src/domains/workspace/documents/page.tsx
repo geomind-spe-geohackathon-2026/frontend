@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { toFieldMessage } from "@/shared/api/errors";
 import { useRef, useState, type ChangeEvent } from "react";
@@ -121,7 +122,7 @@ function DocumentsTable({
   onDelete: (document: Document) => void;
 }) {
   return (
-    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+    <TableScroll label="Documents" className="rounded-card border border-border bg-surface">
       <table className="w-full text-left">
         <caption className="sr-only">Documents</caption>
         <thead className="text-muted">
@@ -168,7 +169,7 @@ function DocumentsTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 

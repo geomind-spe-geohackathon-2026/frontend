@@ -1,5 +1,6 @@
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { TableScroll } from "./table-scroll";
 import { fromSvgUrl, ThemedImage } from "./themed-image";
 
 const plugins = [remarkGfm];
@@ -14,9 +15,9 @@ const components = {
     <pre className="max-w-full overflow-x-auto rounded-control bg-sunken p-2">{children}</pre>
   ),
   table: ({ children }: { children?: React.ReactNode }) => (
-    <div className="max-w-full overflow-x-auto rounded-control border border-border">
+    <TableScroll label="Table" className="rounded-control border border-border">
       <table className="w-max min-w-full border-collapse text-left text-sm">{children}</table>
-    </div>
+    </TableScroll>
   ),
   th: ({ children }: { children?: React.ReactNode }) => (
     <th className="border-b border-border bg-sunken px-2 py-1 font-semibold">{children}</th>

@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { Quantity } from "@/shared/quantity/quantity";
 import type { Total } from "./totals";
 
@@ -6,7 +7,7 @@ type Props = { caption: string; label: string; rows: Total[] };
 /** A footer table of LLM calls with tokens and cost, per agent or per model. */
 export function TotalsTable({ caption, label, rows }: Props) {
   return (
-    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+    <TableScroll label="Totals" className="rounded-card border border-border bg-surface">
       <table className="w-full border-collapse text-left">
         <caption className="px-3 py-2 text-left font-medium">{caption}</caption>
         <thead>
@@ -38,6 +39,6 @@ export function TotalsTable({ caption, label, rows }: Props) {
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }

@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { hasCode } from "@/shared/api/errors";
 import { meQuery } from "@/shared/api/me";
@@ -63,7 +64,7 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
 
 function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefined }) {
   return (
-    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+    <TableScroll label="Users" className="rounded-card border border-border bg-surface">
       <table className="w-full text-left">
         <caption className="sr-only">Users</caption>
         <thead className="text-muted">
@@ -91,7 +92,7 @@ function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefin
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 

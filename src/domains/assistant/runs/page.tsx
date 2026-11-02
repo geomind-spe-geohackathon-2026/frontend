@@ -1,3 +1,4 @@
+import { TableScroll } from "@/shared/ui/table-scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
@@ -84,7 +85,7 @@ function RunsTable({
   titles: Map<string, string>;
 }) {
   return (
-    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+    <TableScroll label="Runs" className="rounded-card border border-border bg-surface">
       <table className="w-full border-collapse text-left">
         <caption className="sr-only">Runs of this project, newest first</caption>
         <thead>
@@ -102,7 +103,7 @@ function RunsTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 
