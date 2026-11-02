@@ -53,6 +53,21 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(screen.queryByRole("dialog", { name: "Unsaved changes" })).not.toBeInTheDocument();
   });
 
+  it("asks the server to check the plant on the project's case", async () => {
+    const projects: unknown[] = [];
+    server.use(
+      http.post("*/api/v1/plant/flowsheet/validate", async ({ request }) => {
+        projects.push(((await request.json()) as { project?: string }).project);
+        return HttpResponse.json({ problems: [] });
+      }),
+    );
+    renderApp({ path: withPlant });
+    await findSave();
+    await waitFor(() => {
+      expect(projects).toContain("example-project-1");
+    });
+  });
+
   it("has no form to type port names for a connection", async () => {
     renderApp({ path: `${withPlant}?module=hx` });
     await screen.findByLabelText("Module id", {}, slow);

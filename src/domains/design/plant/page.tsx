@@ -238,7 +238,7 @@ function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
 }
 
 function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
-  const editor = usePlantEditor(saved);
+  const editor = usePlantEditor(projectId, saved);
   const queryClient = useQueryClient();
   const { selected, tab, setParam } = usePlantParams();
   const [draft, setDraft] = useState<ParameterDraft | null>(null);
