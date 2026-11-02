@@ -1,0 +1,173 @@
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "tailwindcss";
+
+:root {
+  --background: #eef1f4;
+  --surface: #ffffff;
+  --sunken: #e7ebef;
+  --border: #d3dae1;
+  --text: #17212b;
+  --muted: #5b6977;
+  --accent: #0f6e84;
+  --accent-soft: #dbecf0;
+  --on-accent: #ffffff;
+  --ok: #2f7d4a;
+  --warn: #a46700;
+  --bad: #b3362c;
+  --ok-soft: #e0f0e5;
+  --warn-soft: #f7ebd2;
+  --bad-soft: #f6dfdc;
+  --hot: #d0542b;
+  --heat: #e0912f;
+  --cold: #2f74c9;
+  --gas: #7c8a96;
+  --power: #7a5bc0;
+  --shadow: 0 10px 30px rgba(20, 30, 40, 0.18);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0f151b;
+    --surface: #17202a;
+    --sunken: #0c1116;
+    --border: #293643;
+    --text: #e2e8ee;
+    --muted: #91a0ae;
+    --accent: #4fb3c9;
+    --accent-soft: #15343d;
+    --on-accent: #0c1116;
+    --ok: #5cbf7d;
+    --warn: #e2a742;
+    --bad: #ec7a6f;
+    --ok-soft: #163125;
+    --warn-soft: #392c11;
+    --bad-soft: #3c1b18;
+    --hot: #ee7a50;
+    --heat: #f0ab55;
+    --cold: #6aa6ec;
+    --gas: #9aa8b4;
+    --power: #a78be6;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #0f151b;
+  --surface: #17202a;
+  --sunken: #0c1116;
+  --border: #293643;
+  --text: #e2e8ee;
+  --muted: #91a0ae;
+  --accent: #4fb3c9;
+  --accent-soft: #15343d;
+  --on-accent: #0c1116;
+  --ok: #5cbf7d;
+  --warn: #e2a742;
+  --bad: #ec7a6f;
+  --ok-soft: #163125;
+  --warn-soft: #392c11;
+  --bad-soft: #3c1b18;
+  --hot: #ee7a50;
+  --heat: #f0ab55;
+  --cold: #6aa6ec;
+  --gas: #9aa8b4;
+  --power: #a78be6;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-*: initial;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad-soft: var(--bad-soft);
+  --color-hot: var(--hot);
+  --color-heat: var(--heat);
+  --color-cold: var(--cold);
+  --color-gas: var(--gas);
+  --color-power: var(--power);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --shadow-float: var(--shadow);
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --radius-dialog: 10px;
+  --radius-pill: 99px;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  #root {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  th,
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+  a {
+    color: var(--accent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
