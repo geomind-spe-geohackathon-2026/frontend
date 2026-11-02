@@ -31,7 +31,7 @@ export function validateDocument(schema: JsonSchema, value: unknown): Problem[] 
   if (value === undefined) return [];
   const validate = validatorOf(schema);
   if (validate(value)) return [];
-  return toProblems((validate.errors ?? []).filter((error) => error.keyword !== "required"));
+  return toProblems(validate.errors ?? []);
 }
 
 function toMessage(error: ErrorObject): string {
@@ -43,19 +43,32 @@ function toMessage(error: ErrorObject): string {
   return "enter a valid value";
 }
 
-function toProblems(errors: ErrorObject[]): Problem[] {
-  const unions = new Set(
-    errors.filter((error) => error.keyword === "anyOf").map((error) => error.instancePath),
+function chosesForm(errors: ErrorObject[], path: string): boolean {
+  return errors.some(
+    (error) =>
+      (error.keyword === "required" && error.instancePath === path) ||
+      error.instancePath.startsWith(`${path}/`),
   );
-  const single = errors.filter((error) => !unions.has(error.instancePath));
-  const shown = [...unions].map((path) => ({
-    path: path.split("/").slice(1).join("."),
-    message: "choose a form and fill it in",
-    code: "anyOf",
-  }));
+}
+
+function toProblems(errors: ErrorObject[]): Problem[] {
+  const unions = errors
+    .filter((error) => error.keyword === "anyOf")
+    .map((error) => error.instancePath);
+  const wrong = unions.filter((path) => !chosesForm(errors, path));
+  const shown = errors.filter(
+    (error) =>
+      error.keyword !== "required" &&
+      error.keyword !== "anyOf" &&
+      !(error.keyword === "type" && unions.includes(error.instancePath)),
+  );
   return [
-    ...shown,
-    ...single.map((error) => ({
+    ...wrong.map((path) => ({
+      path: path.split("/").slice(1).join("."),
+      message: "choose a form and fill it in",
+      code: "anyOf",
+    })),
+    ...shown.map((error) => ({
       path: toPath(error),
       message: toMessage(error),
       code: error.keyword,

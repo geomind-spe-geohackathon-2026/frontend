@@ -61,4 +61,14 @@ describe("a union section", () => {
       { path: "", message: "choose a form and fill it in", code: "anyOf" },
     ]);
   });
+
+  it("does not call a form with a required value still empty a wrong form", () => {
+    const form = {
+      anyOf: [
+        { type: "string" },
+        { type: "object", required: ["rate"], properties: { rate: { type: "number" } } },
+      ],
+    };
+    expect(validateDocument(form, { other: 1 })).toEqual([]);
+  });
 });
