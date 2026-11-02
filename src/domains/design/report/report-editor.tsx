@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
-import type { ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
+import type { Report, ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
@@ -13,6 +13,19 @@ import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
 
 type Props = { projectId: string; results: Result[]; runs: Run[]; parts: ReportPartInfo[] };
+
+function PreviewBody({
+  include,
+  preview,
+}: {
+  include: ReportPart[];
+  preview: UseQueryResult<Report>;
+}) {
+  if (include.length === 0) return <Notice status="empty">Choose at least one section.</Notice>;
+  if (preview.isPending) return <Notice status="loading" what="the preview" />;
+  if (preview.isError) return <Notice status="failed" error={preview.error} />;
+  return <ReportDocument preview={preview.data} />;
+}
 
 /** The report workspace: options on the right, live preview on the left, export buttons in the header. */
 export function ReportEditor({ projectId, results, runs, parts }: Props) {
@@ -50,16 +63,7 @@ export function ReportEditor({ projectId, results, runs, parts }: Props) {
       {exporter.isError ? <Notice status="failed" error={exporter.error} /> : null}
       <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
-          {include.length === 0 ? (
-            <Notice status="empty">Choose at least one section.</Notice>
-          ) : null}
-          {include.length > 0 && preview.isPending ? (
-            <Notice status="loading" what="the preview" />
-          ) : null}
-          {preview.isError ? <Notice status="failed" error={preview.error} /> : null}
-          {include.length > 0 && preview.data !== undefined ? (
-            <ReportDocument preview={preview.data} />
-          ) : null}
+          <PreviewBody include={include} preview={preview} />
         </div>
         <ReportOptions
           results={results}
