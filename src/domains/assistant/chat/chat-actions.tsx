@@ -82,10 +82,10 @@ function DeleteForm({ projectId, chat, onClose, onDeleted }: Props) {
 type Mode = "rename" | "delete";
 
 /** The rename or delete dialog of one chat; delete asks for confirmation in the page. */
-export function ChatDialog({ mode, ...props }: Props & { mode: Mode | null }) {
+export function ChatDialog({ mode, ...props }: Props & { mode: Mode }) {
   return (
     <Dialog
-      open={mode !== null}
+      open
       onOpenChange={(open) => {
         if (!open) props.onClose();
       }}

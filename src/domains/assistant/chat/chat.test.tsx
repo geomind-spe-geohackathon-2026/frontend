@@ -106,6 +106,30 @@ describe("chat page", () => {
     expect(await screen.findByText("A first question")).toBeVisible();
   });
 
+  it("renames a chat in a dialog", async () => {
+    renderApp({ path: `${base}/example-chat-1` });
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole("button", { name: "Rename Design the example plant" }),
+    );
+    const field = await screen.findByLabelText("Title");
+    await user.clear(field);
+    await user.type(field, "Renamed chat");
+    await user.click(screen.getByRole("button", { name: "Rename" }));
+    expect(await screen.findByRole("link", { name: /Renamed chat/ })).toBeVisible();
+  });
+
+  it("deletes a chat only after the in-page confirmation", async () => {
+    renderApp({ path: `${base}/example-chat-1` });
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole("button", { name: "Delete Design the example plant" }),
+    );
+    expect(await screen.findByText(/This cannot be undone/)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Delete chat" }));
+    expect(await screen.findByText("No chats yet.")).toBeVisible();
+  });
+
   it("shows a permission message when the chats are forbidden", async () => {
     server.use(
       http.get(toRoute("/assistant/chat"), () =>

@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
 import type { Chat } from "@/shared/sse/contract";
 import { Button } from "@/shared/ui/button";
-import { ChatDialog } from "./chat-actions";
+
+const ChatDialog = lazy(() =>
+  import("./chat-actions").then((module) => ({ default: module.ChatDialog })),
+);
 
 type Props = { projectId: string; activeChatId: string | null };
 
@@ -33,7 +35,7 @@ function ChatItem({ projectId, chat, active }: { projectId: string; chat: Chat; 
           setMode("rename");
         }}
       >
-        <Pencil aria-hidden="true" className="size-3.5" />
+        Rename
       </Button>
       <Button
         variant="link"
@@ -42,19 +44,23 @@ function ChatItem({ projectId, chat, active }: { projectId: string; chat: Chat; 
           setMode("delete");
         }}
       >
-        <Trash2 aria-hidden="true" className="size-3.5" />
+        Delete
       </Button>
-      <ChatDialog
-        mode={mode}
-        projectId={projectId}
-        chat={chat}
-        onClose={() => {
-          setMode(null);
-        }}
-        onDeleted={() => {
-          if (active) void navigate(base);
-        }}
-      />
+      {mode === null ? null : (
+        <Suspense fallback={null}>
+          <ChatDialog
+            mode={mode}
+            projectId={projectId}
+            chat={chat}
+            onClose={() => {
+              setMode(null);
+            }}
+            onDeleted={() => {
+              if (active) void navigate(base);
+            }}
+          />
+        </Suspense>
+      )}
     </li>
   );
 }
@@ -65,9 +71,7 @@ export function ChatList({ projectId, activeChatId }: Props) {
   return (
     <nav aria-label="Chats" className="space-y-2">
       <Button variant="primary" asChild className="w-full justify-center">
-        <Link to={`/projects/${projectId}/assistant/chat`}>
-          <Plus aria-hidden="true" className="size-3.5" /> New chat
-        </Link>
+        <Link to={`/projects/${projectId}/assistant/chat`}>+ New chat</Link>
       </Button>
       {chats.isPending ? <p className="text-muted">Loading chats</p> : null}
       {chats.isError ? <ErrorNotice error={chats.error} what="The chats" /> : null}
