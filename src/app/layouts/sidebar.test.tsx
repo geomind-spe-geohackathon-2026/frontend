@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderApp } from "@/testing/render-app";
@@ -12,9 +12,11 @@ describe("project sidebar", () => {
     await user.click(menu);
     expect(menu).toHaveAttribute("aria-expanded", "true");
     await user.click(screen.getByRole("link", { name: "Chat" }));
-    expect(await screen.findByRole("button", { name: "Menu" })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Menu" })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+    });
   });
 });
