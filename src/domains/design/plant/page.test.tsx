@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
+import { isRecord } from "@/shared/forms/json-schema";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
@@ -57,7 +58,8 @@ describe("Plant page", { timeout: 20000 }, () => {
     const projects: unknown[] = [];
     server.use(
       http.post("*/api/v1/plant/flowsheet/validate", async ({ request }) => {
-        projects.push(((await request.json()) as { project?: string }).project);
+        const body: unknown = await request.json();
+        if (isRecord(body)) projects.push(body.project);
         return HttpResponse.json({ problems: [] });
       }),
     );

@@ -1,5 +1,5 @@
 import "@xyflow/react/dist/style.css";
-import { useEffect, type CSSProperties } from "react";
+import { useEffect } from "react";
 import {
   Background,
   Controls,
@@ -18,20 +18,6 @@ import type { PlantSpec } from "./types";
 export const moduleDragType = "application/x-plant-module";
 
 const nodeTypes = { module: ModuleNode };
-
-const flowTheme = {
-  "--xy-background-color": "var(--sunken)",
-  "--xy-background-pattern-dots-color": "var(--border)",
-  "--xy-controls-button-background-color": "var(--surface)",
-  "--xy-controls-button-background-color-hover": "var(--accent-soft)",
-  "--xy-controls-button-color": "var(--text)",
-  "--xy-controls-button-color-hover": "var(--text)",
-  "--xy-controls-button-border-color": "var(--border)",
-  "--xy-controls-box-shadow": "none",
-  "--xy-attribution-background-color": "var(--surface)",
-  "--xy-edge-label-background-color": "var(--surface)",
-  "--xy-edge-label-color": "var(--muted)",
-} as CSSProperties;
 
 export type Issues = Map<string, "missing" | "invalid">;
 
@@ -137,7 +123,7 @@ function FlowCanvas(props: Props) {
         edges={toEdges(props)}
         nodeTypes={nodeTypes}
         fitView
-        style={flowTheme}
+        className="plant-flow"
         minZoom={0.1}
         isValidConnection={(connection) => isAllowed(props, connection)}
         onNodeClick={(_, node) => {
