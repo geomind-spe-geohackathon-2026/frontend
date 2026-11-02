@@ -14,7 +14,7 @@ type Props = {
   scale?: number | undefined;
 };
 
-const displayDigits = 4;
+const scaledDigits = 6;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const selectClass =
   "w-full rounded-control border border-border bg-surface px-2.5 py-[7px] aria-invalid:border-warn";
@@ -36,7 +36,8 @@ function optionLabel(option: unknown): string {
 
 function toShown(current: unknown, scale: number): string {
   if (typeof current !== "number") return "";
-  return String(Number((current * scale).toPrecision(displayDigits)));
+  if (scale === 1) return String(current);
+  return String(Number((current * scale).toPrecision(scaledDigits)));
 }
 
 function NumberControl({

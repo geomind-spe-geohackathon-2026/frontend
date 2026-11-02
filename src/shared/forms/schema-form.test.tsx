@@ -17,6 +17,24 @@ describe("SchemaForm", () => {
     expect(container.querySelectorAll("form")).toHaveLength(1);
   });
 
+  it("shows a stored number in full, and a share as a percentage without float noise", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        pressure: { type: "number" },
+        share: {
+          type: "object",
+          "x-fraction": true,
+          properties: { value: { type: "number" } },
+        },
+      },
+    };
+    const initial = { pressure: 101325, share: { value: 0.8249507401227822 } };
+    render(<SchemaForm schema={schema} initial={initial} onChange={vi.fn()} prefix="air" />);
+    expect(screen.getByLabelText(/Pressure/)).toHaveValue(101325);
+    expect(screen.getByLabelText(/Share/)).toHaveValue(82.4951);
+  });
+
   it("asks for a date with a date field, and keeps a stored time of day as text", () => {
     const schema = {
       type: "object",
