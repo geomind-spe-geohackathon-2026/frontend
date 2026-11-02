@@ -22,11 +22,12 @@ A production build (`npm run build`) always uses the real API and contains no mo
 `compose.yml` builds the app and serves it with nginx behind the Traefik of `../infrastructure`, at `https://geomind.team`. It needs the external `traefik` network.
 
 ```
+cp .env.example .env.production
 docker compose config -q
 docker compose up -d --build
 ```
 
-The API address is `VITE_API_URL` in `.env.production`, which only `vite build` reads, so `npm run dev` keeps its local proxy. Rebuild the image after changing it.
+The API address is `VITE_API_URL` in `.env.production`, which only `vite build` reads, so `npm run dev` keeps its local proxy. The file is git-ignored, as in the backend; `.env.example` is the template. Rebuild the image after changing it.
 
 ## Commands
 
