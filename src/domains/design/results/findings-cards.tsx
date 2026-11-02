@@ -8,6 +8,21 @@ function toFigure(value: number | null): string {
   return value === null ? "-" : formatFigure(value);
 }
 
+function EndValue({
+  value,
+  feasible,
+}: {
+  value: number | null;
+  feasible?: boolean | null | undefined;
+}) {
+  return (
+    <>
+      {toFigure(value)}
+      {feasible === false ? <span className="text-muted"> (infeasible)</span> : null}
+    </>
+  );
+}
+
 /** The effect of each uncertain value on a metric, the largest first. */
 export function TornadoCard({ rows }: { rows: NonNullable<ResultDetail["tornado"]> }) {
   return (
@@ -36,8 +51,12 @@ export function TornadoCard({ rows }: { rows: NonNullable<ResultDetail["tornado"
                 <td>{row.metric}</td>
                 <td>{row.low}</td>
                 <td>{row.high}</td>
-                <td>{toFigure(row.at_low)}</td>
-                <td>{toFigure(row.at_high)}</td>
+                <td>
+                  <EndValue value={row.at_low} feasible={row.feasible_low} />
+                </td>
+                <td>
+                  <EndValue value={row.at_high} feasible={row.feasible_high} />
+                </td>
                 <td>
                   {toFigure(row.effect)} {row.unit}
                 </td>
@@ -50,12 +69,18 @@ export function TornadoCard({ rows }: { rows: NonNullable<ResultDetail["tornado"
   );
 }
 
+function toSpreadTitle(row: NonNullable<ResultDetail["spread"]>[number] | undefined): string {
+  const title = `Uncertainty over ${String(row?.draws ?? 0)} draws`;
+  const feasible = row?.feasible ?? null;
+  return feasible === null ? title : `${title}, ${String(feasible)} feasible`;
+}
+
 /** The mean and percentiles of each metric over the draws of an uncertainty study. */
 export function SpreadCard({ rows }: { rows: NonNullable<ResultDetail["spread"]> }) {
   return (
     <Card className="mb-3.5">
       <CardHeader>
-        <h2>Uncertainty over {rows[0]?.draws ?? 0} draws</h2>
+        <h2>{toSpreadTitle(rows[0])}</h2>
       </CardHeader>
       <CardBody className="overflow-x-auto">
         <table className={`w-full border-collapse text-left ${cellClass}`}>

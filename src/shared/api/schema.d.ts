@@ -2083,6 +2083,8 @@ export interface components {
         SpreadRow: {
             /** Draws */
             draws: number;
+            /** Feasible */
+            feasible?: number | null;
             /** Mean */
             mean: number | null;
             /** Metric */
@@ -2250,6 +2252,10 @@ export interface components {
             at_low: number | null;
             /** Effect */
             effect: number | null;
+            /** Feasible High */
+            feasible_high?: boolean | null;
+            /** Feasible Low */
+            feasible_low?: boolean | null;
             /** High */
             high: string;
             /** Low */
