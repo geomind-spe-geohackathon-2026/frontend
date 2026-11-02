@@ -14,6 +14,7 @@ import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/shared/ui/button";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
+import { Notice } from "@/shared/ui/notice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { showToast } from "@/shared/ui/toast";
 import { caseKeys, caseQuery, caseSchemaQuery, useSaveCase } from "./api";
@@ -60,6 +61,17 @@ function ProblemList({ problems }: { problems: { path: string; message: string }
   );
 }
 
+function SaveFailure({ error }: { error: unknown }) {
+  if (error === null || error === undefined) return null;
+  if (error instanceof ApiError && "latest" in error.details) return null;
+  return (
+    <div className="mb-3.5 flex flex-col gap-2">
+      <Notice status="failed" error={error} />
+      {error instanceof ApiError ? <ProblemList problems={readProblems(error)} /> : null}
+    </div>
+  );
+}
+
 function StartProblem({ projectId, schema }: { projectId: string; schema: JsonSchema }) {
   const project = useQuery(projectQuery(projectId));
   const save = useSaveCase(projectId);
@@ -84,6 +96,7 @@ function StartProblem({ projectId, schema }: { projectId: string; schema: JsonSc
         >
           Start the problem
         </Button>
+        <SaveFailure error={save.error} />
       </CardBody>
     </Card>
   );
@@ -132,7 +145,6 @@ function useSaveFlow(projectId: string, saved: Case, onDiscard: () => void) {
     discard();
     void queryClient.invalidateQueries({ queryKey: caseKeys.all(projectId) });
   };
-  const problems = save.error instanceof ApiError ? readProblems(save.error) : [];
   return {
     save,
     isNoting,
@@ -142,7 +154,6 @@ function useSaveFlow(projectId: string, saved: Case, onDiscard: () => void) {
     discard,
     submit,
     reload,
-    problems,
   };
 }
 
@@ -282,7 +293,8 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
         }
       />
       <BlockerBanner missing={editor.missing} onShow={handleShow} />
-      <ProblemList problems={[...editor.problems, ...flow.problems]} />
+      <ProblemList problems={editor.problems} />
+      <SaveFailure error={flow.save.error} />
       <SectionTabs {...{ projectId, saved, schema, editor, tab, generation }} onTab={showTab} />
       <SaveDialogs flow={flow} content={editor.content} />
       <UnsavedChangesDialog blocker={blocker} />

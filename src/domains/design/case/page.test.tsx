@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
 import { renderApp } from "@/testing/render-app";
+import realSchema from "@/mocks/real-case-schema.json";
 import { server } from "@/testing/server";
 
 const slow = { timeout: 4000 };
@@ -105,5 +106,50 @@ describe("Problem page", { timeout: 20000 }, () => {
     );
     renderApp({ path: withCase });
     expect(await screen.findByRole("alert")).toHaveTextContent("You do not have access");
+  });
+});
+
+describe("Starting the problem", { timeout: 20000 }, () => {
+  it("sends the header gemini's real schema describes, with the kind", async () => {
+    let sent: unknown = null;
+    server.use(
+      http.get("*/api/v1/design/case/schema", () => HttpResponse.json(realSchema)),
+      http.post("*/api/v1/design/case", async ({ request }) => {
+        sent = await request.json();
+        return HttpResponse.json(
+          { error: { code: "internal", message: "stop", details: {} } },
+          { status: 500 },
+        );
+      }),
+    );
+    renderApp({ path: withoutCase });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Start the problem" }));
+    await screen.findByRole("alert");
+    expect(sent).toMatchObject({ content: { format: 1, kind: "case" } });
+  });
+
+  it("shows why the start failed, with the problems gemini names", async () => {
+    server.use(
+      http.post("*/api/v1/design/case", () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: "case_invalid",
+              message: "The case is invalid",
+              details: { problems: [{ path: "kind", message: "old_format" }] },
+            },
+          },
+          { status: 422 },
+        ),
+      ),
+    );
+    renderApp({ path: withoutCase });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Start the problem" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("case_invalid");
+    expect(alert).toHaveTextContent("The case is invalid");
+    expect(screen.getByRole("region", { name: "Problems" })).toHaveTextContent("old_format");
   });
 });

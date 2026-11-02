@@ -157,3 +157,14 @@ test("golden path", async ({ page }, info) => {
   await page.getByRole("menuitem", { name: /sign out/i }).click();
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeAttached();
 });
+
+test("a new empty project starts its problem", async ({ page }, info) => {
+  const mode = info.project.name;
+  const login = mode === "real" ? real : mock;
+  await page.goto("/projects");
+  await signIn(page, login.email, login.password);
+  await createEmpty(page, "پروژه خالی");
+  await page.getByRole("link", { name: "1 Problem" }).click();
+  await page.getByRole("button", { name: "Start the problem" }).click();
+  await expect(page.getByText("Problem v1")).toBeVisible();
+});

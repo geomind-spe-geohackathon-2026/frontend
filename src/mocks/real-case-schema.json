@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "kind",
+    "name",
+    "time"
+  ],
+  "properties": {
+    "format": {
+      "const": 1
+    },
+    "kind": {
+      "type": "string",
+      "const": "case"
+    },
+    "name": {
+      "type": "string"
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end",
+        "step"
+      ],
+      "properties": {
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "unit"
+          ],
+          "properties": {
+            "value": {
+              "type": "number"
+            },
+            "range": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                }
+              }
+            },
+            "uncertainty": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "uniform",
+                    "triangular",
+                    "normal"
+                  ]
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "std": {
+                  "type": "number"
+                }
+              }
+            },
+            "unit": {
+              "enum": [
+                "d",
+                "h",
+                "min",
+                "s",
+                "yr"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "about": {
+      "type": "object"
+    }
+  }
+}
