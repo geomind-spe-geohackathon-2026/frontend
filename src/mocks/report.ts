@@ -10,13 +10,19 @@ const titles: Record<ReportRequest["include"][number], string> = {
   agentlog: "Agent log",
 };
 
+function toMarkdown(key: ReportRequest["include"][number]): string {
+  if (key === "costs") return "Cost per unit: **missing**";
+  if (key === "capacities") return "| Module | Capacity |\n| --- | --- |\n| Example pump | 3 MW |";
+  return `Example text for ${key}.`;
+}
+
 function toPreview(body: ReportRequest): Report {
   return {
     title: `Example report for ${body.result}`,
     sections: body.include.map((key) => ({
       key,
       title: titles[key],
-      markdown: key === "costs" ? "Cost per unit: **missing**" : `Example text for ${key}.`,
+      markdown: toMarkdown(key),
     })),
   };
 }

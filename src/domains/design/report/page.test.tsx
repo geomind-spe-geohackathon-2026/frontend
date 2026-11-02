@@ -12,7 +12,13 @@ describe("ReportPage", () => {
       await screen.findByRole("heading", { name: "Example report for example-result-2" }),
     ).toBeVisible();
     expect(screen.getByRole("heading", { name: "Costs and sources" })).toBeVisible();
-    expect(screen.getByText("missing")).toBeVisible();
+    expect(await screen.findByText("missing", {}, { timeout: 4000 })).toBeVisible();
+  });
+
+  it("renders a pipe table of a section as a real table", async () => {
+    renderApp({ path });
+    expect(await screen.findByRole("cell", { name: "3 MW" }, { timeout: 4000 })).toBeVisible();
+    expect(screen.getByRole("columnheader", { name: "Capacity" })).toBeVisible();
   });
 
   it("drops a section from the preview when it is unchecked", async () => {

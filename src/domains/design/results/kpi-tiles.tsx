@@ -19,7 +19,7 @@ export function KpiTiles({ items, label }: Props) {
               <div className="text-[12.5px] text-muted">{item.title}</div>
               <div className="text-[22px] font-semibold">
                 {item.value === null ? (
-                  <Missing blocks={item.title} />
+                  <Missing compact blocks={item.title} />
                 ) : (
                   <Quantity value={item.value} unit={item.unit} />
                 )}
