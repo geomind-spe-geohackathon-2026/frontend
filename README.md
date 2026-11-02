@@ -17,12 +17,12 @@ A production build (`npm run build`) always uses the real API and contains no mo
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm run check` | types, lint and format check, unit and component tests |
-| `npm run build` | type check, production build, mock-free bundle check |
+| Command           | What it does                                                          |
+| ----------------- | --------------------------------------------------------------------- |
+| `npm run check`   | types, lint and format check, unit and component tests                |
+| `npm run build`   | type check, production build, mock-free bundle check                  |
 | `npm run gen:api` | generates `src/shared/api/schema.d.ts` from `../backend/openapi.json` |
-| `npm run e2e` | Playwright smoke test (needs `npx playwright install chromium`) |
+| `npm run e2e`     | Playwright smoke test (needs `npx playwright install chromium`)       |
 
 ## Docs
 
