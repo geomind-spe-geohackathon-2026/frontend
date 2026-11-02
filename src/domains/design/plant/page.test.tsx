@@ -47,6 +47,7 @@ const geminiParameters = {
   },
   values: { dispatch: null, thermal_conductance: 1500, pressure_drop: null },
   missing: [],
+  ranges: ["thermal_conductance"],
   history: [],
 };
 
@@ -157,6 +158,13 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(screen.getByLabelText(/Duty/)).toHaveValue(20);
     expect(screen.getAllByText("K").length).toBeGreaterThan(0);
     expect(screen.getByText("missing")).toBeVisible();
+  });
+
+  it("says which values a study can search", async () => {
+    server.use(http.get("*/api/v1/plant/parameters", () => HttpResponse.json(geminiParameters)));
+    renderApp({ path: `${withPlant}?module=hx` });
+    const hints = await screen.findAllByText("A study can search this value.", {}, slow);
+    expect(hints).toHaveLength(1);
   });
 
   it("draws gemini's parameters as value, unit and range, never as a form chooser", async () => {

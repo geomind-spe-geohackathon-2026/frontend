@@ -76,6 +76,7 @@ function ParameterRows({ fields, data, edits, onEdit }: RowsProps) {
           stored={data.values[field.local]}
           edit={edits[field.name]}
           isMissing={data.missing.includes(field.local)}
+          searchable={data.ranges.includes(field.local)}
           onEdit={onEdit}
         />
       ))}

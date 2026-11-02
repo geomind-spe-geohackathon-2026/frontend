@@ -314,6 +314,7 @@ function toParameters(module: string, type: string, spec: PlantSpec): Parameters
     },
     values,
     missing: "approach_temperature" in values ? [] : ["approach_temperature"],
+    ranges: ["duty"],
     history: [],
   };
 }

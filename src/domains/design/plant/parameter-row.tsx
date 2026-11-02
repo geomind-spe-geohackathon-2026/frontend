@@ -8,6 +8,7 @@ type Props = {
   stored: unknown;
   edit: FieldEdit | undefined;
   isMissing: boolean;
+  searchable: boolean;
   onEdit: (name: string, edit: FieldEdit | null) => void;
 };
 
@@ -110,9 +111,9 @@ function UnitControl({
   return <span className="shrink-0 text-[12.5px] text-muted">{unit}</span>;
 }
 
-function Notes({ field }: { field: ParameterField }) {
+function Notes({ field, searchable }: { field: ParameterField; searchable: boolean }) {
   const range = toRangeText(field);
-  if (range === null && field.description === null) return null;
+  if (range === null && field.description === null && !searchable) return null;
   return (
     <p className="text-[11.5px] leading-snug text-muted">
       {range === null ? null : (
@@ -123,12 +124,13 @@ function Notes({ field }: { field: ParameterField }) {
         </span>
       )}
       {field.description}
+      {searchable ? <span className="block">A study can search this value.</span> : null}
     </p>
   );
 }
 
 /** One module parameter: its value, its unit, the allowed range and gemini's description. */
-export function ParameterRow({ field, stored, edit, isMissing, onEdit }: Props) {
+export function ParameterRow({ field, stored, edit, isMissing, searchable, onEdit }: Props) {
   const storedText = toFieldText(field, stored);
   const text = edit?.text ?? storedText;
   const unit = edit?.unit ?? field.unit;
@@ -176,7 +178,7 @@ export function ParameterRow({ field, stored, edit, isMissing, onEdit }: Props) 
           {problem === null ? null : <span className="text-bad">{problem}</span>}
         </p>
       ) : null}
-      <Notes field={field} />
+      <Notes field={field} searchable={searchable} />
     </div>
   );
 }

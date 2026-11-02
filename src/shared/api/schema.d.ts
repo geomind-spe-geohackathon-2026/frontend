@@ -1693,6 +1693,8 @@ export interface components {
             missing: string[];
             /** Module */
             module: string;
+            /** Ranges */
+            ranges: string[];
             /** Schema */
             schema: {
                 [key: string]: unknown;
