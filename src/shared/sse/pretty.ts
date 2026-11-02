@@ -99,9 +99,19 @@ function toCount(key: string, value: unknown): string | null {
 export function toSummary(summary: string): string {
   const value = fromText(summary.trim());
   if (Array.isArray(value)) return `${String(value.length)} items`;
+  if (value === undefined) return /^[[{(]/.test(summary.trim()) ? "See the details" : summary;
   if (typeof value !== "object" || value === null) return summary;
   const parts = Object.entries(value).flatMap(([key, item]) => toCount(key, item) ?? []);
   return parts.length === 0 ? "See the details" : parts.slice(0, 3).join(", ");
+}
+
+/** Writes a budget stop as a sentence, or nothing for any other failure. */
+export function toBudgetStop(message: string): string | null {
+  const found = /^project (cost|token) budget: \S+ used (\S+) of (\S+)$/.exec(message);
+  if (found === null) return null;
+  const unit = found[1] === "cost" ? " USD" : " tokens";
+  const spent = Number(Number(found[2]).toPrecision(2));
+  return `Stopped: this project reached its budget of ${found[3] ?? ""}${unit} (spent ${String(spent)}${unit}). Raise the budget in project settings to continue.`;
 }
 
 /** Writes a permission question as what was asked for. */

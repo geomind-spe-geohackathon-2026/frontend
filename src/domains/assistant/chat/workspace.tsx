@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import type { Message } from "@/shared/api/types";
 import { runQuery, useAnswerRun, useCancelRun, useCreateChat, useSendMessage } from "./api";
+import { AddToCase } from "./add-to-case";
 import { Composer } from "./composer";
 import { CaseNotice, DemoNotice } from "./demo-notice";
 import { Conversation } from "./conversation";
 import { RequestCard } from "./request-card";
 import { RunPanel } from "./run-panel";
 import { useRunView } from "./use-run-view";
+import type { View } from "./view";
 
 type Props = {
   projectId: string;
@@ -15,6 +17,25 @@ type Props = {
   runId: string | null;
   messages: Message[];
 };
+
+function toSavedProfile(view: View): boolean {
+  return view.blocks.some(
+    (block) => block.kind === "tool" && block.tool === "save_profile" && block.state === "done",
+  );
+}
+
+function SavedProfile({
+  projectId,
+  chatId,
+  view,
+}: {
+  projectId: string;
+  chatId: string | null;
+  view: View;
+}) {
+  if (chatId === null || !toSavedProfile(view)) return null;
+  return <AddToCase projectId={projectId} chatId={chatId} />;
+}
 
 function toFailure(error: Error | null): string | null {
   return error === null ? null : error.message;
@@ -47,6 +68,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
         <div className="flex-1">
           <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
         </div>
+        <SavedProfile projectId={projectId} chatId={chatId} view={view} />
         {view.request === null || runId === null ? null : (
           <div className="sticky bottom-0">
             <RequestCard

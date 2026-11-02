@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toFailureText, toPretty } from "./pretty";
+import { toFailureText, toPretty, toBudgetStop, toSummary } from "./pretty";
 
 describe("toPretty", () => {
   it("lays out a Python dict as JSON", () => {
@@ -30,5 +30,24 @@ describe("toFailureText", () => {
 
   it("keeps a plain error", () => {
     expect(toFailureText("it broke")).toBe("it broke");
+  });
+});
+
+describe("collapsed rows", () => {
+  it("never shows Python text it cannot read", () => {
+    expect(toSummary("{'a': {'b': 'cut of")).not.toContain("{");
+    expect(toSummary("[{'service': 'heating', 'x': {'y' : [1, (2")).not.toContain("'");
+  });
+});
+
+describe("toBudgetStop", () => {
+  it("writes a budget stop as a sentence", () => {
+    expect(toBudgetStop("project cost budget: 9b6c used 0.01632422 of 0.01")).toBe(
+      "Stopped: this project reached its budget of 0.01 USD (spent 0.016 USD). Raise the budget in project settings to continue.",
+    );
+  });
+
+  it("leaves another failure", () => {
+    expect(toBudgetStop("it broke")).toBeNull();
   });
 });

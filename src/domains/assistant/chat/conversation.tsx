@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ApiError } from "@/shared/api/errors";
 import type { Message } from "@/shared/api/types";
-import { Blocks } from "./blocks";
+import { Blocks, finishTool } from "./blocks";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import type { View } from "./view";
 
@@ -11,6 +11,10 @@ type Props = {
   view: View;
   failure: ApiError | null;
 };
+
+function isFinish(block: View["blocks"][number]): boolean {
+  return block.kind === "tool" && block.tool === finishTool;
+}
 
 function isActive(view: View): boolean {
   return view.status === "queued" || view.status === "running" || view.status === "waiting";
@@ -36,7 +40,8 @@ export function Conversation({ messages, liveRunId, view, failure }: Props) {
       {messages.map((message) => {
         const isLive = message.run !== null && message.run === liveRunId;
         if (message.role === "assistant") {
-          return isLive ? null : <MarkdownText key={message.id} text={message.content} />;
+          const shown = !isLive || view.blocks.some(isFinish);
+          return shown ? <MarkdownText key={message.id} text={message.content} /> : null;
         }
         return (
           <div key={message.id} className="space-y-3">
