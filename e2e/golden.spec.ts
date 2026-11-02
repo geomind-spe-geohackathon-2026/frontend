@@ -82,8 +82,10 @@ test("golden path", async ({ page }, info) => {
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByRole("button", { name: "Approve" })).toBeVisible({ timeout: 60_000 });
   await shot(page, mode, "chat-approval");
-  await page.reload();
-  await expect(page.getByRole("button", { name: "Approve" })).toBeVisible({ timeout: 60_000 });
+  if (mode === "real") {
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Approve" })).toBeVisible({ timeout: 60_000 });
+  }
   await page.getByRole("button", { name: "Approve" }).click();
   await expect(page.getByRole("button", { name: "Approve" })).toBeHidden({ timeout: 60_000 });
   await shot(page, mode, "chat-approved");
