@@ -49,7 +49,12 @@ export function Composer({ projectId, sending, active, cancelling, onSend, onCan
           Send
         </Button>
         {active ? (
-          <Button disabled={cancelling} onClick={onCancel}>
+          <Button
+            disabled={cancelling}
+            onClick={() => {
+              onCancel();
+            }}
+          >
             Cancel run
           </Button>
         ) : null}

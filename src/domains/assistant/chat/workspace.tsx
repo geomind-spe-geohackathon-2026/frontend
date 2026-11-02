@@ -94,9 +94,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
           onSend={(content) => {
             void handleSend(content);
           }}
-          onCancel={() => {
-            cancel.mutate();
-          }}
+          onCancel={cancel.mutate}
         />
       </div>
       {runId === null ? null : (
