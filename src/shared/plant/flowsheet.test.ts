@@ -71,6 +71,22 @@ describe("the process diagram of a report", () => {
     expect(sheet.edges.some((edge) => edge.source === "d1" || edge.target === "d2")).toBe(false);
   });
 
+  it("keeps modules with different settings apart", () => {
+    const deeper = modules.map((module) =>
+      module.id === "d1" ? { ...module, settings: "deeper" } : module,
+    );
+    const sheet = toSimpleSheet(deeper, connections);
+    const doublets = sheet.nodes.filter((node) => node.title.startsWith("Doublet"));
+    expect(doublets.map((node) => node.title)).toEqual(["Doublets ×2", "Doublet d1"]);
+    expect(sheet.edges).toContainEqual({ source: "d1", target: "degasser", stream: "brine" });
+  });
+
+  it("merges nothing when settings are not known", () => {
+    const bare = modules.map(({ id, type, category }) => ({ id, type, category }));
+    const sheet = toSimpleSheet(bare, connections);
+    expect(sheet.nodes.filter((node) => node.title.startsWith("Doublet"))).toHaveLength(3);
+  });
+
   it("leaves out air and heat losses, and marks shared electricity on the node", () => {
     const sheet = toSimpleSheet(modules, connections);
     const streams = new Set(sheet.edges.map((edge) => edge.stream));

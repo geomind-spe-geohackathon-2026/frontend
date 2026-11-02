@@ -3,7 +3,7 @@ import { toModuleGroups } from "./groups";
 import { splitPort, toWords } from "./spec";
 import { find, join, toStem, type Parents } from "./streams";
 
-export type SheetModule = { id: string; type: string; category: string };
+export type SheetModule = { id: string; type: string; category: string; settings?: string };
 export type SheetConnection = { source: string; target: string; stream: string | null };
 export type SheetNode = { id: string; title: string; group: string; marks: string[] };
 export type SheetEdge = { source: string; target: string; stream: string | null };
@@ -120,20 +120,21 @@ function toPassedEdges(steps: SheetEdge[], hidden: Set<string>): SheetEdge[] {
   return flows.filter((step) => !hidden.has(step.source)).flatMap((step) => reach(step, new Set()));
 }
 
-function toSignature(id: string, type: string, edges: SheetEdge[]): string {
+function toSignature({ id, type, settings }: SheetModule, edges: SheetEdge[]): string {
+  if (settings === undefined) return id;
   const sides = (from: "source" | "target", to: "source" | "target") =>
     edges
       .filter((edge) => edge[from] === id)
       .map((edge) => `${edge[to]}:${String(edge.stream)}`)
       .sort()
       .join(",");
-  return `${type}|${sides("source", "target")}|${sides("target", "source")}`;
+  return `${type}|${settings}|${sides("source", "target")}|${sides("target", "source")}`;
 }
 
 function toTwins(modules: SheetModule[], edges: SheetEdge[]): Map<string, string[]> {
   const twins = new Map<string, string[]>();
   for (const module of modules) {
-    const key = toSignature(module.id, module.type, edges);
+    const key = toSignature(module, edges);
     twins.set(key, [...(twins.get(key) ?? []), module.id]);
   }
   const byId = new Map<string, string[]>();
@@ -192,7 +193,7 @@ export function toFullSheet(modules: SheetModule[], connections: SheetConnection
   };
 }
 
-/** The process as a reader follows it: no pipes, mixers or splitters, no air or heat losses, and modules alike in type and connections drawn once with a count. */
+/** The process as a reader follows it: no pipes, mixers or splitters, no air or heat losses, and modules equal in type, settings and connections drawn once with a count. */
 export function toSimpleSheet(modules: SheetModule[], connections: SheetConnection[]): Sheet {
   const streams = toKnownStreams(modules, connections);
   const groups = toGroups(modules, connections, streams);

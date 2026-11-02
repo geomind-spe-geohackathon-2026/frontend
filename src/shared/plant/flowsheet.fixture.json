@@ -3,137 +3,164 @@
     {
       "id": "d0",
       "type": "Doublet",
-      "category": "plants"
+      "category": "plants",
+      "settings": "doublet"
     },
     {
       "id": "d1",
       "type": "Doublet",
-      "category": "plants"
+      "category": "plants",
+      "settings": "doublet"
     },
     {
       "id": "d2",
       "type": "Doublet",
-      "category": "plants"
+      "category": "plants",
+      "settings": "doublet"
     },
     {
       "id": "production_mixers.0",
       "type": "Mixer",
-      "category": "piping"
+      "category": "piping",
+      "settings": "production_mixers.0"
     },
     {
       "id": "production_mixers.1",
       "type": "Mixer",
-      "category": "piping"
+      "category": "piping",
+      "settings": "production_mixers.1"
     },
     {
       "id": "injection_splitters.0",
       "type": "Splitter",
-      "category": "piping"
+      "category": "piping",
+      "settings": "injection_splitters.0"
     },
     {
       "id": "injection_splitters.1",
       "type": "Splitter",
-      "category": "piping"
+      "category": "piping",
+      "settings": "injection_splitters.1"
     },
     {
       "id": "degasser",
       "type": "Degasser",
-      "category": "treatment"
+      "category": "treatment",
+      "settings": "degasser"
     },
     {
       "id": "filters.hot",
       "type": "Filter",
-      "category": "treatment"
+      "category": "treatment",
+      "settings": "filter"
     },
     {
       "id": "filters.cold",
       "type": "Filter",
-      "category": "treatment"
+      "category": "treatment",
+      "settings": "filter"
     },
     {
       "id": "heat_exchanger",
       "type": "HeatExchanger",
-      "category": "exchangers"
+      "category": "exchangers",
+      "settings": "heat_exchanger"
     },
     {
       "id": "heat_pump",
       "type": "HeatPump",
-      "category": "heating"
+      "category": "heating",
+      "settings": "heat_pump"
     },
     {
       "id": "injection_pump",
       "type": "InjectionPump",
-      "category": "pumps"
+      "category": "pumps",
+      "settings": "injection_pump"
     },
     {
       "id": "heating_return_pipe",
       "type": "Pipe",
-      "category": "piping"
+      "category": "piping",
+      "settings": "heating_return_pipe"
     },
     {
       "id": "peak_boiler",
       "type": "Boiler",
-      "category": "heating"
+      "category": "heating",
+      "settings": "peak_boiler"
     },
     {
       "id": "heating_supply_pipe",
       "type": "Pipe",
-      "category": "piping"
+      "category": "piping",
+      "settings": "heating_supply_pipe"
     },
     {
       "id": "heating_consumer",
       "type": "HeatingGrid",
-      "category": "grids"
+      "category": "grids",
+      "settings": "heating_consumer"
     },
     {
       "id": "cooling_return_pipe",
       "type": "Pipe",
-      "category": "piping"
+      "category": "piping",
+      "settings": "cooling_return_pipe"
     },
     {
       "id": "compression_chiller",
       "type": "HeatPump",
-      "category": "heating"
+      "category": "heating",
+      "settings": "compression_chiller"
     },
     {
       "id": "cooling_supply_pipe",
       "type": "Pipe",
-      "category": "piping"
+      "category": "piping",
+      "settings": "cooling_supply_pipe"
     },
     {
       "id": "cooling_consumer",
       "type": "CoolingGrid",
-      "category": "grids"
+      "category": "grids",
+      "settings": "cooling_consumer"
     },
     {
       "id": "gas_grid",
       "type": "GasGrid",
-      "category": "grids"
+      "category": "grids",
+      "settings": "gas_grid"
     },
     {
       "id": "electricity_grid",
       "type": "ElectricityGrid",
-      "category": "grids"
+      "category": "grids",
+      "settings": "electricity_grid"
     },
     {
       "id": "gas_makeup",
       "type": "GasMakeup",
-      "category": "piping"
+      "category": "piping",
+      "settings": "gas_makeup"
     },
     {
       "id": "flare",
       "type": "Flare",
-      "category": "treatment"
+      "category": "treatment",
+      "settings": "flare"
     },
     {
       "id": "atmosphere",
       "type": "Atmosphere",
-      "category": "environment"
+      "category": "environment",
+      "settings": "atmosphere"
     },
     {
       "id": "compression_cooler",
       "type": "Cooler",
-      "category": "exchangers"
+      "category": "exchangers",
+      "settings": "compression_cooler"
     }
   ],
   "connections": [

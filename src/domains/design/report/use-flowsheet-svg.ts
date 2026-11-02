@@ -12,6 +12,7 @@ function toModules(rows: Report["flowsheet"]["modules"] | undefined): SheetModul
     id: String(row.id),
     type: String(row.type),
     category: String(row.category),
+    ...(typeof row.settings === "string" ? { settings: row.settings } : {}),
   }));
 }
 
