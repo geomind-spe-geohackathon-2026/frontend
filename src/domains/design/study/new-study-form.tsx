@@ -68,11 +68,9 @@ export function NewStudyForm({ projectId, kinds, error, pending, onSubmit }: Pro
   const [value, setValue] = useState<unknown>({});
   const [problems, setProblems] = useState<Problem[]>([]);
   const selected = kinds.find((entry) => entry.kind === kind) ?? null;
+  const missing = selected === null ? [] : findMissing(selected.schema, value);
   const ready =
-    selected !== null &&
-    name.trim() !== "" &&
-    problems.length === 0 &&
-    findMissing(selected.schema, value).length === 0;
+    selected !== null && name.trim() !== "" && problems.length === 0 && missing.length === 0;
 
   function handleKind(next: string): void {
     setKind(next);
@@ -106,6 +104,7 @@ export function NewStudyForm({ projectId, kinds, error, pending, onSubmit }: Pro
           key={selected.kind}
           schema={selected.schema}
           initial={{}}
+          missing={missing}
           onChange={(nextValue, nextProblems) => {
             setValue(nextValue);
             setProblems(nextProblems);

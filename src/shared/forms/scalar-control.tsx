@@ -8,7 +8,6 @@ type Props = {
   schema: JsonSchema;
   invalid: boolean;
   describedBy: string | undefined;
-  onFirstValue?: () => void;
 };
 
 const selectClass =
@@ -25,12 +24,11 @@ function optionLabel(option: unknown): string {
 }
 
 /** One input for a scalar schema: number, text, checkbox or select; clearing it removes the value. */
-export function ScalarControl({ id, name, schema, invalid, describedBy, onFirstValue }: Props) {
+export function ScalarControl({ id, name, schema, invalid, describedBy }: Props) {
   const { control, setValue } = useFormContext();
   const current: unknown = useWatch({ control, name });
   const update = (next: unknown) => {
     setValue(name, next, { shouldDirty: true, shouldValidate: true, shouldTouch: true });
-    if (next !== undefined && current === undefined) onFirstValue?.();
   };
   const common = { id, "aria-invalid": invalid, "aria-describedby": describedBy };
   if (schema.enum !== undefined) {

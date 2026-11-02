@@ -18,6 +18,11 @@ function isEmpty(value: unknown): boolean {
   return value === undefined || value === "";
 }
 
+/** Tells whether gemini reported a missing value at this field or inside it. */
+export function isReported(missing: readonly string[], full: string): boolean {
+  return missing.some((path) => path === full || path.startsWith(`${full}.`));
+}
+
 function useMessages(name: string, full: string): string[] {
   const { problems } = useFieldContext();
   const { formState } = useFormContext();
@@ -37,7 +42,7 @@ export function FieldFrame({ name, path, label, unit, children }: Props) {
   const full = toFullPath(prefix, path);
   const id = toFieldId(full);
   const messages = useMessages(name, full);
-  const isMissing = missing.includes(full) && isEmpty(current);
+  const isMissing = isReported(missing, full) && isEmpty(current);
   const invalid = isMissing || messages.length > 0;
   const describedBy = invalid ? `${id}-notes` : undefined;
   return (
