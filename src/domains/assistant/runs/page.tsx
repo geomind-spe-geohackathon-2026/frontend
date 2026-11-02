@@ -6,6 +6,7 @@ import { Quantity } from "@/shared/quantity/quantity";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
 import { RunStatusChip } from "@/shared/sse/status-chip";
+import { toShortId } from "@/lib/shortid";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/shared/ui/button";
 import type { Run } from "@/shared/api/types";
@@ -55,7 +56,7 @@ function RunsTable({
           <tr key={run.id} className="border-b border-border last:border-b-0">
             <td className="px-3 py-2">
               <Link className="text-accent" to={`/projects/${projectId}/assistant/runs/${run.id}`}>
-                {run.id}
+                {toShortId(run.id)}
               </Link>
             </td>
             <td className="px-3 py-2">{titles.get(run.chat) ?? run.chat}</td>

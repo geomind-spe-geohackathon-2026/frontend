@@ -14,7 +14,7 @@ describe("runs page", () => {
   it("lists the runs with chat title, status, tokens and cost, and the project totals", async () => {
     renderApp({ path: base });
     const table = await screen.findByRole("table", { name: /Runs of this project/ });
-    const row = within(table).getByRole("link", { name: "example-run-1" }).closest("tr");
+    const row = within(table).getByRole("link", { name: "exampler" }).closest("tr");
     expect(row).not.toBeNull();
     expect(within(row ?? table).getByText("Design the example plant")).toBeVisible();
     expect(within(row ?? table).getByText("done")).toBeVisible();
@@ -43,14 +43,17 @@ describe("runs page", () => {
 describe("run log page", () => {
   it("opens from the table and shows the steps, the selected step and the totals", async () => {
     renderApp({ path: base });
-    await userEvent.setup().click(await screen.findByRole("link", { name: "example-run-1" }));
-    expect(await screen.findByRole("heading", { name: "Run example-run-1" })).toBeVisible();
+    await userEvent.setup().click(await screen.findByRole("link", { name: "exampler" }));
+    expect(await screen.findByRole("heading", { name: "Run exampler" })).toBeVisible();
     const steps = screen.getByRole("navigation", { name: "Steps" });
     expect(within(steps).getByRole("button", { name: /coordinator · step 0/ })).toBeVisible();
     expect(screen.getByRole("heading", { name: /LLM call · coordinator · step 0/ })).toBeVisible();
     expect(screen.getByRole("table", { name: "Per agent" })).toBeVisible();
     expect(screen.getByRole("table", { name: "Per model" })).toBeVisible();
     expect(screen.getByText(/System prompt and history/)).toBeVisible();
+    expect(screen.getByText(/System prompt and history/).closest("details")).not.toHaveAttribute(
+      "open",
+    );
   });
 
   it("shows the tool call of another step with its input and output", async () => {
