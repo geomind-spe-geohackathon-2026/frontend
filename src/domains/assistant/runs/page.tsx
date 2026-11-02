@@ -84,7 +84,7 @@ function RunsTable({
   titles: Map<string, string>;
 }) {
   return (
-    <div className="overflow-x-auto rounded-card border border-border bg-surface">
+    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
       <table className="w-full border-collapse text-left">
         <caption className="sr-only">Runs of this project, newest first</caption>
         <thead>

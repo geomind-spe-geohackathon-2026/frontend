@@ -74,7 +74,7 @@ export function ReportEditor({ projectId, results, runs, parts }: Props) {
         }
       />
       {exporter.isError ? <Notice status="failed" error={exporter.error} /> : null}
-      <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
           <PreviewBody include={include} preview={preview} flowsheet={flowsheet} />
         </div>

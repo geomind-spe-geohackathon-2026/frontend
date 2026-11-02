@@ -121,52 +121,54 @@ function DocumentsTable({
   onDelete: (document: Document) => void;
 }) {
   return (
-    <table className="w-full rounded-card border border-border bg-surface text-left">
-      <caption className="sr-only">Documents</caption>
-      <thead className="text-muted">
-        <tr>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Name
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Size
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Searchable
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Added
-          </th>
-          <th scope="col" className="px-3 py-2">
-            <span className="sr-only">Action</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {documents.map((document) => (
-          <tr key={document.id} className="border-t border-border">
-            <td className="px-3 py-2">{document.name}</td>
-            <td className="px-3 py-2">{toSizeLabel(document.size)}</td>
-            <td className="px-3 py-2">
-              <Chip tone={searchableTone[document.searchable]}>
-                {searchableText[document.searchable]}
-              </Chip>
-            </td>
-            <td className="px-3 py-2">{toDateLabel(document.created)}</td>
-            <td className="px-3 py-2 text-right">
-              <Button
-                aria-label={`Delete ${document.name}`}
-                onClick={() => {
-                  onDelete(document);
-                }}
-              >
-                Delete
-              </Button>
-            </td>
+    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+      <table className="w-full text-left">
+        <caption className="sr-only">Documents</caption>
+        <thead className="text-muted">
+          <tr>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Name
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Size
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Searchable
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Added
+            </th>
+            <th scope="col" className="px-3 py-2">
+              <span className="sr-only">Action</span>
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {documents.map((document) => (
+            <tr key={document.id} className="border-t border-border">
+              <td className="px-3 py-2">{document.name}</td>
+              <td className="px-3 py-2">{toSizeLabel(document.size)}</td>
+              <td className="px-3 py-2">
+                <Chip tone={searchableTone[document.searchable]}>
+                  {searchableText[document.searchable]}
+                </Chip>
+              </td>
+              <td className="px-3 py-2">{toDateLabel(document.created)}</td>
+              <td className="px-3 py-2 text-right">
+                <Button
+                  aria-label={`Delete ${document.name}`}
+                  onClick={() => {
+                    onDelete(document);
+                  }}
+                >
+                  Delete
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

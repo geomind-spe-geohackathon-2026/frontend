@@ -14,8 +14,20 @@ function toTitle(key: ReportPartInfo["key"]): string {
   return parts.find((part) => part.key === key)?.title ?? key;
 }
 
+const wideColumns = [
+  "Module with a long name",
+  "Type of the module",
+  "Category of the module",
+  "Connected to these modules",
+  "Parameters of the module",
+];
+
 function toMarkdown(key: ReportRequest["include"][number]): string {
   if (key === "costs") return "Cost per unit: **missing**";
+  if (key === "checks") {
+    const row = `| ${wideColumns.join(" | ")} |`;
+    return `${row}\n|${wideColumns.map(() => " --- ").join("|")}|\n${row}`;
+  }
   if (key === "capacities") return "| Module | Capacity |\n| --- | --- |\n| Example pump | 3 MW |";
   return `Example text for ${key}.`;
 }

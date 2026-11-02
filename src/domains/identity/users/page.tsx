@@ -63,33 +63,35 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
 
 function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefined }) {
   return (
-    <table className="w-full rounded-card border border-border bg-surface text-left">
-      <caption className="sr-only">Users</caption>
-      <thead className="text-muted">
-        <tr>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Name
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Email
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Role
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            Status
-          </th>
-          <th scope="col" className="px-3 py-2 font-medium">
-            <span className="sr-only">Action</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user) => (
-          <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
-        ))}
-      </tbody>
-    </table>
+    <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+      <table className="w-full text-left">
+        <caption className="sr-only">Users</caption>
+        <thead className="text-muted">
+          <tr>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Name
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Email
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Role
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Status
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              <span className="sr-only">Action</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

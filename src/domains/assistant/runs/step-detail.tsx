@@ -77,7 +77,7 @@ function ToolCard({ call }: { call: ToolCall }) {
           <Chip tone={failed ? "bad" : "ok"}>{failed ? "failed" : "ok"}</Chip>
         </span>
       </CardHeader>
-      <CardBody className="grid gap-3 md:grid-cols-2">
+      <CardBody className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
         <section aria-label="Input" className="min-w-0 space-y-1.5">
           <h3 className="text-[11.5px] tracking-wide text-muted uppercase">Input</h3>
           <pre className="overflow-x-auto rounded-control bg-sunken p-2 font-mono text-[12px]">

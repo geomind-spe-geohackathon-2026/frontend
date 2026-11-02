@@ -11,7 +11,11 @@ export default defineConfig({
   use: { actionTimeout: 15_000, trace: "retain-on-failure" },
   projects: [
     { name: "real", testMatch: "golden.spec.ts", use: { baseURL: realUrl } },
-    { name: "mock", testMatch: ["golden.spec.ts", "smoke.spec.ts"], use: { baseURL: mockUrl } },
+    {
+      name: "mock",
+      testMatch: ["golden.spec.ts", "smoke.spec.ts", "mobile.spec.ts"],
+      use: { baseURL: mockUrl },
+    },
   ],
   webServer: {
     command: "npm run dev -- --port 5174 --strictPort",
