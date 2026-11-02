@@ -1,6 +1,6 @@
 import type { Project } from "@/shared/api/types";
 import type { Document, DocumentList } from "./documents/types";
-import type { Overview, MessageReply, NewChat, NewMessage, Chat } from "./overview/types";
+import type { Overview } from "./overview/types";
 import type { ProjectRename } from "./settings/types";
 
 declare module "@/shared/api/schema" {
@@ -49,19 +49,6 @@ declare module "@/shared/api/schema" {
       delete: {
         parameters: { path: { id: string } };
         responses: { 204: { content?: never } };
-      };
-    };
-    "/assistant/chat": {
-      post: {
-        requestBody: { content: { "application/json": NewChat } };
-        responses: { 201: { content: { "application/json": Chat } } };
-      };
-    };
-    "/assistant/chat/{id}/messages": {
-      post: {
-        parameters: { path: { id: string } };
-        requestBody: { content: { "application/json": NewMessage } };
-        responses: { 201: { content: { "application/json": MessageReply } } };
       };
     };
   }

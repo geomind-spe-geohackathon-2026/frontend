@@ -103,6 +103,9 @@ const exampleOverview: Overview = {
       loop: "design",
       started: "2026-01-12T09:41:00Z",
       ended: null,
+      usage: { input_tokens: 1200, output_tokens: 300, cost: 0.02 },
+      request: null,
+      error: null,
     },
   ],
 };
