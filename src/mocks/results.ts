@@ -83,6 +83,8 @@ const exampleDetails: ResultDetail[] = [
     ...designA,
     capacities: [toCapacity("heat", 18)],
     sizes: [],
+    tornado: null,
+    spread: null,
     coverage: null,
     constraints: [
       {
@@ -105,6 +107,8 @@ const exampleDetails: ResultDetail[] = [
     ...designB,
     capacities: [toCapacity("heat", 31.2), toCapacity("cooling", 10.4)],
     sizes: [],
+    tornado: null,
+    spread: null,
     coverage: { heating: toYear(), cooling: toYear() },
     constraints: [
       {

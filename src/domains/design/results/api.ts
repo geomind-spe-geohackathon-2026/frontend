@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 
 export const resultKeys = {
@@ -35,3 +35,17 @@ export const comparisonQuery = (projectId: string, ids: string[], x: string, y: 
       ),
     enabled: ids.length > 0 && x !== "" && y !== "",
   });
+
+/** Mutation that saves a result's design as the next plant version. */
+export function useAdoptDesign(projectId: string, resultId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () =>
+      toData(
+        await api.POST("/design/results/{result_id}/adopt", {
+          params: { path: { result_id: resultId } },
+        }),
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects", projectId] }),
+  });
+}

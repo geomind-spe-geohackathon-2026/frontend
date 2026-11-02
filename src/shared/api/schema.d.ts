@@ -377,6 +377,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/design/results/{result_id}/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adopt Design */
+        post: operations["adopt_design_api_v1_design_results__result_id__adopt_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/design/study": {
         parameters: {
             query?: never;
@@ -1010,6 +1027,11 @@ export interface components {
             kind: "user" | "agent";
             /** Name */
             name: string;
+        };
+        /** AdoptedDesign */
+        AdoptedDesign: {
+            /** Plant Version */
+            plant_version: number;
         };
         /** Approval */
         Approval: {
@@ -1895,8 +1917,12 @@ export interface components {
             series: unknown[];
             /** Sizes */
             sizes: components["schemas"]["Capacity"][];
+            /** Spread */
+            spread: components["schemas"]["SpreadRow"][] | null;
             /** Study */
             study: string | null;
+            /** Tornado */
+            tornado: components["schemas"]["TornadoRow"][] | null;
         };
         /**
          * Run
@@ -1976,6 +2002,23 @@ export interface components {
         SpecProblems: {
             /** Problems */
             problems: components["schemas"]["Problem"][];
+        };
+        /** SpreadRow */
+        SpreadRow: {
+            /** Draws */
+            draws: number;
+            /** Mean */
+            mean: number | null;
+            /** Metric */
+            metric: string;
+            /** P5 */
+            p5: number | null;
+            /** P50 */
+            p50: number | null;
+            /** P95 */
+            p95: number | null;
+            /** Unit */
+            unit: string;
         };
         /** StartedBy */
         StartedBy: {
@@ -2118,6 +2161,25 @@ export interface components {
             input_tokens: number;
             /** Output Tokens */
             output_tokens: number;
+        };
+        /** TornadoRow */
+        TornadoRow: {
+            /** At High */
+            at_high: number | null;
+            /** At Low */
+            at_low: number | null;
+            /** Effect */
+            effect: number | null;
+            /** High */
+            high: string;
+            /** Low */
+            low: string;
+            /** Metric */
+            metric: string;
+            /** Parameter */
+            parameter: string;
+            /** Unit */
+            unit: string;
         };
         /** Usage */
         Usage: {
@@ -3033,6 +3095,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResultDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adopt_design_api_v1_design_results__result_id__adopt_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                result_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdoptedDesign"];
                 };
             };
             /** @description Validation Error */
