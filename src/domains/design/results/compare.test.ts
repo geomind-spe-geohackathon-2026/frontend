@@ -18,12 +18,12 @@ function result(kpis: Result["kpis"]): Result {
 describe("toSharedKpis", () => {
   it("leaves out a figure that has no value in some result, as it cannot be plotted", () => {
     const first = result([
-      { name: "cold", title: "cold", value: null, unit: "MWh" },
-      { name: "lcts", title: "lcts", value: 40, unit: "EUR/MWh" },
+      { name: "cold", title: "cold", value: null, unit: "MWh", reason: null },
+      { name: "lcts", title: "lcts", value: 40, unit: "EUR/MWh", reason: null },
     ]);
     const second = result([
-      { name: "cold", title: "cold", value: 3, unit: "MWh" },
-      { name: "lcts", title: "lcts", value: 41, unit: "EUR/MWh" },
+      { name: "cold", title: "cold", value: 3, unit: "MWh", reason: null },
+      { name: "lcts", title: "lcts", value: 41, unit: "EUR/MWh", reason: null },
     ]);
     expect(toSharedKpis([first, second]).map((kpi) => kpi.name)).toEqual(["lcts"]);
   });

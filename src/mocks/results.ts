@@ -20,9 +20,9 @@ const designA: Result = {
   case_version: 2,
   plant_version: 3,
   kpis: [
-    { name: "heat_capacity", title: "Heat capacity", value: 18, unit: "MW" },
-    { name: "lcoh", title: "LCOH", value: 38.9, unit: "EUR/MWh" },
-    { name: "co2", title: "CO2", value: 27.4, unit: "kt/a" },
+    { name: "heat_capacity", title: "Heat capacity", value: 18, unit: "MW", reason: null },
+    { name: "lcoh", title: "LCOH", value: 38.9, unit: "EUR/MWh", reason: null },
+    { name: "co2", title: "CO2", value: 27.4, unit: "kt/a", reason: null },
   ],
   checks: { passed: 6, failed: 0, not_assessed: 0 },
   created: "2026-01-12T14:03:00Z",
@@ -35,9 +35,9 @@ const designB: Result = {
   case_version: 2,
   plant_version: 3,
   kpis: [
-    { name: "heat_capacity", title: "Heat capacity", value: 31.2, unit: "MW" },
-    { name: "lcoh", title: "LCOH", value: 41.8, unit: "EUR/MWh" },
-    { name: "co2", title: "CO2", value: 19.6, unit: "kt/a" },
+    { name: "heat_capacity", title: "Heat capacity", value: 31.2, unit: "MW", reason: null },
+    { name: "lcoh", title: "LCOH", value: 41.8, unit: "EUR/MWh", reason: null },
+    { name: "co2", title: "CO2", value: 19.6, unit: "kt/a", reason: null },
   ],
   checks: { passed: 5, failed: 0, not_assessed: 1 },
   created: "2026-01-12T14:10:00Z",
@@ -48,7 +48,7 @@ const exampleSummaries: Result[] = [designA, designB];
 const exampleDetails: ResultDetail[] = [
   {
     ...designA,
-    capacities: [{ name: "heat", title: "Heat", value: 18, unit: "MW" }],
+    capacities: [{ name: "heat", title: "Heat", value: 18, unit: "MW", reason: null }],
     coverage: null,
     constraints: [
       {
@@ -63,8 +63,8 @@ const exampleDetails: ResultDetail[] = [
   {
     ...designB,
     capacities: [
-      { name: "heat", title: "Heat", value: 31.2, unit: "MW" },
-      { name: "cooling", title: "Cooling", value: 10.4, unit: "MW" },
+      { name: "heat", title: "Heat", value: 31.2, unit: "MW", reason: null },
+      { name: "cooling", title: "Cooling", value: 10.4, unit: "MW", reason: null },
     ],
     coverage: toYear(),
     constraints: [

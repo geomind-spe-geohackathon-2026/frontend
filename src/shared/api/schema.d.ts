@@ -1027,6 +1027,8 @@ export interface components {
         Capacity: {
             /** Name */
             name: string;
+            /** Reason */
+            reason: string | null;
             /** Title */
             title: string;
             /** Unit */
@@ -1309,6 +1311,8 @@ export interface components {
         Kpi: {
             /** Name */
             name: string;
+            /** Reason */
+            reason: string | null;
             /** Title */
             title: string;
             /** Unit */
