@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
 import { renderApp } from "@/testing/render-app";
+import { exampleCaseSchema } from "@/shared/forms/example-schema";
+import { validateDocument } from "@/shared/forms/resolver";
 import realSchema from "@/mocks/real-case-schema.json";
 import { server } from "@/testing/server";
 
@@ -151,5 +153,14 @@ describe("Starting the case", { timeout: 20000 }, () => {
     expect(alert).toHaveTextContent("case_invalid");
     expect(alert).toHaveTextContent("The case is invalid");
     expect(screen.getByRole("region", { name: "Problems" })).toHaveTextContent("old_format");
+  });
+});
+
+describe("Stored cases in the form", { timeout: 20000 }, () => {
+  it.each([
+    ["a file name", "economics.json"],
+    ["a filled form", { discount_rate: { value: 5 } }],
+  ])("reads economics as %s and reports nothing wrong", (_name, economics) => {
+    expect(validateDocument(exampleCaseSchema.properties?.economics ?? {}, economics)).toEqual([]);
   });
 });

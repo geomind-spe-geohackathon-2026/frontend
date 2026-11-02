@@ -28,15 +28,39 @@ function toPath(error: ErrorObject): string {
 
 /** Checks a value against a schema with ajv; required properties are missing values, not problems. */
 export function validateDocument(schema: JsonSchema, value: unknown): Problem[] {
+  if (value === undefined) return [];
   const validate = validatorOf(schema);
   if (validate(value)) return [];
-  return (validate.errors ?? [])
-    .filter((error) => error.keyword !== "required")
-    .map((error) => ({
+  return toProblems((validate.errors ?? []).filter((error) => error.keyword !== "required"));
+}
+
+function toMessage(error: ErrorObject): string {
+  if (error.keyword === "pattern") return "use lower case letters, digits and _";
+  if (error.keyword === "minimum" || error.keyword === "maximum") {
+    return error.message ?? "out of range";
+  }
+  if (error.keyword === "enum") return "choose one of the options";
+  return "enter a valid value";
+}
+
+function toProblems(errors: ErrorObject[]): Problem[] {
+  const unions = new Set(
+    errors.filter((error) => error.keyword === "anyOf").map((error) => error.instancePath),
+  );
+  const single = errors.filter((error) => !unions.has(error.instancePath));
+  const shown = [...unions].map((path) => ({
+    path: path.split("/").slice(1).join("."),
+    message: "choose a form and fill it in",
+    code: "anyOf",
+  }));
+  return [
+    ...shown,
+    ...single.map((error) => ({
       path: toPath(error),
-      message: error.message ?? "invalid",
+      message: toMessage(error),
       code: error.keyword,
-    }));
+    })),
+  ];
 }
 
 function toTree(problems: Problem[]): FieldErrors {

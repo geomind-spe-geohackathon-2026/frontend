@@ -44,3 +44,21 @@ describe("missing values", () => {
     expect(findMissing(exampleCaseSchema, { ...header, ...gradient(30, "K/km") })).toEqual([]);
   });
 });
+
+describe("a union section", () => {
+  const economics = {
+    anyOf: [{ type: "string" }, { type: "object", properties: { rate: { type: "number" } } }],
+  };
+
+  it("accepts a file name, a filled form and nothing", () => {
+    expect(validateDocument(economics, "economics.json")).toEqual([]);
+    expect(validateDocument(economics, { rate: 1 })).toEqual([]);
+    expect(validateDocument(economics, undefined)).toEqual([]);
+  });
+
+  it("gives one readable message for a value of neither form", () => {
+    expect(validateDocument(economics, 3)).toEqual([
+      { path: "", message: "choose a form and fill it in", code: "anyOf" },
+    ]);
+  });
+});
