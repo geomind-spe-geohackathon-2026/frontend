@@ -15,3 +15,15 @@ Cost: axes, ticks and scales are ours. Keep them in one small module (a linear s
 Rules for chart code (owner: C8): values come from the API with their unit; no hard-coded series names or ranges; axis titles show the unit; a missing series is shown with `<Missing>`, not drawn as zero.
 
 The flowsheet is not part of this layer: it uses `@xyflow/react` with `elkjs` (owner: C7).
+
+## What exists (C8)
+
+All in `src/shared/charts/`, no dependencies:
+
+- `scale.ts`: `toLinearScale`, `toNiceTicks`, `toPaddedDomain`. Every chart uses them.
+- `days-strip.tsx`: `DaysStrip`. One cell per day on a week grid, coloured by source (geothermal `--ok`, backup `--gas`, short `--bad`); legend with day counts as text and the same counts in the `aria-label`. Pages show "not available" when `coverage` is `null`; they never draw an empty strip.
+- `scatter.tsx`: `Scatter`. Two axes with titles that carry the unit, a dashed line through the Pareto set, the best trade-offs named in the `aria-label`.
+- `line-chart.tsx`: `LineChart`. Series with `[time, value]` points (ISO text or numbers), one colour per series, a legend with each unit.
+- `progress-bar.tsx`: `ProgressBar`. A `null` value draws an indeterminate bar with no `aria-valuenow`. Studies stay `0 of 1` until they end, so the Study page uses this for running studies instead of a percentage.
+
+`shared/ui/notice.tsx` (`Notice`) is the shared loading, empty, error and permission (403) panel used by the C8 pages.

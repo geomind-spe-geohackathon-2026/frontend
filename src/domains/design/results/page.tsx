@@ -1,6 +1,70 @@
+import { useQuery } from "@tanstack/react-query";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
+import { useRequiredParam } from "@/shared/layout/params";
+import { Notice } from "@/shared/ui/notice";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { resultsQuery } from "./api";
+import { ComparePane } from "./compare-pane";
+import { ResultPane } from "./result-pane";
 
-/** Placeholder for the 4 · Results page; the owning domain replaces it. */
+const compareTab = "compare";
+
+/** The 4 · Results page: one tab per result plus Compare; the selected tab is part of the address. */
 export function ResultsPage() {
-  return <PageHeader title="4 · Results" />;
+  const projectId = useRequiredParam("projectId");
+  const { resultId } = useParams();
+  const navigate = useNavigate();
+  const results = useQuery(resultsQuery(projectId));
+
+  function renderBody() {
+    if (results.isPending) return <Notice status="loading" what="results" />;
+    if (results.isError) return <Notice status="failed" error={results.error} />;
+    const first = results.data[0];
+    if (first === undefined) {
+      return (
+        <Notice status="empty">
+          No results yet.{" "}
+          <Link className="text-accent" to={`/projects/${projectId}/design/study`}>
+            Run a study
+          </Link>{" "}
+          to get one.
+        </Notice>
+      );
+    }
+    const selected = resultId ?? first.id;
+    return (
+      <Tabs
+        value={selected}
+        onValueChange={(value) => void navigate(`/projects/${projectId}/design/results/${value}`)}
+      >
+        <TabsList aria-label="Results">
+          {results.data.map((entry) => (
+            <TabsTrigger key={entry.id} value={entry.id}>
+              {entry.name}
+            </TabsTrigger>
+          ))}
+          <TabsTrigger value={compareTab}>Compare</TabsTrigger>
+        </TabsList>
+        {results.data.map((entry) => (
+          <TabsContent key={entry.id} value={entry.id}>
+            <ResultPane projectId={projectId} resultId={entry.id} />
+          </TabsContent>
+        ))}
+        <TabsContent value={compareTab}>
+          <ComparePane projectId={projectId} results={results.data} />
+        </TabsContent>
+      </Tabs>
+    );
+  }
+
+  return (
+    <>
+      <PageHeader
+        title="4 · Results"
+        description="Designs found by the studies, with their checks."
+      />
+      {renderBody()}
+    </>
+  );
 }
