@@ -11,7 +11,7 @@ import { Card, CardBody } from "@/shared/ui/card";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { showToast } from "@/shared/ui/toast";
-import { useDeleteProject, useExportProject, useRenameProject } from "./api";
+import { useDeleteProject, useExportProject, useRenameProject, useSetBudget } from "./api";
 import { startDownload } from "./download";
 
 function RenameForm({ project }: { project: Project }) {
@@ -40,6 +40,68 @@ function RenameForm({ project }: { project: Project }) {
       )}
       <Button type="submit" variant="primary" disabled={rename.isPending} className="self-start">
         Save name
+      </Button>
+    </form>
+  );
+}
+
+function toCap(value: FormDataEntryValue | null): number | null {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  return Number(value);
+}
+
+function BudgetForm({ project }: { project: Project }) {
+  const setBudget = useSetBudget(project.id);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const budget = {
+      max_tokens: toCap(form.get("max_tokens")),
+      max_cost: toCap(form.get("max_cost")),
+    };
+    setBudget.mutate(budget, {
+      onSuccess: () => {
+        showToast("Budget saved");
+      },
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div>
+        <b>Assistant budget</b>
+        <p className="text-muted">
+          The assistant stops once the project reaches a cap. Empty means no cap.
+        </p>
+      </div>
+      <Field label="Token cap" htmlFor="project-max-tokens">
+        <Input
+          id="project-max-tokens"
+          name="max_tokens"
+          type="number"
+          min="1"
+          step="1"
+          defaultValue={project.budget.max_tokens ?? ""}
+        />
+      </Field>
+      <Field label="Cost cap (USD)" htmlFor="project-max-cost">
+        <Input
+          id="project-max-cost"
+          name="max_cost"
+          type="number"
+          min="0"
+          step="any"
+          defaultValue={project.budget.max_cost ?? ""}
+        />
+      </Field>
+      {setBudget.error === null ? null : (
+        <p role="alert" className="text-bad">
+          {toFieldMessage(setBudget.error)}
+        </p>
+      )}
+      <Button type="submit" disabled={setBudget.isPending} className="self-start">
+        Save budget
       </Button>
     </form>
   );
@@ -131,7 +193,7 @@ function DeleteRow({ project }: { project: Project }) {
   );
 }
 
-/** Project settings: rename, export as a zip, and delete with an in-page confirmation. */
+/** Project settings: rename, the assistant budget, export as a zip, and delete with an in-page confirmation. */
 export function SettingsPage() {
   const projectId = useRequiredParam("projectId");
   const project = useQuery(projectQuery(projectId));
@@ -145,6 +207,7 @@ export function SettingsPage() {
         <Card>
           <CardBody className="flex flex-col gap-5">
             <RenameForm key={project.data.updated} project={project.data} />
+            <BudgetForm key={`budget-${project.data.updated}`} project={project.data} />
             <ExportRow project={project.data} />
             <DeleteRow project={project.data} />
           </CardBody>

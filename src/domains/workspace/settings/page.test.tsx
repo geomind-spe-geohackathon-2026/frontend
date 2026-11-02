@@ -17,6 +17,16 @@ describe("project settings", () => {
     expect(await screen.findByText("Example renamed plant", { selector: "b" })).toBeVisible();
   });
 
+  it("saves a budget cap and shows it after the save", async () => {
+    const user = userEvent.setup();
+    renderApp({ path: "/projects/example-project-1/settings" });
+    await user.type(await screen.findByLabelText("Cost cap (USD)"), "2.5");
+    await user.click(screen.getByRole("button", { name: "Save budget" }));
+    expect(await screen.findByText("Budget saved")).toBeVisible();
+    expect(await screen.findByLabelText("Cost cap (USD)")).toHaveValue(2.5);
+    expect(screen.getByLabelText("Token cap")).toHaveValue(null);
+  });
+
   it("exports the zip", async () => {
     const download = vi.fn(() => "blob:example");
     Object.assign(URL, { createObjectURL: download, revokeObjectURL: vi.fn() });

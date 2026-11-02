@@ -5,6 +5,10 @@ import { fromEvent, fromRunId } from "./events";
 const origin = { agent: "coordinator", parent: null };
 
 describe("fromEvent", () => {
+  it("skips an event of a type it does not know", () => {
+    expect(fromEvent("study.recorded", '{"study": "study/first"}', "9")).toBeNull();
+  });
+
   it("reads the sequence from the id and the agent and parent from the data", () => {
     const data = JSON.stringify({ ...origin, index: 0, text: "Hello" });
     expect(fromEvent("text.delta", data, "7")).toEqual({

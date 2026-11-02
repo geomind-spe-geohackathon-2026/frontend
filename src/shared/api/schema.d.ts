@@ -925,8 +925,8 @@ export interface paths {
         delete: operations["delete_project_api_v1_workspace_projects__project_id__delete"];
         options?: never;
         head?: never;
-        /** Rename Project */
-        patch: operations["rename_project_api_v1_workspace_projects__project_id__patch"];
+        /** Update Project */
+        patch: operations["update_project_api_v1_workspace_projects__project_id__patch"];
         trace?: never;
     };
     "/workspace/projects/{project_id}/export": {
@@ -1022,6 +1022,13 @@ export interface components {
              * Format: uuid
              */
             project: string;
+        };
+        /** Budget */
+        Budget: {
+            /** Max Cost */
+            max_cost?: number | null;
+            /** Max Tokens */
+            max_tokens?: number | null;
         };
         /** Capacity */
         Capacity: {
@@ -1603,6 +1610,7 @@ export interface components {
         };
         /** Project */
         Project: {
+            budget: components["schemas"]["Budget"];
             /** Case Version */
             case_version: number | null;
             /** Chats */
@@ -1640,8 +1648,9 @@ export interface components {
         };
         /** ProjectUpdate */
         ProjectUpdate: {
+            budget?: components["schemas"]["Budget"] | null;
             /** Name */
-            name: string;
+            name?: string | null;
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -4098,7 +4107,7 @@ export interface operations {
             };
         };
     };
-    rename_project_api_v1_workspace_projects__project_id__patch: {
+    update_project_api_v1_workspace_projects__project_id__patch: {
         parameters: {
             query?: never;
             header?: never;

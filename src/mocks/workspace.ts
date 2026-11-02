@@ -16,6 +16,8 @@ const emptyProgress: Project["progress"] = {
   report: step("empty", "none yet"),
 };
 
+const noBudget: Project["budget"] = { max_tokens: null, max_cost: null };
+
 const exampleProjects: Project[] = [
   {
     id: "example-project-1",
@@ -34,6 +36,7 @@ const exampleProjects: Project[] = [
     },
     chats: 3,
     runs: 5,
+    budget: noBudget,
   },
   {
     id: "example-project-2",
@@ -49,6 +52,7 @@ const exampleProjects: Project[] = [
     },
     chats: 0,
     runs: 0,
+    budget: noBudget,
   },
 ];
 
@@ -134,6 +138,7 @@ function toNewProject(number: number, name: string, source: Project | undefined)
       source === undefined ? emptyProgress : { ...emptyProgress, case: source.progress.case },
     chats: 0,
     runs: 0,
+    budget: noBudget,
   };
 }
 
@@ -170,6 +175,7 @@ function projectHandlers(projects: Project[]): RequestHandler[] {
         progress: emptyProgress,
         chats: 0,
         runs: 0,
+        budget: noBudget,
       };
       projects.unshift(project);
       return HttpResponse.json<Project>(project, { status: 201 });
@@ -186,14 +192,16 @@ function projectHandlers(projects: Project[]): RequestHandler[] {
 
 function projectChangeHandlers(projects: Project[]): RequestHandler[] {
   return [
-    http.patch<{ projectId: string }, { name: string }>(
+    http.patch<{ projectId: string }, { name?: string; budget?: Project["budget"] }>(
       toRoute("/workspace/projects/:projectId"),
       async ({ params, request }) => {
         const project = projects.find((item) => item.id === params.projectId);
         if (project === undefined) {
           return toErrorResponse(404, "project_not_found", "Project not found");
         }
-        project.name = (await request.json()).name;
+        const { name, budget } = await request.json();
+        if (name !== undefined) project.name = name;
+        if (budget !== undefined) project.budget = budget;
         return HttpResponse.json<Project>(project);
       },
     ),

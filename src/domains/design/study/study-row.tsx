@@ -47,6 +47,16 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
       </Link>
     );
   }
+  if (study.status === "done" && study.started_by.run !== null) {
+    return (
+      <Link
+        to={`/projects/${projectId}/assistant/runs/${study.started_by.run}`}
+        className="text-accent"
+      >
+        Open run
+      </Link>
+    );
+  }
   if (study.status === "blocked") {
     return (
       <div className="flex flex-col gap-1">

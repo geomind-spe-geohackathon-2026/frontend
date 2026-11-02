@@ -19,6 +19,21 @@ export function useRenameProject(projectId: string) {
   });
 }
 
+/** Mutation that sets the project's budget caps; a null cap is no cap. */
+export function useSetBudget(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (budget: { max_tokens: number | null; max_cost: number | null }) =>
+      toData(
+        await api.PATCH("/workspace/projects/{project_id}", {
+          params: { path: { project_id: projectId } },
+          body: { budget },
+        }),
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
+  });
+}
+
 /** Mutation that deletes the project and refreshes the project lists. */
 export function useDeleteProject(projectId: string) {
   const queryClient = useQueryClient();
