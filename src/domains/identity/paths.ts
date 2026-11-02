@@ -3,6 +3,7 @@ import type { NewUser, UserChanges, UserList } from "./users/types";
 import type { User } from "@/shared/api/types";
 
 declare module "@/shared/api/schema" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface paths {
     "/identity/me/password": {
       post: {
