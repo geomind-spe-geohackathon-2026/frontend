@@ -24,7 +24,7 @@ export function KpiTiles({ items, label }: Props) {
                   )}
                 </div>
               ) : (
-                <div title={`${item.value} ${item.unit}`}>
+                <div title={`${String(item.value)} ${item.unit}`}>
                   <div className="break-all text-[22px] font-semibold tabular-nums">
                     {formatFigure(item.value)}
                   </div>

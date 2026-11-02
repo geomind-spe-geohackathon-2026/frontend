@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { projectFooterNav, projectNav, type NavItem } from "@/app/nav";
 import type { Project, ProgressStep } from "@/shared/api/types";
@@ -60,38 +61,56 @@ function DisabledItem({ item }: { item: NavItem }) {
 
 /** The project sidebar: switch project, the Assistant, Design and Operation groups, documents and settings. */
 export function Sidebar({ project }: Props) {
+  const [open, setOpen] = useState(false);
   return (
-    <nav
-      aria-label="Project"
-      className="flex w-[210px] flex-none flex-col gap-3 border-r border-border bg-sunken px-2.5 py-3 max-[720px]:w-full max-[720px]:flex-row max-[720px]:overflow-x-auto max-[720px]:border-r-0 max-[720px]:border-b"
-    >
-      <div className="flex flex-col gap-0.5 border-b border-border px-2 pb-2.5">
-        <b className="text-sm">{project.name}</b>
-        <NavLink to="/projects" className="text-xs">
-          Switch project
-        </NavLink>
-      </div>
-      {projectNav.map((group) => (
-        <div key={group.label ?? "top"} className="flex flex-col gap-px">
-          {group.label === null ? null : (
-            <span className="px-2 pb-1 text-[11px] font-medium tracking-[0.06em] text-muted uppercase">
-              {group.label}
-            </span>
-          )}
-          {group.items.map((item) =>
-            group.disabled === true ? (
-              <DisabledItem key={item.to} item={item} />
-            ) : (
-              <Item key={item.to} item={item} project={project} />
-            ),
-          )}
+    <>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls="project-navigation"
+        className="hidden w-full border-b border-border bg-sunken px-[18px] py-2 text-left font-medium max-[720px]:block"
+        onClick={() => {
+          setOpen(!open);
+        }}
+      >
+        Menu
+      </button>
+      <nav
+        id="project-navigation"
+        aria-label="Project"
+        className={cn(
+          "flex w-[210px] flex-none flex-col gap-3 border-r border-border bg-sunken px-2.5 py-3 max-[720px]:w-full max-[720px]:border-r-0 max-[720px]:border-b",
+          !open && "max-[720px]:hidden",
+        )}
+      >
+        <div className="flex flex-col gap-0.5 border-b border-border px-2 pb-2.5">
+          <b className="text-sm">{project.name}</b>
+          <NavLink to="/projects" className="text-xs">
+            Switch project
+          </NavLink>
         </div>
-      ))}
-      <div className="mt-auto flex flex-col gap-px border-t border-border pt-2.5 max-[720px]:mt-0">
-        {projectFooterNav.map((item) => (
-          <Item key={item.to} item={item} project={project} />
+        {projectNav.map((group) => (
+          <div key={group.label ?? "top"} className="flex flex-col gap-px">
+            {group.label === null ? null : (
+              <span className="px-2 pb-1 text-[11px] font-medium tracking-[0.06em] text-muted uppercase">
+                {group.label}
+              </span>
+            )}
+            {group.items.map((item) =>
+              group.disabled === true ? (
+                <DisabledItem key={item.to} item={item} />
+              ) : (
+                <Item key={item.to} item={item} project={project} />
+              ),
+            )}
+          </div>
         ))}
-      </div>
-    </nav>
+        <div className="mt-auto flex flex-col gap-px border-t border-border pt-2.5 max-[720px]:mt-0">
+          {projectFooterNav.map((item) => (
+            <Item key={item.to} item={item} project={project} />
+          ))}
+        </div>
+      </nav>
+    </>
   );
 }

@@ -46,7 +46,7 @@ export function ProjectLayout() {
         <RunPill projectId={projectId} />
       </TopBar>
       <div className="flex min-h-0 flex-1 max-[720px]:flex-col">
-        <Sidebar project={project.data} />
+        <Sidebar key={location.pathname} project={project.data} />
         <main className="min-w-0 flex-1 p-[18px]">
           <Outlet />
         </main>
