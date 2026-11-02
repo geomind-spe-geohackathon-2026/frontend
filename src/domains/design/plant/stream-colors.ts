@@ -9,7 +9,7 @@ const tokenByStream: Record<string, string> = {
 };
 
 /** Maps a gemini stream kind to a colour token; kinds without a token use the muted colour. */
-export function toStreamColor(stream: string | undefined): string {
-  if (stream === undefined) return "var(--muted)";
+export function toStreamColor(stream: string | null | undefined): string {
+  if (stream === null || stream === undefined) return "var(--muted)";
   return tokenByStream[stream] ?? "var(--muted)";
 }

@@ -9,7 +9,7 @@ import {
 } from "@xyflow/react";
 import { ModuleNode, type ModuleFlowNode } from "./module-node";
 import { toStreamColor } from "./stream-colors";
-import { readConnections, readModules, splitPort, type PortKinds } from "./spec";
+import { isSameKind, readConnections, readModules, splitPort, type PortKinds } from "./spec";
 import type { Palette } from "@/shared/api/types";
 import type { Layout } from "@/shared/api/layout";
 import type { PlantSpec } from "./types";
@@ -56,14 +56,14 @@ function toNodes(props: Props): ModuleFlowNode[] {
 function toEdges(props: Props): Edge[] {
   return readConnections(props.spec).map((connection, index) => {
     const from = splitPort(connection.source);
-    const stream = props.ports.get(from.module)?.outlets.get(from.port);
+    const stream = props.ports.get(from.module)?.outlets.get(from.port) ?? null;
     return {
       id: `c${String(index)}`,
       source: from.module,
       sourceHandle: from.port,
       target: splitPort(connection.target).module,
       targetHandle: splitPort(connection.target).port,
-      label: stream === undefined || stream === "" ? undefined : stream,
+      label: stream ?? undefined,
       style: { stroke: toStreamColor(stream), strokeWidth: 2 },
     };
   });
@@ -76,11 +76,14 @@ type Ends = {
   targetHandle?: string | null;
 };
 
-function isSameStream(props: Props, connection: Ends): boolean {
-  const from = props.ports.get(connection.source)?.outlets.get(connection.sourceHandle ?? "");
-  const to = props.ports.get(connection.target)?.inlets.get(connection.targetHandle ?? "");
-  if (from === undefined || to === undefined || from === "" || to === "") return true;
-  return from === to;
+function isAllowed(props: Props, connection: Ends): boolean {
+  return isSameKind(
+    props.ports,
+    connection.source,
+    connection.sourceHandle ?? "",
+    connection.target,
+    connection.targetHandle ?? "",
+  );
 }
 
 function FlowCanvas(props: Props) {
@@ -103,7 +106,7 @@ function FlowCanvas(props: Props) {
         edges={toEdges(props)}
         nodeTypes={nodeTypes}
         fitView
-        isValidConnection={(connection) => isSameStream(props, connection)}
+        isValidConnection={(connection) => isAllowed(props, connection)}
         onNodeClick={(_, node) => {
           props.onSelect(node.id);
         }}

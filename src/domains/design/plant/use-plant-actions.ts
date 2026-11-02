@@ -67,9 +67,6 @@ export function usePlantActions(
     removeConnection: (index: number) => {
       editor.editSpec(withoutConnection(editor.spec, index));
     },
-    addConnection: (connection: { source: string; target: string }) => {
-      editor.editSpec(withConnection(editor.spec, connection));
-    },
     hasModule: (id: string) => readModules(editor.spec).some((module) => module.id === id),
   };
 }

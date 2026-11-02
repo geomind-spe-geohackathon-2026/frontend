@@ -16,6 +16,7 @@ import { showToast } from "@/shared/ui/toast";
 import {
   flowsheetQuery,
   paletteQuery,
+  portsQuery,
   plantKeys,
   plantVersionQuery,
   useSaveFlowsheet,
@@ -24,7 +25,7 @@ import { FlowsheetTab, type FlowsheetProps } from "./flowsheet-tab";
 import { HistoryPanel } from "./history-panel";
 import type { ParameterDraft } from "./parameters-panel";
 import { TemplatesDialog } from "./templates-dialog";
-import type { Flowsheet, Palette } from "@/shared/api/types";
+import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
 import type { SaveFlowsheetInput } from "./types";
 import { usePlantActions } from "./use-plant-actions";
 import { useAutoLayout } from "./use-auto-layout";
@@ -87,7 +88,12 @@ function useSaveFlow(projectId: string): PlantSaveFlow {
   };
 }
 
-type EditorProps = { projectId: string; saved: Flowsheet; palette: Palette[] };
+type EditorProps = {
+  projectId: string;
+  saved: Flowsheet;
+  palette: Palette[];
+  catalog: ModulePorts[];
+};
 
 type ActionsProps = {
   editor: Editor;
@@ -231,7 +237,7 @@ function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
   );
 }
 
-function PlantEditor({ projectId, saved, palette }: EditorProps) {
+function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   const editor = usePlantEditor(saved);
   const queryClient = useQueryClient();
   const { selected, tab, setParam } = usePlantParams();
@@ -272,7 +278,7 @@ function PlantEditor({ projectId, saved, palette }: EditorProps) {
         }}
       />
       <PlantTabs
-        {...{ projectId, saved, palette, editor, actions, selected, draft, tab }}
+        {...{ projectId, saved, palette, catalog, editor, actions, selected, draft, tab }}
         onSelect={select}
         onDraft={setDraft}
         onConflict={() => {
@@ -336,6 +342,7 @@ export function PlantPage() {
   const projectId = useRequiredParam("projectId");
   const saved = useQuery(flowsheetQuery(projectId));
   const palette = useQuery(paletteQuery());
+  const ports = useQuery(portsQuery());
   const header = <PageHeader title="2 · Plant" />;
   if (palette.isError) {
     return (
@@ -349,6 +356,14 @@ export function PlantPage() {
       </>
     );
   }
+  if (ports.isError) {
+    return (
+      <>
+        {header}
+        <LoadError error={ports.error} what="module ports" onRetry={() => void ports.refetch()} />
+      </>
+    );
+  }
   if (saved.isError && !hasCode(saved.error, "plant_not_found")) {
     return (
       <>
@@ -357,7 +372,7 @@ export function PlantPage() {
       </>
     );
   }
-  if (saved.isPending || palette.isPending) {
+  if (saved.isPending || palette.isPending || ports.isPending) {
     return (
       <>
         {header}
@@ -374,5 +389,12 @@ export function PlantPage() {
         <EmptyPlant projectId={projectId} />
       </>
     );
-  return <PlantEditor projectId={projectId} saved={saved.data} palette={palette.data} />;
+  return (
+    <PlantEditor
+      projectId={projectId}
+      saved={saved.data}
+      palette={palette.data}
+      catalog={ports.data}
+    />
+  );
 }

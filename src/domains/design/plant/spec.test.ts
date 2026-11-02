@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
+import type { ModulePorts } from "@/shared/api/types";
 import {
   checkModuleId,
-  learnPorts,
+  isSameKind,
   modulesOfProblem,
   nextModuleId,
   readConnections,
   readModules,
   splitPort,
+  toPorts,
   withConnection,
   withModule,
   withoutConnection,
@@ -66,18 +68,58 @@ describe("plant spec edits", () => {
     expect(checkModuleId(exampleSpec, "hx", "exchanger")).toBeNull();
   });
 
-  it("learns the ports of a type from connections and points problems at modules", () => {
-    const types = new Map([
-      ["hx", "HeatExchanger"],
-      ["pump", "CirculationPump"],
-    ]);
-    const ports = learnPorts(types, [
-      { source: "hx.hot_out", target: "pump.fluid_in", stream: "brine", kind: null },
-    ]);
-    expect(ports.get("HeatExchanger")?.outlets.get("hot_out")).toBe("brine");
-    expect(ports.get("CirculationPump")?.inlets.get("fluid_in")).toBe("brine");
+  it("points problems at modules", () => {
     expect(modulesOfProblem("connections.0", readConnections(exampleSpec))).toEqual(["hx", "pump"]);
     expect(modulesOfProblem("params.hx.duty", [])).toEqual(["hx"]);
     expect(modulesOfProblem("format", [])).toEqual([]);
+  });
+});
+
+const catalog: ModulePorts[] = [
+  {
+    type: "HeatExchanger",
+    inlets: [{ port: "hot_in", kind: "brine" }],
+    outlets: [{ port: "hot_out", kind: "brine" }],
+  },
+  {
+    type: "CirculationPump",
+    inlets: [{ port: "fluid_in", kind: "brine" }],
+    outlets: [{ port: "fluid_out", kind: null }],
+  },
+];
+
+describe("plant ports from the catalog", () => {
+  const modules = readModules(exampleSpec);
+  const ports = toPorts(modules, catalog);
+
+  it("gives every module its ports by type, with no connection needed", () => {
+    expect(ports.get("hx")?.outlets.get("hot_out")).toBe("brine");
+    expect(ports.get("pump")?.inlets.get("fluid_in")).toBe("brine");
+    expect(
+      toPorts([{ id: "lonely", type: "HeatExchanger" }], catalog).get("lonely")?.inlets,
+    ).toEqual(new Map([["hot_in", "brine"]]));
+  });
+
+  it("gives a module of an unknown type no ports", () => {
+    const unknown = toPorts([{ id: "x", type: "Unknown" }], catalog).get("x");
+    expect(unknown?.inlets.size).toBe(0);
+    expect(unknown?.outlets.size).toBe(0);
+  });
+
+  it("accepts equal stream kinds and refuses different ones", () => {
+    expect(isSameKind(ports, "hx", "hot_out", "pump", "fluid_in")).toBe(true);
+    const other = toPorts(modules, [
+      catalog[0] ?? { type: "", inlets: [], outlets: [] },
+      { type: "CirculationPump", inlets: [{ port: "fluid_in", kind: "gas" }], outlets: [] },
+    ]);
+    expect(isSameKind(other, "hx", "hot_out", "pump", "fluid_in")).toBe(false);
+  });
+
+  it("accepts a port whose kind gemini does not name", () => {
+    expect(isSameKind(ports, "pump", "fluid_out", "hx", "hot_in")).toBe(true);
+  });
+
+  it("refuses a port the catalog does not list", () => {
+    expect(isSameKind(ports, "hx", "typed_by_hand", "pump", "fluid_in")).toBe(false);
   });
 });

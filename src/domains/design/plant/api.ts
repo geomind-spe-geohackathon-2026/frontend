@@ -14,6 +14,7 @@ export const plantKeys = {
     [...plantKeys.all(projectId), "parameters", module] as const,
   palette: () => ["plant", "palette"] as const,
   templates: () => ["plant", "templates"] as const,
+  ports: () => ["plant", "ports"] as const,
   validation: (spec: PlantSpec) => ["plant", "validation", spec] as const,
 };
 
@@ -32,6 +33,14 @@ export const paletteQuery = () =>
   queryOptions({
     queryKey: plantKeys.palette(),
     queryFn: async ({ signal }) => toData(await api.GET("/plant/flowsheet/palette", { signal })),
+    staleTime: Infinity,
+  });
+
+/** Query options for the inlets and outlets of every module type, with gemini's stream kinds. */
+export const portsQuery = () =>
+  queryOptions({
+    queryKey: plantKeys.ports(),
+    queryFn: async ({ signal }) => toData(await api.GET("/plant/flowsheet/ports", { signal })),
     staleTime: Infinity,
   });
 

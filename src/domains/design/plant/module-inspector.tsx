@@ -3,13 +3,7 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import {
-  checkModuleId,
-  readConnections,
-  readModules,
-  splitPort,
-  type SpecConnection,
-} from "./spec";
+import { checkModuleId, readConnections, splitPort } from "./spec";
 import type { PlantSpec } from "./types";
 
 type Props = {
@@ -18,7 +12,6 @@ type Props = {
   title: string;
   onRename: (to: string) => void;
   onRemove: () => void;
-  onAddConnection: (connection: SpecConnection) => void;
   onRemoveConnection: (index: number) => void;
 };
 
@@ -52,83 +45,7 @@ function IdField({ spec, moduleId, onRename }: Pick<Props, "spec" | "moduleId" |
   );
 }
 
-type TextFieldProps = {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-};
-
-function TextField({ id, label, value, onChange }: TextFieldProps) {
-  return (
-    <Field label={label} htmlFor={id}>
-      <Input
-        id={id}
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
-      />
-    </Field>
-  );
-}
-
-function ConnectionForm({
-  spec,
-  moduleId,
-  onAddConnection,
-}: Pick<Props, "spec" | "moduleId" | "onAddConnection">) {
-  const [outlet, setOutlet] = useState("");
-  const [target, setTarget] = useState("");
-  const [inlet, setInlet] = useState("");
-  const others = readModules(spec);
-  const canAdd = outlet.trim() !== "" && target !== "" && inlet.trim() !== "";
-  return (
-    <form
-      className="flex flex-col gap-2"
-      aria-label="Add a connection"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onAddConnection({
-          source: `${moduleId}.${outlet.trim()}`,
-          target: `${target}.${inlet.trim()}`,
-        });
-        setOutlet("");
-        setInlet("");
-      }}
-    >
-      <TextField
-        id="connection-outlet"
-        label="From outlet of this module"
-        value={outlet}
-        onChange={setOutlet}
-      />
-      <Field label="To module" htmlFor="connection-target">
-        <select
-          id="connection-target"
-          className="w-full rounded-control border border-border bg-surface px-2.5 py-[7px]"
-          value={target}
-          onChange={(event) => {
-            setTarget(event.target.value);
-          }}
-        >
-          <option value="" />
-          {others.map((module) => (
-            <option key={module.id} value={module.id}>
-              {module.id}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <TextField id="connection-inlet" label="To inlet" value={inlet} onChange={setInlet} />
-      <Button type="submit" disabled={!canAdd}>
-        Add connection
-      </Button>
-    </form>
-  );
-}
-
-/** The inspector of one module: rename, remove, its connections, and a form to add a connection by port names. */
+/** The inspector of one module: rename, remove and its connections; new connections are drawn on the canvas. */
 export function ModuleInspector(props: Props) {
   const { spec, moduleId, title } = props;
   const mine = readConnections(spec)
@@ -170,7 +87,6 @@ export function ModuleInspector(props: Props) {
           ))}
         </ul>
       </div>
-      <ConnectionForm spec={spec} moduleId={moduleId} onAddConnection={props.onAddConnection} />
     </section>
   );
 }

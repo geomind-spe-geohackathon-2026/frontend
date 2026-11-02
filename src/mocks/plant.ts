@@ -3,6 +3,7 @@ import type { Page } from "@/shared/api/pagination";
 import type {
   Flowsheet,
   FlowsheetCreate,
+  ModulePorts,
   LayoutUpdate,
   Palette,
   Parameters,
@@ -69,6 +70,35 @@ const examplePalette: Palette[] = [
   },
 ];
 
+const examplePorts: ModulePorts[] = [
+  {
+    type: "Doublet",
+    inlets: [{ port: "return_in", kind: "brine" }],
+    outlets: [{ port: "supply_out", kind: "brine" }],
+  },
+  {
+    type: "HeatExchanger",
+    inlets: [
+      { port: "hot_in", kind: "brine" },
+      { port: "cold_in", kind: "hot_water" },
+    ],
+    outlets: [
+      { port: "hot_out", kind: "brine" },
+      { port: "cold_out", kind: "hot_water" },
+    ],
+  },
+  {
+    type: "HeatPump",
+    inlets: [
+      { port: "source_in", kind: "brine" },
+      { port: "power_in", kind: "electricity" },
+    ],
+    outlets: [{ port: "heat_out", kind: "hot_water" }],
+  },
+  { type: "HeatingGrid", inlets: [{ port: "supply_in", kind: "hot_water" }], outlets: [] },
+  { type: "ElectricityGrid", inlets: [], outlets: [{ port: "power_out", kind: "electricity" }] },
+];
+
 const exampleTemplates: Template[] = [
   {
     name: "ExampleHeatingPlant",
@@ -100,14 +130,16 @@ const exampleSpec: PlantSpec = {
   params: { hx: { duty: { value: 20, unit: "MW" } } },
 };
 
-const exampleStreams: Record<string, string> = {
-  "doublet.supply_out": "brine",
-  "hx.cold_out": "hot_water",
-};
-
 const exampleAuthor = { id: "example-user-admin", name: "Example Admin" };
 
 type Stored = { version: Version; spec: PlantSpec; layout: Layout };
+
+function toKind(spec: PlantSpec, reference: string): string | null {
+  const [id, port] = reference.split(".");
+  const type = readModules(spec).find((module) => module.id === id)?.type;
+  const outlets = examplePorts.find((entry) => entry.type === type)?.outlets;
+  return outlets?.find((outlet) => outlet.port === port)?.kind ?? null;
+}
 
 function toFlowsheet(project: string, stored: Stored): Flowsheet {
   const modules = readModules(stored.spec).map((module) => ({
@@ -115,11 +147,10 @@ function toFlowsheet(project: string, stored: Stored): Flowsheet {
     title: module.type,
     category: examplePalette.find((item) => item.type === module.type)?.category ?? "",
   }));
-  const connections = readConnections(stored.spec).map((connection) => ({
-    ...connection,
-    stream: exampleStreams[connection.source] ?? "",
-    kind: null,
-  }));
+  const connections = readConnections(stored.spec).map((connection) => {
+    const kind = toKind(stored.spec, connection.source);
+    return { ...connection, stream: kind, kind };
+  });
   return {
     project,
     version: stored.version.number,
@@ -194,6 +225,9 @@ function catalogHandlers(): RequestHandler[] {
   return [
     http.get(toRoute("/plant/flowsheet/palette"), () =>
       HttpResponse.json<Palette[]>(examplePalette),
+    ),
+    http.get(toRoute("/plant/flowsheet/ports"), () =>
+      HttpResponse.json<ModulePorts[]>(examplePorts),
     ),
     http.get(toRoute("/plant/flowsheet/templates"), () =>
       HttpResponse.json<Template[]>(exampleTemplates),

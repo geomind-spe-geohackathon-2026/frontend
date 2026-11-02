@@ -19,8 +19,16 @@ const issueClass = {
   invalid: "border-bad",
 };
 
-function PortRow({ name, stream, side }: { name: string; stream: string; side: "in" | "out" }) {
-  const label = stream === "" ? name : `${name} (${stream})`;
+function PortRow({
+  name,
+  stream,
+  side,
+}: {
+  name: string;
+  stream: string | null;
+  side: "in" | "out";
+}) {
+  const label = stream === null ? name : `${name} (${stream})`;
   return (
     <li
       className={cn(

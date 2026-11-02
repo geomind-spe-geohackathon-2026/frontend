@@ -1,5 +1,5 @@
 import { isRecord } from "@/shared/forms/json-schema";
-import type { FlowsheetConnection } from "@/shared/api/types";
+import type { ModulePorts, PortKind } from "@/shared/api/types";
 import type { Layout } from "@/shared/api/layout";
 import type { PlantSpec } from "./types";
 
@@ -128,30 +128,45 @@ function renamedKeyLayout(layout: Layout, from: string, to: string): Layout {
   );
 }
 
-export type PortKinds = { inlets: Map<string, string>; outlets: Map<string, string> };
+export type PortKinds = {
+  inlets: Map<string, string | null>;
+  outlets: Map<string, string | null>;
+};
 
-/** Learns, per module type, which ports exist and what stream each carries, from saved connections. */
-export function learnPorts(
-  types: Map<string, string>,
-  connections: FlowsheetConnection[],
-): Map<string, PortKinds> {
-  const known = new Map<string, PortKinds>();
-  const kindsOf = (type: string): PortKinds => {
-    const existing = known.get(type);
-    if (existing !== undefined) return existing;
-    const created: PortKinds = { inlets: new Map(), outlets: new Map() };
-    known.set(type, created);
-    return created;
-  };
-  for (const connection of connections) {
-    const from = splitPort(connection.source);
-    const to = splitPort(connection.target);
-    const fromType = types.get(from.module);
-    const toType = types.get(to.module);
-    if (fromType !== undefined) kindsOf(fromType).outlets.set(from.port, connection.stream ?? "");
-    if (toType !== undefined) kindsOf(toType).inlets.set(to.port, connection.stream ?? "");
-  }
-  return known;
+function toKinds(ports: PortKind[]): Map<string, string | null> {
+  return new Map(ports.map((entry) => [entry.port, entry.kind]));
+}
+
+/** Gives every module of a plant document its inlets and outlets, with gemini's stream kinds, from the port catalog. */
+export function toPorts(modules: SpecModule[], catalog: ModulePorts[]): Map<string, PortKinds> {
+  const byType = new Map(catalog.map((entry) => [entry.type, entry]));
+  return new Map(
+    modules.map((module) => {
+      const entry = byType.get(module.type);
+      const ports: PortKinds = {
+        inlets: toKinds(entry?.inlets ?? []),
+        outlets: toKinds(entry?.outlets ?? []),
+      };
+      return [module.id, ports];
+    }),
+  );
+}
+
+/** Tells whether an outlet may feed an inlet: both ports must exist and known stream kinds must be equal. */
+export function isSameKind(
+  ports: Map<string, PortKinds>,
+  source: string,
+  sourceHandle: string,
+  target: string,
+  targetHandle: string,
+): boolean {
+  const outlets = ports.get(source)?.outlets;
+  const inlets = ports.get(target)?.inlets;
+  if (!outlets?.has(sourceHandle) || !inlets?.has(targetHandle)) return false;
+  const from = outlets.get(sourceHandle);
+  const to = inlets.get(targetHandle);
+  if (from === null || from === undefined || to === null || to === undefined) return true;
+  return from === to;
 }
 
 /** Finds the module ids a validation problem path points at: modules.<id>, params.<id>, connections.<n>. */
@@ -162,31 +177,6 @@ export function modulesOfProblem(path: string, connections: SpecConnection[]): s
   const connection = connections[Number(key)];
   if (connection === undefined) return [];
   return [splitPort(connection.source).module, splitPort(connection.target).module];
-}
-
-/** Collects the known ports of every module: learned per type, plus the ports its connections use. */
-export function portsFor(
-  modules: SpecModule[],
-  connections: SpecConnection[],
-  learned: Map<string, PortKinds>,
-): Map<string, PortKinds> {
-  const result = new Map<string, PortKinds>();
-  for (const module of modules) {
-    const known = learned.get(module.type);
-    result.set(module.id, {
-      inlets: new Map(known?.inlets),
-      outlets: new Map(known?.outlets),
-    });
-  }
-  for (const connection of connections) {
-    const from = splitPort(connection.source);
-    const to = splitPort(connection.target);
-    const outlets = result.get(from.module)?.outlets;
-    const inlets = result.get(to.module)?.inlets;
-    if (outlets !== undefined && !outlets.has(from.port)) outlets.set(from.port, "");
-    if (inlets !== undefined && !inlets.has(to.port)) inlets.set(to.port, "");
-  }
-  return result;
 }
 
 /** Checks a new module id: not empty, no dot or space, not taken; returns the message or null when fine. */

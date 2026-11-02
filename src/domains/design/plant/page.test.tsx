@@ -29,6 +29,23 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(screen.getByRole("button", { name: "Save version" })).toBeDisabled();
   });
 
+  it("shows the handles of a new module at once, before any connection", async () => {
+    renderApp({ path: withPlant });
+    const user = userEvent.setup();
+    await findSave();
+    await user.click(screen.getByRole("button", { name: "Add HeatPump" }));
+    expect(await screen.findByLabelText("Inlet source_in (brine)", {}, slow)).toBeInTheDocument();
+    expect(screen.getByLabelText("Inlet power_in (electricity)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Outlet heat_out (hot_water)")).toBeInTheDocument();
+  });
+
+  it("has no form to type port names for a connection", async () => {
+    renderApp({ path: `${withPlant}?module=hx` });
+    await screen.findByLabelText("Module id", {}, slow);
+    expect(screen.queryByLabelText("From outlet of this module")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add connection" })).not.toBeInTheDocument();
+  });
+
   it("adds a module with a generated id, saves a new version and reports it", async () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();

@@ -1,12 +1,11 @@
-import { useMemo } from "react";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Canvas, type Issues } from "./canvas";
 import { ModuleInspector } from "./module-inspector";
 import { PalettePanel } from "./palette-panel";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
 import { ProblemsPanel } from "./problems-panel";
-import { learnPorts, modulesOfProblem, portsFor, readConnections, readModules } from "./spec";
-import type { Flowsheet, Palette } from "@/shared/api/types";
+import { modulesOfProblem, readConnections, readModules, toPorts } from "./spec";
+import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
 import type { usePlantActions } from "./use-plant-actions";
 import type { usePlantEditor } from "./use-plant-editor";
 
@@ -14,6 +13,7 @@ export type FlowsheetProps = {
   projectId: string;
   saved: Flowsheet;
   palette: Palette[];
+  catalog: ModulePorts[];
   editor: ReturnType<typeof usePlantEditor>;
   actions: ReturnType<typeof usePlantActions>;
   selected: string | null;
@@ -49,7 +49,6 @@ function Inspector(props: FlowsheetProps & { moduleId: string; type: string }) {
         onRemove={() => {
           actions.remove(moduleId);
         }}
-        onAddConnection={actions.addConnection}
         onRemoveConnection={actions.removeConnection}
       />
       <section aria-label="Parameters" className="flex flex-col gap-2">
@@ -70,13 +69,10 @@ function Inspector(props: FlowsheetProps & { moduleId: string; type: string }) {
 
 /** The flowsheet tab: palette, canvas with problems below it, and the inspector of the selected module. */
 export function FlowsheetTab(props: FlowsheetProps) {
-  const { saved, palette, editor, actions, selected } = props;
+  const { palette, editor, actions, selected } = props;
   const modules = readModules(editor.spec);
   const connections = readConnections(editor.spec);
-  const ports = useMemo(() => {
-    const types = new Map(saved.modules.map((module) => [module.id, module.type]));
-    return portsFor(modules, connections, learnPorts(types, saved.connections));
-  }, [saved, modules, connections]);
+  const ports = toPorts(modules, props.catalog);
   const current = modules.find((module) => module.id === selected);
   return (
     <div className="grid gap-3.5 lg:grid-cols-[170px_minmax(0,1fr)_280px]">
