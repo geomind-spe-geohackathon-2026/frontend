@@ -20,9 +20,9 @@ describe("theme before first paint", () => {
     expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 
-  it("is light when no theme was chosen", () => {
+  it("is dark when no theme was chosen", () => {
     runInThisContext(toBootScript());
-    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
   });
 
   it("leaves a chosen system theme to the operating system", () => {

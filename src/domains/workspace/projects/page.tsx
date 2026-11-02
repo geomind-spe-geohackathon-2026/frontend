@@ -10,9 +10,6 @@ import { projectsQuery, useImportProject } from "./api";
 import { NewProjectDialog } from "./new-project-dialog";
 import { ProjectCard } from "./project-card";
 
-const newCardClass =
-  "grid min-h-[118px] place-items-center rounded-card border border-dashed border-border text-accent hover:border-accent";
-
 function ImportButton() {
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
@@ -80,6 +77,14 @@ export function ProjectsPage() {
               className="w-52"
             />
             <ImportButton />
+            <Button
+              variant="primary"
+              onClick={() => {
+                setCreating(true);
+              }}
+            >
+              + New project
+            </Button>
           </>
         }
       />
@@ -92,15 +97,6 @@ export function ProjectsPage() {
         {items.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
-        <button
-          type="button"
-          className={newCardClass}
-          onClick={() => {
-            setCreating(true);
-          }}
-        >
-          + New project
-        </button>
       </div>
       {projects.hasNextPage ? (
         <Button

@@ -38,7 +38,7 @@ const designNav: NavGroup[] = [
       { to: "design/plant", label: "2 Plant", progress: "plant", icon: Workflow },
       { to: "design/study", label: "3 Study", progress: "study", icon: FlaskConical },
       { to: "design/results", label: "4 Results", progress: "results", icon: ChartColumn },
-      { to: "design/report", label: "Report", progress: "report", icon: FileText },
+      { to: "design/report", label: "5 Report", progress: "report", icon: FileText },
     ],
   },
 ];

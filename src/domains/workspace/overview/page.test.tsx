@@ -72,7 +72,7 @@ describe("overview page", () => {
     const { router } = renderApp({ path: `${base}/overview` });
     const user = userEvent.setup();
     await user.type(
-      await screen.findByLabelText("Ask the assistant", { selector: "input" }),
+      await screen.findByLabelText("Ask the assistant", { selector: "textarea" }),
       "Design it",
     );
     await user.click(screen.getByRole("button", { name: "Ask" }));

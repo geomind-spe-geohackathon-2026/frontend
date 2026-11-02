@@ -26,6 +26,23 @@ describe("Stepper", () => {
 });
 
 describe("ActivityList", () => {
+  it("folds repeated rows into one with a count", () => {
+    const item: Activity = {
+      id: "a1",
+      time: new Date().toISOString(),
+      actor: { kind: "user", name: "Admin" },
+      text: "Admin exported the report",
+      link: null,
+    };
+    render(
+      <MemoryRouter>
+        <ActivityList projectId="p1" items={[item, { ...item, id: "a2" }]} />
+      </MemoryRouter>,
+    );
+    expect(screen.getAllByText("Admin exported the report")).toHaveLength(1);
+    expect(screen.getByText("2 times")).toBeVisible();
+  });
+
   it("does not repeat the actor when the text already starts with it", () => {
     const item: Activity = {
       id: "a1",

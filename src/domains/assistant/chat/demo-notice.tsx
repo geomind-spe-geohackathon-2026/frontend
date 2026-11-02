@@ -17,15 +17,15 @@ export function DemoNotice() {
   );
 }
 
-/** Says that the assistant cannot read an incomplete case, with a link to fill it. */
+/** Says that the case is incomplete: the user can tell the assistant or fill it in by hand. */
 export function CaseNotice({ projectId }: { projectId: string }) {
   const project = useQuery(projectQuery(projectId));
   const step = project.data?.progress.case;
   if (step?.state !== "incomplete") return null;
   return (
     <p role="status" className="rounded-control border border-warn bg-sunken px-3 py-2">
-      The case is incomplete ({step.label}), so the assistant cannot read it yet.{" "}
-      <Link to={`/projects/${projectId}/design/case`}>Fill it in</Link>
+      The case still has missing values. Tell the assistant, or{" "}
+      <Link to={`/projects/${projectId}/design/case`}>fill them in yourself</Link>.
     </p>
   );
 }

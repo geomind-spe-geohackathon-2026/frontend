@@ -55,7 +55,7 @@ function AgentTree({ view }: { view: View }) {
   );
 }
 
-/** The right column of the chat: status and timer, tokens and cost, agent tree, problem state, link to the log. */
+/** The right column of the chat: status and timer, what it knows, the log; tokens and agents behind Details. */
 export function RunPanel({ projectId, runId, view, run }: Props) {
   const status = view.blocks.length === 0 && run !== undefined ? run.status : view.status;
   const active = status === "queued" || status === "running" || status === "waiting";
@@ -66,7 +66,7 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
       <Card>
         <CardBody className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-muted">Run {toShortId(runId)}</span>
+            <span className="text-muted">Assistant</span>
             {status === "done" && failed > 0 ? (
               <Chip tone="warn">
                 done with {failed} {failed === 1 ? "error" : "errors"}
@@ -80,17 +80,16 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
               Time <Elapsed run={run} active={active} />
             </p>
           )}
-          <p>
-            <UsageLine usage={view.usage} />
-          </p>
-        </CardBody>
-      </Card>
-      <Card>
-        <CardHeader>
-          <h2>Agents</h2>
-        </CardHeader>
-        <CardBody>
-          <AgentTree view={view} />
+          <details>
+            <summary className="cursor-pointer text-muted">Details</summary>
+            <div className="mt-1.5 space-y-1.5">
+              <p className="text-muted">Run {toShortId(runId)}</p>
+              <p>
+                <UsageLine usage={view.usage} />
+              </p>
+              <AgentTree view={view} />
+            </div>
+          </details>
         </CardBody>
       </Card>
       <Card>

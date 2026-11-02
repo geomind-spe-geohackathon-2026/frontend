@@ -1,8 +1,12 @@
 import { useState, type FormEvent } from "react";
+import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
+import { toMessageWithFiles } from "@/shared/attach/upload";
+import { useAttachments } from "@/shared/attach/use-attachments";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 
 type Props = {
+  projectId: string;
   sending: boolean;
   active: boolean;
   cancelling: boolean;
@@ -10,36 +14,46 @@ type Props = {
   onCancel: () => void;
 };
 
-/** The message input: Send while no run is active, Cancel run while one is. */
-export function Composer({ sending, active, cancelling, onSend, onCancel }: Props) {
+/** The message input with attached files: Send while no run is active, Cancel run while one is. */
+export function Composer({ projectId, sending, active, cancelling, onSend, onCancel }: Props) {
   const [text, setText] = useState("");
+  const files = useAttachments(projectId);
 
   function handleSubmit(event: FormEvent): void {
     event.preventDefault();
     const content = text.trim();
-    if (content === "" || active) return;
-    onSend(content);
+    if (content === "" || active || files.reading) return;
+    onSend(toMessageWithFiles(content, files.names));
     setText("");
+    files.clear();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <Input
-        aria-label="Message"
-        placeholder="Ask about the design"
-        value={text}
-        onChange={(event) => {
-          setText(event.target.value);
-        }}
-      />
-      <Button type="submit" variant="primary" disabled={sending || active || text.trim() === ""}>
-        Send
-      </Button>
-      {active ? (
-        <Button disabled={cancelling} onClick={onCancel}>
-          Cancel run
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2" {...toDropProps(files.add)}>
+      <AttachmentList items={files.items} onRemove={files.remove} />
+      <div className="flex gap-2">
+        <AttachButton onFiles={files.add} />
+        <Input
+          aria-label="Message"
+          placeholder="Tell the assistant what you need"
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+          }}
+        />
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={sending || active || files.reading || text.trim() === ""}
+        >
+          Send
         </Button>
-      ) : null}
+        {active ? (
+          <Button disabled={cancelling} onClick={onCancel}>
+            Cancel run
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

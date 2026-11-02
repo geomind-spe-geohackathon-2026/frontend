@@ -8,14 +8,14 @@ function text(id: string, value: string): Block {
 }
 
 describe("Blocks", () => {
-  it("shows the coordinator's route as a small label", () => {
+  it("hides the coordinator's route", () => {
     render(
       <Blocks
         running={false}
         blocks={[text("b0", '{"kind": "loop", "loop": "tool", "agent": "analyst"}')]}
       />,
     );
-    expect(screen.getByText("Routed to analyst, tool loop")).toBeVisible();
+    expect(screen.queryByText(/Routed to/)).not.toBeInTheDocument();
     expect(screen.queryByText(/"kind"/)).not.toBeInTheDocument();
   });
 

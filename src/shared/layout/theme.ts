@@ -11,7 +11,7 @@ function isTheme(value: unknown): value is Theme {
 
 function toTheme(): Theme {
   const stored = window.localStorage.getItem(storageKey);
-  return isTheme(stored) ? stored : "light";
+  return isTheme(stored) ? stored : "dark";
 }
 
 function applyTheme(theme: Theme): void {
@@ -32,7 +32,7 @@ export function startTheme(): void {
   });
 }
 
-/** Remembers and applies a theme: light unless chosen, so the page never turns with the operating system by itself. */
+/** Remembers and applies a theme: dark unless chosen, so the page never turns with the operating system by itself. */
 export function setTheme(theme: Theme): void {
   window.localStorage.setItem(storageKey, theme);
   applyTheme(theme);

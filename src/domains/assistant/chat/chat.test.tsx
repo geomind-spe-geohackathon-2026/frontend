@@ -20,8 +20,8 @@ describe("chat page", () => {
   it("lists the chats and replays the finished run with its tool cards and delegated agent", async () => {
     renderApp({ path: `${base}/example-chat-1` });
     expect(await screen.findByText("Which plant fits the example problem?")).toBeVisible();
-    expect(await screen.findByText("read_case")).toBeVisible();
-    expect(screen.getByText("size_plant")).toBeVisible();
+    expect(await screen.findByText("Read case")).toBeInTheDocument();
+    expect(screen.getByText("Size plant")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Agent coordinator.designer" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Design the example plant/ })).toHaveAttribute(
       "aria-current",
@@ -104,7 +104,7 @@ describe("chat page", () => {
 
   it("starts a new chat from the first message", async () => {
     const { router } = renderApp({ path: `${base}?new` });
-    expect(await screen.findByText(/New chat. Ask anything/)).toBeVisible();
+    expect(await screen.findByText(/New chat. Add files/)).toBeVisible();
     await sendMessage("A first question");
     await waitFor(() => {
       expect(router.state.location.pathname).toMatch(/assistant\/chat\/example-chat-2$/);

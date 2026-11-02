@@ -29,7 +29,11 @@ export function Conversation({ messages, liveRunId, view, failure }: Props) {
   }, [count]);
 
   if (messages.length === 0) {
-    return <p className="text-muted">New chat. Ask anything about this project.</p>;
+    return (
+      <p className="text-muted">
+        New chat. Add files, say what you need, and the assistant takes it from there.
+      </p>
+    );
   }
   return (
     <div className="space-y-3" aria-live="polite">

@@ -6,6 +6,7 @@ import { Quantity } from "@/shared/quantity/quantity";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
 import { RunStatusChip } from "@/shared/sse/status-chip";
+import { toDateTimeLabel } from "@/lib/datelabel";
 import { toShortId } from "@/lib/shortid";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/shared/ui/button";
@@ -30,6 +31,49 @@ function Totals({ projectId }: { projectId: string }) {
   );
 }
 
+function RunRow({
+  projectId,
+  run,
+  title,
+}: {
+  projectId: string;
+  run: Run;
+  title: string | undefined;
+}) {
+  const navigate = useNavigate();
+  return (
+    <tr
+      className="cursor-pointer border-b border-border last:border-b-0 hover:bg-sunken"
+      onClick={() => {
+        void navigate(`/projects/${projectId}/assistant/runs/${run.id}`);
+      }}
+    >
+      <td className="px-3 py-2">
+        <Link className="text-accent" to={`/projects/${projectId}/assistant/runs/${run.id}`}>
+          {toShortId(run.id)}
+        </Link>
+      </td>
+      <td className="px-3 py-2">{title ?? run.chat}</td>
+      <td className="px-3 py-2">
+        <RunStatusChip status={run.status} />
+      </td>
+      <td className="px-3 py-2">
+        <Quantity
+          value={run.usage.input_tokens + run.usage.output_tokens}
+          unit=""
+          fractionDigits={0}
+        />
+      </td>
+      <td className="px-3 py-2">
+        <Quantity value={run.usage.cost} unit="USD" fractionDigits={3} />
+      </td>
+      <td className="px-3 py-2">
+        {run.started === null ? "not started" : toDateTimeLabel(run.started)}
+      </td>
+    </tr>
+  );
+}
+
 function RunsTable({
   projectId,
   items,
@@ -39,55 +83,26 @@ function RunsTable({
   items: Run[];
   titles: Map<string, string>;
 }) {
-  const navigate = useNavigate();
   return (
-    <table className="w-full border-collapse rounded-card border border-border bg-surface text-left">
-      <caption className="sr-only">Runs of this project, newest first</caption>
-      <thead>
-        <tr className="text-muted">
-          {["Run", "Chat", "Loop", "Status", "Tokens", "Cost", "Started"].map((name) => (
-            <th key={name} scope="col" className="border-b border-border px-3 py-2 font-medium">
-              {name}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((run) => (
-          <tr
-            key={run.id}
-            className="cursor-pointer border-b border-border last:border-b-0 hover:bg-sunken"
-            onClick={() => {
-              void navigate(`/projects/${projectId}/assistant/runs/${run.id}`);
-            }}
-          >
-            <td className="px-3 py-2">
-              <Link className="text-accent" to={`/projects/${projectId}/assistant/runs/${run.id}`}>
-                {toShortId(run.id)}
-              </Link>
-            </td>
-            <td className="px-3 py-2">{titles.get(run.chat) ?? run.chat}</td>
-            <td className="px-3 py-2">{run.loop ?? "not started"}</td>
-            <td className="px-3 py-2">
-              <RunStatusChip status={run.status} />
-            </td>
-            <td className="px-3 py-2">
-              <Quantity
-                value={run.usage.input_tokens + run.usage.output_tokens}
-                unit=""
-                fractionDigits={0}
-              />
-            </td>
-            <td className="px-3 py-2">
-              <Quantity value={run.usage.cost} unit="USD" fractionDigits={3} />
-            </td>
-            <td className="px-3 py-2">
-              {run.started === null ? "not started" : new Date(run.started).toLocaleString()}
-            </td>
+    <div className="overflow-x-auto rounded-card border border-border bg-surface">
+      <table className="w-full border-collapse text-left">
+        <caption className="sr-only">Runs of this project, newest first</caption>
+        <thead>
+          <tr className="text-muted">
+            {["Run", "Chat", "Status", "Tokens", "Cost", "Started"].map((name) => (
+              <th key={name} scope="col" className="border-b border-border px-3 py-2 font-medium">
+                {name}
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {items.map((run) => (
+            <RunRow key={run.id} projectId={projectId} run={run} title={titles.get(run.chat)} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

@@ -17,7 +17,7 @@ export function TopBar({ crumbs, children }: Props) {
         <Logo />
         Geomind
       </Link>
-      <nav aria-label="Breadcrumb">
+      <nav aria-label="Breadcrumb" className="max-[720px]:hidden">
         <ol className="flex min-w-0 flex-wrap items-center gap-1.5 text-muted">
           {crumbs.map((crumb, index) => (
             <li key={crumb.label} className="flex items-center gap-1.5">

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import type { Project, ProgressStep } from "@/shared/api/types";
+import { cn } from "@/lib/cn";
 import { Chip } from "@/shared/ui/chip";
 import type { StepKey } from "./stale";
+import { toNextStep } from "./next-step";
 import { designSteps } from "./steps";
 
 const tones: Record<ProgressStep["state"], "ok" | "warn" | "info" | "off"> = {
@@ -22,13 +24,17 @@ export function Stepper({
   progress: Project["progress"];
   stale: ReadonlySet<StepKey>;
 }) {
+  const next = toNextStep(progress, stale);
   return (
     <ol className="grid grid-cols-5 gap-3 max-[1000px]:grid-cols-2 max-[720px]:grid-cols-1">
       {designSteps.map((step) => (
         <li key={step.key}>
           <Link
             to={`/projects/${projectId}/${step.route}`}
-            className="flex h-full flex-col gap-1.5 rounded-card border border-border bg-surface p-3 text-text no-underline hover:border-accent"
+            className={cn(
+              "flex h-full flex-col gap-1.5 rounded-card border bg-surface p-3 text-text no-underline hover:border-accent",
+              step.key === next ? "border-accent" : "border-border",
+            )}
           >
             <span className="flex items-center gap-2">
               <span aria-hidden="true" className="text-muted">
@@ -39,6 +45,7 @@ export function Stepper({
               ) : (
                 <Chip tone={tones[progress[step.key].state]}>{progress[step.key].label}</Chip>
               )}
+              {step.key === next ? <span className="ml-auto text-accent">Next</span> : null}
             </span>
             <b>{step.name}</b>
             <span className="text-muted">{step.description}</span>

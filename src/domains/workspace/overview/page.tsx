@@ -10,7 +10,7 @@ import { AskBox } from "./ask-box";
 import { RecentChats } from "./recent-chats";
 import { Stepper } from "./stepper";
 
-/** The project overview: ask box, the five-step stepper, recent chats and the activity feed. */
+/** The project overview: the assistant first, then the five design steps, recent chats and activity. */
 export function OverviewPage() {
   const projectId = useRequiredParam("projectId");
   const project = useQuery(projectQuery(projectId));
@@ -21,10 +21,7 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader
-        title="Overview"
-        {...(project.data === undefined ? {} : { description: project.data.name })}
-      />
+      <PageHeader title="Overview" />
       <AskBox projectId={projectId} />
       {overview.isPending ? <p role="status">Loading the overview</p> : null}
       {overview.isError ? <p role="alert">{overview.error.message}</p> : null}
@@ -35,7 +32,7 @@ export function OverviewPage() {
               id="progress-heading"
               className="text-[11px] tracking-[0.06em] text-muted uppercase"
             >
-              Design progress
+              Or work step by step
             </h2>
             <Stepper projectId={projectId} progress={overview.data.progress} stale={stale} />
           </section>

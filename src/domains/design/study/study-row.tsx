@@ -25,9 +25,17 @@ const tones: Record<StudyStatus, Tone> = {
   blocked: "warn",
 };
 
+const kindLabels: Record<string, string> = {
+  size: "Run the design",
+  minimize: "Best design",
+  sample: "Uncertainty",
+  sensitivity: "What matters most",
+};
+
 function ProgressCell({ study }: { study: Study }) {
   const progress = toProgress(study);
-  if (progress.kind === "none") return <span className="text-muted">-</span>;
+  if (progress.kind === "none" || study.status === "done")
+    return <span className="text-muted">-</span>;
   const value = progress.kind === "determinate" ? progress.done : null;
   const max = progress.kind === "determinate" ? progress.total : 1;
   return (
@@ -87,10 +95,8 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
       <th scope="row" className="text-left font-medium">
         {study.name}
       </th>
-      <td>{study.kind}</td>
-      <td>
-        {study.started_by.kind === "agent" ? "Agent" : "User"} {study.started_by.name}
-      </td>
+      <td>{kindLabels[study.kind] ?? study.kind}</td>
+      <td>{study.started_by.name}</td>
       <td>
         <ProgressCell study={study} />
       </td>

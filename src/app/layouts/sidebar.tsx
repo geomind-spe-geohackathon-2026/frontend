@@ -1,6 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { projectFooterNav, projectNav, type NavItem } from "@/app/nav";
+import { useQuery } from "@tanstack/react-query";
+import { projectFooterNav, projectNav, type NavItem, type ProgressKey } from "@/app/nav";
+import { toStaleSteps } from "@/domains/workspace/overview/stale";
+import { resultsQuery } from "@/shared/api/results";
 import type { Project, ProgressStep } from "@/shared/api/types";
 import { cn } from "@/lib/cn";
 
@@ -27,6 +30,10 @@ function toMissing(step: ProgressStep | undefined): ReactNode {
   );
 }
 
+function toShown(project: Project, key: ProgressKey, stale: ReadonlySet<string>): ProgressStep {
+  return stale.has(key) ? { state: "incomplete", label: "Out of date" } : project.progress[key];
+}
+
 function StatusDot({ step }: { step: ProgressStep }) {
   return (
     <>
@@ -39,8 +46,16 @@ function StatusDot({ step }: { step: ProgressStep }) {
   );
 }
 
-function Item({ item, project }: { item: NavItem; project: Project }) {
-  const progress = item.progress === undefined ? undefined : project.progress[item.progress];
+function Item({
+  item,
+  project,
+  stale,
+}: {
+  item: NavItem;
+  project: Project;
+  stale: ReadonlySet<string>;
+}) {
+  const progress = item.progress === undefined ? undefined : toShown(project, item.progress, stale);
   return (
     <NavLink
       to={`/projects/${project.id}/${item.to}`}
@@ -75,6 +90,8 @@ function DisabledItem({ item }: { item: NavItem }) {
 /** The project sidebar: switch project, the Assistant, Design and Operation groups, documents and settings. */
 export function Sidebar({ project }: Props) {
   const [open, setOpen] = useState(false);
+  const results = useQuery(resultsQuery(project.id));
+  const stale = toStaleSteps(project, results.data?.[0]);
   return (
     <>
       <button
@@ -113,14 +130,14 @@ export function Sidebar({ project }: Props) {
               group.disabled === true ? (
                 <DisabledItem key={item.to} item={item} />
               ) : (
-                <Item key={item.to} item={item} project={project} />
+                <Item key={item.to} item={item} project={project} stale={stale} />
               ),
             )}
           </div>
         ))}
         <div className="mt-auto flex flex-col gap-px border-t border-border pt-2.5 max-[720px]:mt-0">
           {projectFooterNav.map((item) => (
-            <Item key={item.to} item={item} project={project} />
+            <Item key={item.to} item={item} project={project} stale={stale} />
           ))}
         </div>
       </nav>

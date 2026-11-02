@@ -65,6 +65,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
           </p>
         ) : null}
         <Composer
+          projectId={projectId}
           sending={send.isPending || create.isPending}
           active={active}
           cancelling={cancel.isPending}

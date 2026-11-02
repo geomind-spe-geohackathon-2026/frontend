@@ -6,7 +6,7 @@ import { Copy } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import { toFailureText, toPretty, toRequestText, toSummary } from "@/shared/sse/pretty";
-import { fromRoute, toRouteLabel } from "@/shared/sse/route";
+import { fromRoute } from "@/shared/sse/route";
 import type { Block } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
@@ -34,13 +34,18 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function toToolName(tool: string): string {
+  const words = tool.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 function ToolCard({ block }: { block: ToolBlock }) {
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
   return (
     <details className="rounded-control border border-border bg-surface">
       <summary className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5">
         <Chip tone={tone}>{block.state}</Chip>
-        <code className="font-mono">{block.tool}</code>
+        <span>{toToolName(block.tool)}</span>
         <span
           className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}
         >
@@ -73,8 +78,7 @@ function TextView({ block, running }: { block: TextBlock; running: boolean }) {
     return block.open && running ? <p className="text-muted">Thinking</p> : null;
   const route = fromRoute(block.text);
   if (route === null) return <MarkdownText text={block.text} />;
-  if (route.kind === "answer") return <MarkdownText text={route.answer} />;
-  return <p className="text-[12px] text-muted">{toRouteLabel(route)}</p>;
+  return route.kind === "answer" ? <MarkdownText text={route.answer} /> : null;
 }
 
 function FailedTools({ count }: { count: number }) {
@@ -85,12 +89,38 @@ function FailedTools({ count }: { count: number }) {
   );
 }
 
+function ToolSteps({ tools, running }: { tools: ToolBlock[]; running: boolean }) {
+  const failed = tools.some((tool) => tool.state === "failed");
+  const count = tools.length;
+  return (
+    <details open={running || failed} className="space-y-1.5">
+      <summary className="cursor-pointer text-[12px] text-muted">
+        {count} {count === 1 ? "step" : "steps"}
+      </summary>
+      {tools.map((tool) => (
+        <ToolCard key={tool.id} block={tool} />
+      ))}
+    </details>
+  );
+}
+
+function toRuns(blocks: Block[]): (Block | ToolBlock[])[] {
+  const runs: (Block | ToolBlock[])[] = [];
+  for (const block of blocks) {
+    const last = runs.at(-1);
+    if (block.kind !== "tool") runs.push(block);
+    else if (Array.isArray(last)) last.push(block);
+    else runs.push([block]);
+  }
+  return runs;
+}
+
 function BlockView({ block, running, failed }: { block: Block; running: boolean; failed: number }) {
   switch (block.kind) {
     case "text":
       return <TextView block={block} running={running} />;
     case "tool":
-      return <ToolCard block={block} />;
+      return null;
     case "request":
       if (!block.resolved) return null;
       return <p className="text-[12px] text-muted">{toRequestText(block.request.message)}</p>;
@@ -120,13 +150,14 @@ function AgentGroup({
       aria-label={`Agent ${group.agent}`}
       className={`space-y-1.5 ${indents[Math.min(depth, 2)] ?? ""} ${depth === 0 ? "" : "border-l-2 border-border pl-2.5"}`}
     >
-      <p className="text-[12px] text-muted">
-        {toLabel(group.agent)}
-        {depth === 0 ? "" : " · delegated"}
-      </p>
-      {group.blocks.map((block) => (
-        <BlockView key={block.id} block={block} running={running} failed={failed} />
-      ))}
+      {depth === 0 ? null : <p className="text-[12px] text-muted">{toLabel(group.agent)}</p>}
+      {toRuns(group.blocks).map((run) =>
+        Array.isArray(run) ? (
+          <ToolSteps key={run[0]?.id} tools={run} running={running} />
+        ) : (
+          <BlockView key={run.id} block={run} running={running} failed={failed} />
+        ),
+      )}
     </section>
   );
 }
