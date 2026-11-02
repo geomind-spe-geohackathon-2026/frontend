@@ -14,7 +14,8 @@ State: foundation done (build step B-F), Phase C not started. What exists:
 - `shared/ui`, `shared/quantity` (`Quantity`, `Missing`), `shared/layout` (`PageHeader`, theme, route types, `useRequiredParam`), toasts.
 - `src/mocks`: one file per domain; only `identity` and `workspace` have handlers (example sign in, three example projects).
 - `src/shared/api/schema.d.ts` is a hand-kept placeholder until `npm run gen:api` reads `../backend/openapi.json`. Adjust names in `src/shared/api/types.ts` after the first real generation.
-- Not built yet: `shared/sse`, `shared/forms`, `shared/charts` (owned by Phase C agents C6, C7, C8).
+- Assistant (C6): `domains/assistant/chat` (three columns: chat list, conversation, run panel) and `domains/assistant/runs` (runs table, run log). Live runs: `shared/sse` (`streamEvents` with `@microsoft/fetch-event-source`, bearer token, Last-Event-ID; `fromEvent`; run event and contract types) and the pure reducer `applyEvent(view, event)` in `chat/view.ts`; a reload replays from event 0 and must equal the live view (`chat/view.test.ts`). Details in `docs/assistant.md`.
+- Not built yet: `shared/forms`, `shared/charts` (owned by Phase C agents C7, C8).
 
 Commands: `npm run dev` (mock API), `npm run check` (types, lint, tests), `npm run build` (production build plus the bundle check), `npm run gen:api`, `npm run e2e`.
 

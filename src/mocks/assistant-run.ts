@@ -44,7 +44,8 @@ export function toMockRun(run: Run, question: string): MockRun {
 }
 
 function applyProblem(chat: MockChat, event: RunEvent & { type: "state.changed" }): void {
-  const results = Array.isArray(chat.problem.state.results) ? chat.problem.state.results : [];
+  const known: unknown = chat.problem.state.results;
+  const results: unknown[] = Array.isArray(known) ? known : [];
   event.changes.forEach((change) => {
     if (change.path === "/goal") chat.problem.state.goal = change.value;
     if (change.path === "/results") chat.problem.state.results = change.value;
@@ -53,7 +54,11 @@ function applyProblem(chat: MockChat, event: RunEvent & { type: "state.changed" 
   chat.problem.version = event.version;
 }
 
-function finishRun(mock: MockRun, chat: MockChat, event: RunEvent & { type: "run.finished" }): void {
+function finishRun(
+  mock: MockRun,
+  chat: MockChat,
+  event: RunEvent & { type: "run.finished" },
+): void {
   mock.run.status = event.status;
   mock.run.ended = new Date().toISOString();
   mock.feed.finished = true;
@@ -107,11 +112,15 @@ export function record(mock: MockRun, chat: MockChat, draft: Draft): void {
   });
 }
 
+function wasCancelled(mock: MockRun): boolean {
+  return mock.cancelled;
+}
+
 async function playDrafts(mock: MockRun, chat: MockChat, drafts: Draft[]): Promise<void> {
   for (const draft of drafts) {
-    if (mock.cancelled) return;
+    if (wasCancelled(mock)) return;
     await pause(draft.type === "text.delta" ? deltaMs : paceMs);
-    if (mock.cancelled) return;
+    if (wasCancelled(mock)) return;
     record(mock, chat, draft);
   }
 }
@@ -126,7 +135,7 @@ function waitForAnswer(mock: MockRun): Promise<Answer | "cancelled"> {
 export async function play(mock: MockRun, chat: MockChat): Promise<void> {
   const version = chat.problem.version;
   await playDrafts(mock, chat, toOpening(version, mock.run.id, mock.question));
-  if (mock.cancelled) return;
+  if (wasCancelled(mock)) return;
   record(mock, chat, toApprovalRequest());
   const answer = await waitForAnswer(mock);
   if (answer === "cancelled") return;

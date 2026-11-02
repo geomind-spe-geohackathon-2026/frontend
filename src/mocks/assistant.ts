@@ -17,7 +17,10 @@ import { toRoute, type NoParams } from "./url";
 
 type World = { chats: MockChat[]; runs: MockRun[] };
 type WithId = { id: string };
-type Answer = { request: string; answer: { approved: boolean; reason?: string } | { text: string } };
+type Answer = {
+  request: string;
+  answer: { approved: boolean; reason?: string } | { text: string };
+};
 
 const emptyUsage = { input_tokens: 0, output_tokens: 0, cost: 0 };
 const seedTime = "2026-10-31T09:00:00Z";

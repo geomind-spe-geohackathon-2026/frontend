@@ -14,6 +14,7 @@ type Items<T> = Json<{ items: T[]; next: string | null }>;
 type Id = { path: { id: string } };
 
 declare module "@/shared/api/schema" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface paths {
     "/assistant/chat": {
       get: {

@@ -8,17 +8,18 @@ function toKey(agent: string, index: number): string {
 }
 
 function toMessages(agent: string, request: string, previous: LogStep | undefined): LogMessage[] {
-  const system: LogMessage = { role: "system", content: `You are the ${agent} agent (example prompt).` };
+  const system: LogMessage = {
+    role: "system",
+    content: `You are the ${agent} agent (example prompt).`,
+  };
   const first: LogMessage = { role: "user", content: request };
   if (previous === undefined) return [system, first];
   const answer = previous.llm_calls[0]?.answer ?? "";
-  const results = previous.tool_calls.map(
-    (call): LogMessage => ({
-      role: "tool",
-      content: typeof call.output === "string" ? call.output : JSON.stringify(call.output),
-      tool_call_id: call.call_id,
-    }),
-  );
+  const results = previous.tool_calls.map((call): LogMessage => ({
+    role: "tool",
+    content: typeof call.output === "string" ? call.output : JSON.stringify(call.output),
+    tool_call_id: call.call_id,
+  }));
   return [system, first, { role: "assistant", content: answer }, ...results];
 }
 

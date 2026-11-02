@@ -34,7 +34,12 @@ export type ChatState = { version: number; state: unknown };
 
 export type SentMessage = { message: Message; run: Run };
 
-export type UsageTotals = { runs: number; input_tokens: number; output_tokens: number; cost: number };
+export type UsageTotals = {
+  runs: number;
+  input_tokens: number;
+  output_tokens: number;
+  cost: number;
+};
 
 export type LogMessage = {
   role: "user" | "assistant" | "tool" | "system";

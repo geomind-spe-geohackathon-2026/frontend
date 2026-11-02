@@ -30,7 +30,7 @@ function speak(agent: string, index: number, text: string, model: string): Draft
   ];
 }
 
-function useTool(agent: string, index: number, id: string, name: string, input: unknown): Draft[] {
+function toolCall(agent: string, index: number, id: string, name: string, input: unknown): Draft[] {
   return [
     { type: "tool.started", agent, index, call_id: id, tool: name, input },
     {
@@ -51,7 +51,7 @@ function toCoordinatorStart(runId: string, question: string): Draft[] {
     { type: "run.started", agent, run: runId, loop: "design" },
     { type: "step.started", agent, index: 0, model: "example/model-large" },
     ...toChunks(text).map((chunk): Draft => ({ type: "text.delta", agent, index: 0, text: chunk })),
-    ...useTool(agent, 0, "example-call-read", "read_case", {}),
+    ...toolCall(agent, 0, "example-call-read", "read_case", {}),
     { type: "step.finished", agent, index: 0, usage: small, text },
     { type: "usage", agent, ...small },
     { type: "step.started", agent, index: 1, model: "example/model-large" },
@@ -71,7 +71,7 @@ function toDesignerStart(runId: string, stateVersion: number): Draft[] {
   return [
     { type: "run.started", agent, run: `${runId}.designer`, loop: "design" },
     ...speak(agent, 0, "I will size the plant first.", "example/model-small"),
-    ...useTool(agent, 1, "example-call-size", "size_plant", { module: "example" }),
+    ...toolCall(agent, 1, "example-call-size", "size_plant", { module: "example" }),
     {
       type: "state.changed",
       agent,
@@ -109,7 +109,12 @@ export function toOpening(stateVersion: number, runId: string, question: string)
 }
 
 function toStudyResult(answer: Answer): Draft {
-  const base = { type: "tool.finished", agent: designerPath, index: 2, call_id: callStudy } as const;
+  const base = {
+    type: "tool.finished",
+    agent: designerPath,
+    index: 2,
+    call_id: callStudy,
+  } as const;
   if (answer === "approved") {
     return { ...base, output_summary: "uncertainty study queued", duration: 1.1 };
   }
@@ -154,11 +159,7 @@ export function toRecording(
   question: string,
   answer: Answer,
 ): Draft[] {
-  return [
-    ...toOpening(stateVersion, runId, question),
-    toApprovalRequest(),
-    ...toClosing(answer),
-  ];
+  return [...toOpening(stateVersion, runId, question), toApprovalRequest(), ...toClosing(answer)];
 }
 
 /** The last event of a run that the user cancelled. */

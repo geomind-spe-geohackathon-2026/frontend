@@ -45,7 +45,7 @@ describe("applyEvent", () => {
 
   it("builds the agent tree from the dotted paths and marks the delegated agent done", () => {
     const view = fold(recorded);
-    expect(view.agents["coordinator"]).toMatchObject({ parent: null, state: "running" });
+    expect(view.agents.coordinator).toMatchObject({ parent: null, state: "running" });
     expect(view.agents["coordinator.designer"]).toMatchObject({
       parent: "coordinator",
       state: "done",
