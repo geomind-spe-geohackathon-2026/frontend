@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   toFlowsheetSvg,
+  toFullFlowsheetSvg,
   type SheetConnection,
   type SheetModule,
 } from "@/shared/plant/flowsheet-svg";
@@ -22,19 +23,25 @@ function toConnections(rows: Report["flowsheet"]["connections"] | undefined): Sh
   }));
 }
 
-/** Draws the flowsheet of a report with the editor's layout; null until it is ready. */
-export function useFlowsheetSvg(flowsheet: Report["flowsheet"] | undefined): string | null {
-  const [svg, setSvg] = useState<string | null>(null);
+export type FlowsheetPictures = { process: string; full: string };
+
+/** Draws the process diagram and the full flowsheet of a report; null until they are ready. */
+export function useFlowsheetSvg(flowsheet: Report["flowsheet"] | undefined) {
+  const [pictures, setPictures] = useState<FlowsheetPictures | null>(null);
   useEffect(() => {
     const modules = toModules(flowsheet?.modules);
     if (modules.length === 0) return undefined;
     let active = true;
-    void toFlowsheetSvg(modules, toConnections(flowsheet?.connections)).then((drawn) => {
-      if (active) setSvg(drawn);
+    const connections = toConnections(flowsheet?.connections);
+    void Promise.all([
+      toFlowsheetSvg(modules, connections),
+      toFullFlowsheetSvg(modules, connections),
+    ]).then(([process, full]) => {
+      if (active) setPictures({ process, full });
     });
     return () => {
       active = false;
     };
   }, [flowsheet]);
-  return svg;
+  return pictures;
 }

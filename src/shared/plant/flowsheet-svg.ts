@@ -1,18 +1,32 @@
-import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api";
-import { toFanConnections, toLaidOutGraph } from "./auto-layout";
-import { groupOrder, toGroupFrames, toModuleGroups, type GroupFrame } from "./groups";
-import { splitPort, toWords } from "./spec";
-import { toStreamLabel } from "./stream-colors";
+import {
+  toSheetPicture,
+  sheetNodeHeight,
+  sheetNodeWidth,
+  type PlacedNode,
+  type SheetLine,
+  type SheetPicture,
+} from "./flowsheet-layout";
+import {
+  toFullSheet,
+  toSimpleSheet,
+  type SheetConnection,
+  type SheetModule,
+} from "./flowsheet-sheet";
+import type { GroupFrame } from "./groups";
+import { toStreamDash, toStreamLabel } from "./stream-colors";
 
-export type SheetModule = { id: string; type: string; category: string };
-export type SheetConnection = { source: string; target: string; stream: string | null };
+export type { SheetConnection, SheetModule } from "./flowsheet-sheet";
 
-const nodeWidth = 200;
-const nodeHeight = 76;
-const titleSize = 28;
-const lineHeight = 31;
+export const sheetFontSize = 12;
+export const simpleSheetLimit = 800;
+export const fullSheetLimit = 1170;
+
+const lineHeight = 14;
 const maximumLine = 13;
-const legendHeight = 60;
+const legendHeight = 28;
+const labelWidth = 6.6;
+const legendStep = 124;
+const margin = 2;
 const sans = "Helvetica, Arial, sans-serif";
 const ink = "#17212b";
 const muted = "#5b6977";
@@ -33,11 +47,8 @@ function escapeText(text: string): string {
   return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
-/** Names a module in words; a short id such as d0 stays, after its type. */
-export function toModuleTitle(module: SheetModule): string {
-  if (module.id.length <= 3) return `${toWords(module.type).join(" ")} ${module.id}`;
-  const words = module.id.replaceAll(".", " ").replaceAll("_", " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
+function toNumber(value: number): string {
+  return String(Math.round(value * 10) / 10);
 }
 
 /** Breaks a title over at most two lines at a space. */
@@ -51,107 +62,104 @@ export function toTitleLines(title: string): string[] {
   return first.length === 0 ? [title] : [first.join(" "), words.join(" ")];
 }
 
-function toGraph(
-  modules: SheetModule[],
-  connections: SheetConnection[],
-  groups: Map<string, string>,
-): ElkNode {
-  const ids = new Set(modules.map((module) => module.id));
-  const fans = toFanConnections(connections);
-  const edges: ElkExtendedEdge[] = connections.flatMap((connection, index) => {
-    const source = splitPort(connection.source).module;
-    const target = splitPort(connection.target).module;
-    if (fans.has(index) || source === target || !ids.has(source) || !ids.has(target)) return [];
-    return [{ id: `c${String(index)}`, sources: [source], targets: [target] }];
-  });
-  return {
-    id: "plant",
-    layoutOptions: {
-      "elk.algorithm": "layered",
-      "elk.direction": "RIGHT",
-      "elk.partitioning.activate": "true",
-      "elk.separateConnectedComponents": "false",
-      "elk.edgeRouting": "ORTHOGONAL",
-      "elk.spacing.nodeNode": "42",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "56",
-    },
-    children: modules.map((module) => ({
-      id: module.id,
-      width: nodeWidth,
-      height: nodeHeight,
-      layoutOptions: {
-        "elk.partitioning.partition": String(groupOrder.indexOf(groups.get(module.id) ?? "other")),
-      },
-    })),
-    edges,
-  };
+function toText(text: string, x: number, y: number, fill: string): string {
+  return `<text x="${toNumber(x)}" y="${toNumber(y)}" font-size="${String(sheetFontSize)}" font-family="${sans}" fill="${fill}">${escapeText(text)}</text>`;
 }
 
-function toEdgeSvg(edge: ElkExtendedEdge, connections: SheetConnection[]): string {
-  const stream = connections[Number(edge.id.slice(1))]?.stream ?? null;
-  return (edge.sections ?? [])
-    .map((section) => {
-      const points = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint];
-      const path = points.map((point) => `${String(point.x)},${String(point.y)}`).join(" ");
-      return `<polyline points="${path}" fill="none" stroke="${toColour(stream)}" stroke-width="3"/>`;
-    })
-    .join("");
+function toArrow(line: SheetLine): string {
+  const end = line.points.at(-1);
+  const before = line.points.at(-2);
+  if (end === undefined || before === undefined) return "";
+  const length = Math.hypot(end.x - before.x, end.y - before.y) || 1;
+  const along = { x: (end.x - before.x) / length, y: (end.y - before.y) / length };
+  const back = { x: end.x - along.x * 7, y: end.y - along.y * 7 };
+  const corners = [
+    end,
+    { x: back.x - along.y * 3.5, y: back.y + along.x * 3.5 },
+    { x: back.x + along.y * 3.5, y: back.y - along.x * 3.5 },
+  ];
+  const points = corners.map((point) => `${toNumber(point.x)},${toNumber(point.y)}`).join(" ");
+  return `<polygon points="${points}" fill="${toColour(line.stream)}"/>`;
 }
 
-function toNodeSvg(node: ElkNode, title: string): string {
-  const x = node.x ?? 0;
-  const y = node.y ?? 0;
-  const lines = toTitleLines(title);
-  const start = y + nodeHeight / 2 - ((lines.length - 1) * lineHeight) / 2 + titleSize / 3;
-  const text = lines
-    .map(
-      (line, index) =>
-        `<text x="${String(x + 12)}" y="${String(start + index * lineHeight)}" font-size="${String(titleSize)}" font-family="${sans}" fill="${ink}">${escapeText(line)}</text>`,
-    )
-    .join("");
-  return `<rect x="${String(x)}" y="${String(y)}" width="${String(nodeWidth)}" height="${String(nodeHeight)}" rx="8" fill="#ffffff" stroke="${muted}" stroke-width="2"/>${text}`;
+function toLineSvg(line: SheetLine): string {
+  const points = line.points.map((point) => `${toNumber(point.x)},${toNumber(point.y)}`).join(" ");
+  const dash = toStreamDash(line.stream);
+  const pattern = dash === undefined ? "" : ` stroke-dasharray="${dash}"`;
+  const body = `<polyline points="${points}" fill="none" stroke="${toColour(line.stream)}" stroke-width="1.5"${pattern}/>`;
+  return line.arrow ? `${body}${toArrow(line)}` : body;
+}
+
+function toNodeSvg(node: PlacedNode): string {
+  const lines = toTitleLines(node.title);
+  const start = node.y + sheetNodeHeight / 2 - ((lines.length - 1) * lineHeight) / 2 + 4;
+  const text = lines.map((line, index) =>
+    toText(line, node.x + 6, start + index * lineHeight, ink),
+  );
+  const marks = node.marks.map(
+    (mark, index) =>
+      `<circle cx="${toNumber(node.x + sheetNodeWidth - 7 - index * 10)}" cy="${toNumber(node.y + 7)}" r="3.5" fill="${toColour(mark)}"/>`,
+  );
+  return `<rect x="${toNumber(node.x)}" y="${toNumber(node.y)}" width="${String(sheetNodeWidth)}" height="${String(sheetNodeHeight)}" rx="4" fill="#ffffff" stroke="${muted}" stroke-width="1"/>${text.join("")}${marks.join("")}`;
 }
 
 function toFrameSvg(frame: GroupFrame): string {
-  return `<rect x="${String(frame.x)}" y="${String(frame.y)}" width="${String(frame.width)}" height="${String(frame.height)}" rx="10" fill="#f1f4f7"/><text x="${String(frame.x + 12)}" y="${String(frame.y + 26)}" font-size="24" font-family="${sans}" fill="${muted}">${escapeText(frame.label)}</text>`;
+  return `<rect x="${toNumber(frame.x)}" y="${toNumber(frame.y)}" width="${toNumber(frame.width)}" height="${toNumber(frame.height)}" rx="6" fill="#f1f4f7"/>`;
 }
 
-function toLegendSvg(streams: string[], x: number, y: number): string {
-  return streams
-    .map((stream, index) => {
-      const left = x + index * 260;
-      return `<rect x="${String(left)}" y="${String(y)}" width="44" height="8" fill="${toColour(stream)}"/><text x="${String(left + 54)}" y="${String(y + 12)}" font-size="26" font-family="${sans}" fill="${muted}">${escapeText(toStreamLabel(stream))}</text>`;
+function toLabelSvg(frame: GroupFrame): string {
+  const width = frame.label.length * labelWidth + 8;
+  return `<rect x="${toNumber(frame.x + 6)}" y="${toNumber(frame.y + 5)}" width="${toNumber(width)}" height="16" fill="#f1f4f7"/>${toText(frame.label, frame.x + 10, frame.y + 17, muted)}`;
+}
+
+function toLegendSvg(picture: SheetPicture, x: number, y: number): string {
+  const lined = picture.lines.flatMap((line) => line.stream ?? []);
+  const marked = picture.nodes.flatMap((node) => node.marks);
+  const streams = [...new Set(lined)];
+  const dots = [...new Set(marked)].filter((stream) => !streams.includes(stream));
+  const entries = [
+    ...streams.map((stream) => ({ stream, dot: false })),
+    ...dots.map((stream) => ({ stream, dot: true })),
+  ];
+  return entries
+    .map(({ stream, dot }, index) => {
+      const left = x + index * legendStep;
+      const sign = dot
+        ? `<circle cx="${toNumber(left + 10)}" cy="${toNumber(y)}" r="3.5" fill="${toColour(stream)}"/>`
+        : `<rect x="${toNumber(left)}" y="${toNumber(y - 1.5)}" width="22" height="3" fill="${toColour(stream)}"/>`;
+      return `${sign}${toText(toStreamLabel(stream), left + 28, y + 4, muted)}`;
     })
     .join("");
 }
 
-/** Draws a plant as an SVG picture: the editor's layered layout, groups, titles and stream colours. */
+function toSvg(picture: SheetPicture): string {
+  const left = -margin;
+  const top = -margin;
+  const width = picture.width + 2 * margin;
+  const height = picture.height + 2 * margin + legendHeight;
+  const body = [
+    `<rect x="${String(left)}" y="${String(top)}" width="${toNumber(width)}" height="${toNumber(height)}" fill="#ffffff"/>`,
+    ...picture.frames.map(toFrameSvg),
+    ...picture.lines.map(toLineSvg),
+    ...picture.frames.map(toLabelSvg),
+    ...picture.nodes.map(toNodeSvg),
+    toLegendSvg(picture, 0, picture.height + legendHeight / 2 + 2),
+  ];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${String(left)} ${String(top)} ${toNumber(width)} ${toNumber(height)}">${body.join("")}</svg>`;
+}
+
+/** Draws the process of a plant for the report: main units only, wrapped to stay readable on a page. */
 export async function toFlowsheetSvg(
   modules: SheetModule[],
   connections: SheetConnection[],
 ): Promise<string> {
-  const streams = connections.map((connection) => connection.stream);
-  const palette = modules.map((module) => ({ ...module, title: module.type, summary: "" }));
-  const groups = toModuleGroups(modules, connections, streams, palette);
-  const graph = await toLaidOutGraph(toGraph(modules, connections, groups));
-  const children = graph.children ?? [];
-  const layout = Object.fromEntries(
-    children.map((child) => [child.id, { x: child.x ?? 0, y: child.y ?? 0 }]),
-  );
-  const frames = toGroupFrames(groups, layout, () => ({ width: nodeWidth, height: nodeHeight }));
-  const left = Math.min(...frames.map((frame) => frame.x)) - 8;
-  const top = Math.min(...frames.map((frame) => frame.y)) - 8;
-  const right = Math.max(...frames.map((frame) => frame.x + frame.width)) + 8;
-  const bottom = Math.max(...frames.map((frame) => frame.y + frame.height)) + 8;
-  const titles = new Map(modules.map((module) => [module.id, toModuleTitle(module)]));
-  const shown = (graph.edges ?? []).map((edge) => connections[Number(edge.id.slice(1))]?.stream);
-  const legend = [...new Set(shown.filter((stream) => typeof stream === "string"))];
-  const body = [
-    `<rect x="${String(left)}" y="${String(top)}" width="${String(right - left)}" height="${String(bottom - top + legendHeight)}" fill="#ffffff"/>`,
-    ...frames.map(toFrameSvg),
-    ...(graph.edges ?? []).map((edge) => toEdgeSvg(edge, connections)),
-    ...children.map((child) => toNodeSvg(child, titles.get(child.id) ?? child.id)),
-    toLegendSvg(legend, left + 8, bottom + 18),
-  ];
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${String(left)} ${String(top)} ${String(right - left)} ${String(bottom - top + legendHeight)}">${body.join("")}</svg>`;
+  return toSvg(await toSheetPicture(toSimpleSheet(modules, connections), simpleSheetLimit));
+}
+
+/** Draws every module of a plant, for the report's appendix. */
+export async function toFullFlowsheetSvg(
+  modules: SheetModule[],
+  connections: SheetConnection[],
+): Promise<string> {
+  return toSvg(await toSheetPicture(toFullSheet(modules, connections), fullSheetLimit));
 }

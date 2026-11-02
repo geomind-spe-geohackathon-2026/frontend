@@ -1,8 +1,9 @@
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { ThemedImage } from "@/shared/ui/themed-image";
 import type { Report } from "@/shared/api/types";
+import type { FlowsheetPictures } from "./use-flowsheet-svg";
 
-type Props = { preview: Report; flowsheet: string | null };
+type Props = { preview: Report; flowsheet: FlowsheetPictures | null };
 
 /** The report as a page in the theme of the app; the PDF always comes out light. */
 export function ReportDocument({ preview, flowsheet }: Props) {
@@ -14,7 +15,10 @@ export function ReportDocument({ preview, flowsheet }: Props) {
           <h3 className="text-[15px] font-semibold">{section.title}</h3>
           <MarkdownText text={section.markdown} />
           {section.key === "design" && flowsheet !== null ? (
-            <ThemedImage svg={flowsheet} alt="Flowsheet of the plant" zoom />
+            <ThemedImage svg={flowsheet.process} alt="Process diagram of the plant" zoom />
+          ) : null}
+          {section.key === "appendix" && flowsheet !== null ? (
+            <ThemedImage svg={flowsheet.full} alt="Flowsheet of every module" zoom />
           ) : null}
         </section>
       ))}

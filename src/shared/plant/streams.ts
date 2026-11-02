@@ -1,21 +1,24 @@
 import { splitPort, type PortKinds, type SpecConnection } from "./spec";
 
-type Parents = Map<string, string>;
+export type Parents = Map<string, string>;
 
-function find(parents: Parents, key: string): string {
+/** Finds the root of a set of joined ports. */
+export function find(parents: Parents, key: string): string {
   let root = key;
   for (let next = parents.get(root); next !== undefined; next = parents.get(root)) root = next;
   if (root !== key) parents.set(key, root);
   return root;
 }
 
-function join(parents: Parents, first: string, second: string): void {
+/** Joins two ports into one set, as they carry one stream. */
+export function join(parents: Parents, first: string, second: string): void {
   const left = find(parents, first);
   const right = find(parents, second);
   if (left !== right) parents.set(left, right);
 }
 
-function toStem(port: string): string {
+/** Removes the direction from a port name, so hot_in and hot_out share a stem. */
+export function toStem(port: string): string {
   return port.replace(/_(in|out)$/, "");
 }
 
