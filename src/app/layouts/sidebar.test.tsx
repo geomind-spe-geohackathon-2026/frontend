@@ -12,6 +12,9 @@ describe("project sidebar", () => {
     await user.click(menu);
     expect(menu).toHaveAttribute("aria-expanded", "true");
     await user.click(screen.getByRole("link", { name: "Chat" }));
-    expect(menu).toHaveAttribute("aria-expanded", "false");
+    expect(await screen.findByRole("button", { name: "Menu" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
   });
 });
