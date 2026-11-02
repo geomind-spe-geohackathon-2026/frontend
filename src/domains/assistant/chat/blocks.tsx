@@ -5,7 +5,13 @@ import { MarkdownText } from "@/shared/ui/markdown-text";
 import { Copy } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
-import { toFailureText, toPretty, toRequestText, toSummary } from "@/shared/sse/pretty";
+import {
+  toFailureText,
+  toPretty,
+  toRequestText,
+  toBudgetStop,
+  toSummary,
+} from "@/shared/sse/pretty";
 import { fromRoute } from "@/shared/sse/route";
 import type { Block } from "./view";
 
@@ -13,6 +19,9 @@ type ToolBlock = Extract<Block, { kind: "tool" }>;
 type TextBlock = Extract<Block, { kind: "text" }>;
 
 const indents = ["", "ml-3", "ml-6"];
+
+/** The tool an agent ends with; its text is the answer, shown as the message. */
+export const finishTool = "finish";
 
 /** Counts the tool calls of a run that failed. */
 export function toFailedCount(blocks: Block[]): number {
@@ -81,6 +90,11 @@ function TextView({ block, running }: { block: TextBlock; running: boolean }) {
   return route.kind === "answer" ? <MarkdownText text={route.answer} /> : null;
 }
 
+function toEndText(status: string, message: string | null): string {
+  if (message === null) return `Run ${status}`;
+  return toBudgetStop(message) ?? `Run ${status}: ${message}`;
+}
+
 function FailedTools({ count }: { count: number }) {
   return (
     <p role="status" className="text-bad">
@@ -108,6 +122,7 @@ function toRuns(blocks: Block[]): (Block | ToolBlock[])[] {
   const runs: (Block | ToolBlock[])[] = [];
   for (const block of blocks) {
     const last = runs.at(-1);
+    if (block.kind === "tool" && block.tool === finishTool && block.error === null) continue;
     if (block.kind !== "tool") runs.push(block);
     else if (Array.isArray(last)) last.push(block);
     else runs.push([block]);
@@ -128,8 +143,7 @@ function BlockView({ block, running, failed }: { block: Block; running: boolean;
       if (block.status === "done") return failed === 0 ? null : <FailedTools count={failed} />;
       return (
         <p role="status" className="text-bad">
-          Run {block.status}
-          {block.message === null ? "" : `: ${block.message}`}
+          {toEndText(block.status, block.message)}
         </p>
       );
   }
