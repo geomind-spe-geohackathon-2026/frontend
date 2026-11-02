@@ -1172,8 +1172,19 @@ export interface components {
         };
         /** Coverage */
         Coverage: {
+            backup: components["schemas"]["Energy"];
             /** Date */
             date: string;
+            demand: components["schemas"]["Energy"];
+            /** Failed Steps */
+            failed_steps: number;
+            geothermal: components["schemas"]["Energy"];
+            /**
+             * Service
+             * @enum {string}
+             */
+            service: "heating" | "cooling";
+            short: components["schemas"]["Energy"];
             /**
              * Source
              * @enum {string}
@@ -1213,6 +1224,13 @@ export interface components {
             searchable: "pending" | "ready" | "failed";
             /** Size */
             size: number;
+        };
+        /** Energy */
+        Energy: {
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number;
         };
         /** Failure */
         Failure: {

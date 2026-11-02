@@ -9,7 +9,18 @@ function toYear(): Coverage[] {
   return Array.from({ length: 365 }, (_, index) => {
     const date = new Date(start + index * 86_400_000).toISOString().slice(0, 10);
     const down = (index >= 120 && index <= 136) || (index >= 280 && index <= 297);
-    return { date, source: down ? "backup" : "geothermal" };
+    const demand = { value: 40, unit: "MWh" };
+    const backup = { value: down ? 40 : 0, unit: "MWh" };
+    return {
+      date,
+      source: down ? "backup" : "geothermal",
+      service: "heating",
+      demand,
+      geothermal: { value: 40 - backup.value, unit: "MWh" },
+      backup,
+      short: { value: 0, unit: "MWh" },
+      failed_steps: 0,
+    };
   });
 }
 

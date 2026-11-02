@@ -23,9 +23,9 @@ const exampleKinds: StudyKind[] = [
     schema: exampleSettings,
   },
   {
-    kind: "optimise",
-    title: "Optimise",
-    description: "Searches the design space.",
+    kind: "minimize",
+    title: "Minimize",
+    description: "Searches the design space for the lowest objective.",
     schema: exampleSettings,
   },
   {
@@ -69,8 +69,8 @@ function toInitial(): Study[] {
       ended: "2026-01-12T14:03:00Z",
     }),
     toStudy(project, "example-study-2", {
-      name: "Example optimise study",
-      kind: "optimise",
+      name: "Example minimize study",
+      kind: "minimize",
       status: "running",
     }),
     toStudy(project, "example-study-3", {

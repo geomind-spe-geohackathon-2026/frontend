@@ -24,10 +24,15 @@ function study(change: Partial<Study>): Study {
 }
 
 describe("toProgress", () => {
-  it("claims no percentage while a study runs at 0 of 1", () => {
-    expect(toProgress(study({}))).toEqual({
-      kind: "indeterminate",
-      text: "running, progress is shown when it ends",
+  it("claims no percentage before the first trial has ended", () => {
+    expect(toProgress(study({}))).toEqual({ kind: "indeterminate", text: "in progress" });
+    expect(toProgress(study({ progress: { done: 0, total: 120 } })).kind).toBe("indeterminate");
+  });
+
+  it("draws a bar from the first reported trial, whatever the total", () => {
+    expect(toProgress(study({ progress: { done: 1, total: 2 } }))).toMatchObject({
+      kind: "determinate",
+      text: "1 of 2",
     });
   });
 

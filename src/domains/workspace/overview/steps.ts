@@ -26,7 +26,7 @@ export const designSteps: {
     number: 3,
     name: "Study",
     route: "design/study",
-    description: "Size, optimise, uncertainty",
+    description: "Size, minimize, uncertainty",
   },
   {
     key: "results",

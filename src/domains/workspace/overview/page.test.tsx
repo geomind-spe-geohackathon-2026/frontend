@@ -13,7 +13,7 @@ describe("overview page", () => {
     const problem = await screen.findByRole("link", { name: /Demand, site/ });
     expect(problem).toHaveAttribute("href", `${base}/design/case`);
     expect(problem).toHaveTextContent("complete");
-    expect(screen.getByRole("link", { name: /Size, optimise/ })).toHaveTextContent("1 running");
+    expect(screen.getByRole("link", { name: /Size, minimize/ })).toHaveTextContent("1 running");
     expect(screen.getByRole("link", { name: /Deliverable/ })).toHaveAttribute(
       "href",
       `${base}/design/report`,

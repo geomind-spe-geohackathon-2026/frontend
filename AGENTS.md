@@ -4,7 +4,7 @@ React app for designing geothermal heating and cooling plants with an AI assista
 
 ## Start here
 
-State: Phase D integration done for the golden path (real and mock). Every screen is built and tested in mock mode; the types now come from the backend schema (`npm run gen:api` reads `../backend/openapi.json`, contract version 21). The golden path (`e2e/golden.spec.ts`) passes in real mode against the backend stack (`../backend/scripts/stack-up.sh`) and in mock mode; screenshots go to `.tmp/build/screens/`. Open items are in `docs/app-build/handover.md` of the backend repo. What exists:
+State: Phase D integration done for the golden path (real and mock). Every screen is built and tested in mock mode; the types now come from the backend schema (`npm run gen:api` reads `../backend/openapi.json`, contract version 23). The golden path (`e2e/golden.spec.ts`) passes in real mode against the backend stack (`../backend/scripts/stack-up.sh`) and in mock mode; screenshots go to `.tmp/build/screens/`. Open items are in `docs/app-build/handover.md` of the backend repo. What exists:
 
 - Tooling: Vite, React 18, TypeScript strict, Tailwind 4, ESLint (typescript-eslint strict), Prettier, Vitest, Playwright (smoke test and the golden path, real and mock), MSW.
 - Shell: `/signin`; `/projects`, `/account`, `/users` (top bar); `/projects/:projectId/...` (top bar, breadcrumb, run pill, project sidebar). Auth guard, admin guard, unknown project redirect.

@@ -8,10 +8,10 @@ const path = "/projects/example-project-1/design/study";
 describe("StudyPage", () => {
   it("lists studies and shows a running study without a percentage", async () => {
     renderApp({ path });
-    const row = await screen.findByRole("row", { name: /Example optimise study/ });
+    const row = await screen.findByRole("row", { name: /Example minimize study/ });
     const bar = within(row).getByRole("progressbar");
     expect(bar).not.toHaveAttribute("aria-valuenow");
-    expect(within(row).getByText("running")).toBeVisible();
+    expect(within(row).getByText("in progress")).toBeVisible();
   });
 
   it("links a finished study to its result", async () => {
