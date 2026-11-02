@@ -109,6 +109,28 @@ const exampleDocuments: Document[] = [
   },
 ];
 
+function toCopyFailure(body: ProjectCreate, source: Project | undefined) {
+  if (body.case_from === undefined || body.case_from === null) return null;
+  if (source === undefined) return toErrorResponse(404, "project_not_found", "Project not found");
+  if (source.case_version !== null) return null;
+  return toErrorResponse(404, "case_not_found", "That project has no problem");
+}
+
+function toNewProject(number: number, name: string, source: Project | undefined): Project {
+  const now = new Date().toISOString();
+  return {
+    id: `example-project-${String(number)}`,
+    name,
+    owner: exampleOwner,
+    plant_version: null,
+    case_version: source === undefined ? null : 1,
+    created: now,
+    updated: now,
+    progress:
+      source === undefined ? emptyProgress : { ...emptyProgress, case: source.progress.case },
+  };
+}
+
 function projectHandlers(projects: Project[]): RequestHandler[] {
   return [
     http.get(toRoute("/workspace/projects"), ({ request }) => {
@@ -118,17 +140,10 @@ function projectHandlers(projects: Project[]): RequestHandler[] {
     }),
     http.post<NoParams, ProjectCreate>(toRoute("/workspace/projects"), async ({ request }) => {
       const body = await request.json();
-      const now = new Date().toISOString();
-      const project: Project = {
-        id: `example-project-${String(projects.length + 1)}`,
-        name: body.name,
-        owner: exampleOwner,
-        plant_version: null,
-        case_version: null,
-        created: now,
-        updated: now,
-        progress: emptyProgress,
-      };
+      const source = projects.find((item) => item.id === body.case_from);
+      const failure = toCopyFailure(body, source);
+      if (failure !== null) return failure;
+      const project = toNewProject(projects.length + 1, body.name, source);
       projects.unshift(project);
       return HttpResponse.json<Project>(project, { status: 201 });
     }),

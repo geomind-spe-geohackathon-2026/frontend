@@ -1,13 +1,15 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { toItems } from "@/shared/api/pagination";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { showToast } from "@/shared/ui/toast";
-import { useCreateProject, useImportProject } from "./api";
+import { projectsQuery, useCreateProject, useImportProject } from "./api";
 
-type Source = "empty" | "zip";
+type Source = "empty" | "copy" | "zip";
 
 type Props = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -36,6 +38,17 @@ function SourceChoice({
         <input
           type="radio"
           name="source"
+          checked={source === "copy"}
+          onChange={() => {
+            onChange("copy");
+          }}
+        />
+        A copy of another project&apos;s problem
+      </label>
+      <label className="flex items-center gap-2">
+        <input
+          type="radio"
+          name="source"
           checked={source === "zip"}
           onChange={() => {
             onChange("zip");
@@ -44,6 +57,28 @@ function SourceChoice({
         A project zip
       </label>
     </fieldset>
+  );
+}
+
+function CopyPicker() {
+  const projects = useInfiniteQuery(projectsQuery(""));
+  const items = toItems(projects.data?.pages);
+  return (
+    <Field label="Project to copy" htmlFor="project-copy">
+      <select
+        id="project-copy"
+        name="case_from"
+        required
+        className="w-full rounded-control border border-border bg-surface px-2.5 py-[7px]"
+      >
+        <option value="" />
+        {items.map((project) => (
+          <option key={project.id} value={project.id}>
+            {project.name}
+          </option>
+        ))}
+      </select>
+    </Field>
   );
 }
 
@@ -64,8 +99,12 @@ function NewProjectForm() {
     const form = new FormData(event.currentTarget);
     const name = form.get("name");
     const file = form.get("file");
+    const caseFrom = form.get("case_from");
     if (source === "empty" && typeof name === "string") {
       create.mutate({ name: name.trim() }, { onSuccess: handleCreated });
+    }
+    if (source === "copy" && typeof name === "string" && typeof caseFrom === "string") {
+      create.mutate({ name: name.trim(), case_from: caseFrom }, { onSuccess: handleCreated });
     }
     if (source === "zip" && file instanceof File) {
       importZip.mutate(file, { onSuccess: handleCreated });
@@ -75,14 +114,17 @@ function NewProjectForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <SourceChoice source={source} onChange={setSource} />
-      {source === "empty" ? (
-        <Field label="Name" htmlFor="project-name">
-          <Input id="project-name" name="name" required />
-        </Field>
-      ) : (
+      {source === "zip" ? (
         <Field label="Project zip" htmlFor="project-zip">
           <Input id="project-zip" name="file" type="file" accept=".zip" required />
         </Field>
+      ) : (
+        <>
+          <Field label="Name" htmlFor="project-name">
+            <Input id="project-name" name="name" required />
+          </Field>
+          {source === "copy" ? <CopyPicker /> : null}
+        </>
       )}
       {error === null ? null : (
         <p role="alert" className="text-bad">
@@ -101,7 +143,7 @@ function NewProjectForm() {
   );
 }
 
-/** The New project dialog: a name for an empty problem, or a project zip to import. */
+/** The New project dialog: a name for an empty problem or for a copy of another project's problem, or a project zip to import. */
 export function NewProjectDialog({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
