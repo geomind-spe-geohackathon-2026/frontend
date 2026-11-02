@@ -4,7 +4,7 @@ React app for designing geothermal heating and cooling plants with an AI assista
 
 ## Start here
 
-State: foundation done (build step B-F), Phase C not started. What exists:
+State: Phase C done; every screen is built and tested in mock mode, not yet run against the real backend. Phase D is next: read `docs/app-build/handover.md` in the backend repo. What exists:
 
 - Tooling: Vite, React 18, TypeScript strict, Tailwind 4, ESLint (typescript-eslint strict), Prettier, Vitest, Playwright (one smoke test), MSW.
 - Shell: `/signin`; `/projects`, `/account`, `/users` (top bar); `/projects/:projectId/...` (top bar, breadcrumb, run pill, project sidebar). Auth guard, admin guard, unknown project redirect.
