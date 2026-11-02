@@ -5,6 +5,7 @@ import { ApiError, hasCode } from "@/shared/api/errors";
 import { toItems } from "@/shared/api/pagination";
 import { projectQuery } from "@/shared/api/projects";
 import { ConflictDialog } from "@/shared/forms/conflict-dialog";
+import type { SeriesSource } from "@/shared/forms/field-context";
 import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { SchemaForm } from "@/shared/forms/schema-form";
@@ -29,8 +30,10 @@ import {
   caseQuery,
   caseSchemaQuery,
   copySourcesQuery,
+  readCaseFile,
   useCopyCase,
   useSaveCase,
+  useUploadCaseFile,
 } from "./api";
 import { BlockerBanner } from "./blocker-banner";
 import { FilesPanel } from "./files-panel";
@@ -38,8 +41,12 @@ import { HistoryPanel } from "./history-panel";
 import { toEmptyCase } from "./empty-case";
 import type { Case, MissingValue } from "@/shared/api/types";
 import type { CaseContent } from "./types";
+import { toRequirementText } from "./requirement-text";
 import { useCaseEditor } from "./use-case-editor";
 
+const REQUIREMENTS = "requirements";
+const REQUIREMENTS_HINT =
+  "After a run each requirement shows pass or fail under Results and in the report, and Optimise counts a broken one as infeasible.";
 const filesTab = "files";
 const historyTab = "history";
 
@@ -282,6 +289,17 @@ function MissingCount({ missing, section }: { missing: MissingValue[]; section: 
 
 function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
   const sections = sectionsOf(schema);
+  const upload = useUploadCaseFile(projectId);
+  const series: SeriesSource = {
+    scope: `${projectId}-${String(saved.version)}`,
+    files: saved.files.map((file) => file.name),
+    time: editor.content.time,
+    uploadBlocked: editor.dirty,
+    read: (file) => readCaseFile(projectId, saved.version, file),
+    upload: (file) => {
+      upload.mutate({ base: saved.version, name: `data/${file.name}`, file });
+    },
+  };
   return (
     <Tabs value={tab} onValueChange={onTab}>
       <TabsList aria-label="Sections of the case">
@@ -296,6 +314,7 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
       </TabsList>
       {sections.map((section) => (
         <TabsContent key={section} value={section}>
+          {section === REQUIREMENTS ? <p className="mb-2 text-muted">{REQUIREMENTS_HINT}</p> : null}
           <SchemaForm
             key={`${String(saved.version)}-${String(generation)}-${section}`}
             schema={schema.properties?.[section] ?? {}}
@@ -303,6 +322,8 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
             prefix={section}
             missing={editor.missing.map((item) => item.path)}
             problems={editor.problems}
+            series={series}
+            describeItem={toRequirementText}
             onChange={(value, problems) => {
               const shown = withHeader(schema.properties?.[section] ?? {}, section, value);
               editor.edit(section, shown, problems);

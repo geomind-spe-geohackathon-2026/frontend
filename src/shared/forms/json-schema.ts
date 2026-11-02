@@ -7,11 +7,14 @@ export type JsonSchema = {
   items?: JsonSchema;
   required?: string[];
   enum?: unknown[];
+  pattern?: string;
   const?: unknown;
   anyOf?: JsonSchema[];
   oneOf?: JsonSchema[];
   minimum?: number;
   maximum?: number;
+  exclusiveMinimum?: number;
+  exclusiveMaximum?: number;
 };
 
 export type Problem = { path: string; message: string; code?: string };
@@ -26,10 +29,11 @@ export function variantsOf(schema: JsonSchema): JsonSchema[] {
   return schema.anyOf ?? schema.oneOf ?? [];
 }
 
-/** Tells whether a node is a quantity: an object with a value and a unit property. */
+/** Tells whether a node is a quantity: an object with a value and a unit, or a plain number value. */
 export function isLeaf(schema: JsonSchema): boolean {
   const properties = schema.properties;
-  return properties?.value !== undefined && properties.unit !== undefined;
+  if (properties?.value === undefined) return false;
+  return properties.unit !== undefined || properties.value.type === "number";
 }
 
 function fitsType(schema: JsonSchema, value: unknown): boolean {
@@ -84,6 +88,15 @@ export function unitsOf(schema: JsonSchema): string[] {
   if (unit === undefined) return typeof schema.unit === "string" ? [schema.unit] : [];
   const options = unit.enum ?? (unit.const === undefined ? [] : [unit.const]);
   return options.filter((option): option is string => typeof option === "string");
+}
+
+/** Writes the bounds of a number node as a hint, or nothing when it has none. */
+export function boundsOf(schema: JsonSchema): string | undefined {
+  const low = schema.minimum ?? schema.exclusiveMinimum;
+  const high = schema.maximum ?? schema.exclusiveMaximum;
+  if (low !== undefined && high !== undefined) return `between ${String(low)} and ${String(high)}`;
+  if (low !== undefined) return `at least ${String(low)}`;
+  return high === undefined ? undefined : `at most ${String(high)}`;
 }
 
 /** Makes a readable label from a property name unless the schema has a title. */

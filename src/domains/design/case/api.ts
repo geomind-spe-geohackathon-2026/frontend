@@ -86,7 +86,6 @@ function toUploadForm(body: UploadBody): FormData {
   return toFormData({ ...body, file: new File([body.file], body.name) });
 }
 
-/** Mutation that uploads a series file; the answer is the new case version. */
 /** Paged query options for the projects a case can be copied from. */
 export const copySourcesQuery = () =>
   pagedQuery(["projects", "list", ""], async (cursor, signal) =>
@@ -113,7 +112,7 @@ export function useCopyCase(projectId: string) {
   });
 }
 
-/** Mutation that uploads a file the case names. */
+/** Mutation that uploads a series file; the answer is the new case version. */
 export function useUploadCaseFile(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -130,4 +129,17 @@ export function useUploadCaseFile(projectId: string) {
       await queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
     },
   });
+}
+
+/** Reads a saved file of the case as text. */
+export async function readCaseFile(
+  projectId: string,
+  version: number,
+  name: string,
+): Promise<string> {
+  const { data } = await api.GET("/design/case/files/{name}", {
+    params: { path: { name }, query: { project: projectId, version } },
+    parseAs: "text",
+  });
+  return typeof data === "string" ? data : "";
 }

@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { Info, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { getAt } from "./document";
@@ -11,6 +11,8 @@ type Props = {
   label: string;
   unit?: string | undefined;
   hint?: string | undefined;
+  description?: string | undefined;
+  required?: boolean;
   children: (props: { id: string; invalid: boolean; describedBy: string | undefined }) => ReactNode;
 };
 
@@ -36,7 +38,16 @@ function useMessages(name: string, full: string): string[] {
 }
 
 /** Label, control, unit, missing mark and messages of one field; the control comes from the render prop. */
-export function FieldFrame({ name, path, label, unit, hint, children }: Props) {
+export function FieldFrame({
+  name,
+  path,
+  label,
+  unit,
+  hint,
+  description,
+  required = false,
+  children,
+}: Props) {
   const { prefix, missing } = useFieldContext();
   const { control } = useFormContext();
   const current: unknown = useWatch({ control, name });
@@ -47,11 +58,23 @@ export function FieldFrame({ name, path, label, unit, hint, children }: Props) {
   const invalid = isMissing || messages.length > 0;
   const describedBy = invalid ? `${id}-notes` : undefined;
   return (
-    <div className="flex flex-col gap-1" data-missing={isMissing}>
-      <label htmlFor={id} className="text-[12.5px] text-muted">
-        {label}
-        {unit === undefined || unit === "" ? null : <span className="ml-1">[{unit}]</span>}
-      </label>
+    <div className="flex min-w-0 flex-col gap-1" data-missing={isMissing}>
+      <div className="flex h-[18px] items-center gap-1">
+        <label
+          htmlFor={id}
+          title={label}
+          className={`truncate text-[12.5px] text-muted ${required ? "after:ml-0.5 after:text-warn after:content-['*']" : ""}`}
+        >
+          {label}
+          {unit === undefined || unit === "" ? null : <span className="ml-1">[{unit}]</span>}
+        </label>
+        {description === undefined ? null : (
+          <span title={description} className="flex-none text-muted">
+            <Info aria-hidden="true" className="size-3" />
+            <span className="sr-only">{description}</span>
+          </span>
+        )}
+      </div>
       {children({ id, invalid, describedBy })}
       {hint === undefined ? null : <span className="text-[12px] text-muted">{hint}</span>}
       {invalid ? (

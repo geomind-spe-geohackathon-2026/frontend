@@ -1,10 +1,21 @@
 import { createContext, useContext } from "react";
 import type { Problem } from "./json-schema";
 
+export type SeriesSource = {
+  scope: string;
+  files: string[];
+  time: unknown;
+  uploadBlocked: boolean;
+  read: (file: string) => Promise<string>;
+  upload: (file: File) => void;
+};
+
 export type FieldContext = {
   prefix: string;
   missing: readonly string[];
   problems: readonly Problem[];
+  series?: SeriesSource | undefined;
+  describeItem?: ((item: unknown) => string | null) | undefined;
 };
 
 export const fieldContext = createContext<FieldContext>({ prefix: "", missing: [], problems: [] });

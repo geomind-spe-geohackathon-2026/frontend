@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { prune } from "./document";
-import { fieldContext } from "./field-context";
+import { fieldContext, type SeriesSource } from "./field-context";
 import type { JsonSchema, Problem } from "./json-schema";
 import { createSchemaResolver, formRoot, validateDocument } from "./resolver";
 import { FieldNode } from "./schema-fields";
@@ -13,6 +13,8 @@ type Props = {
   prefix?: string;
   missing?: readonly string[];
   problems?: readonly Problem[];
+  series?: SeriesSource | undefined;
+  describeItem?: ((item: unknown) => string | null) | undefined;
 };
 
 /** A form generated from a JSON schema: units, missing marks, ajv checks; reports every change. */
@@ -23,6 +25,8 @@ export function SchemaForm({
   prefix = "",
   missing = [],
   problems = [],
+  series,
+  describeItem,
 }: Props) {
   const resolver = useMemo(() => createSchemaResolver(schema), [schema]);
   const form = useForm({
@@ -42,7 +46,10 @@ export function SchemaForm({
       }),
     [subscribe, onChange, schema],
   );
-  const context = useMemo(() => ({ prefix, missing, problems }), [prefix, missing, problems]);
+  const context = useMemo(
+    () => ({ prefix, missing, problems, series, describeItem }),
+    [prefix, missing, problems, series, describeItem],
+  );
   return (
     <fieldContext.Provider value={context}>
       <FormProvider {...form}>

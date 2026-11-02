@@ -2,10 +2,10 @@ import { Plus, Trash2, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 import { toChildPath, toFullPath, useFieldContext } from "./field-context";
 import { FieldFrame, isReported } from "./field-frame";
 import {
+  boundsOf,
   formEntries,
   isLeaf,
   isRecord,
@@ -17,6 +17,7 @@ import {
   type JsonSchema,
 } from "./json-schema";
 import { ScalarControl } from "./scalar-control";
+import { SeriesPicker } from "./series-picker";
 
 export type NodeProps = {
   name: string;
@@ -26,36 +27,21 @@ export type NodeProps = {
   optional?: boolean;
 };
 
-function TextPart({ id, name, label }: { id?: string; name: string; label: string }) {
-  const { control, setValue } = useFormContext();
-  const value: unknown = useWatch({ control, name });
-  return (
-    <Input
-      {...(id === undefined ? {} : { id })}
-      aria-label={label}
-      placeholder={label.split(" ")[0]}
-      value={typeof value === "string" ? value : ""}
-      onChange={(event) => {
-        const next = event.target.value === "" ? undefined : event.target.value;
-        setValue(name, next, { shouldDirty: true, shouldValidate: true });
-      }}
-    />
-  );
+function toPatternHint(schema: JsonSchema): string | undefined {
+  return schema.pattern === undefined ? undefined : "lower case letters, digits and _";
+}
+
+function toSingular(label: string): string {
+  return label.endsWith("s") ? label.slice(0, -1) : label;
 }
 
 const selectClass =
   "rounded-control border border-border bg-surface px-2 py-[7px] aria-invalid:border-warn";
 
-function SeriesReference({ name, path, label }: NodeProps) {
+function SeriesReference({ name, path, label, schema }: NodeProps) {
   return (
     <FieldFrame name={name} path={path} label={label}>
-      {({ id }) => (
-        <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)] gap-1">
-          <TextPart id={id} name={`${name}.file`} label={`File of ${label}`} />
-          <TextPart name={`${name}.column`} label={`Column of ${label}`} />
-          <TextPart name={`${name}.unit`} label={`Unit of ${label}`} />
-        </div>
-      )}
+      {({ id }) => <SeriesPicker id={id} name={name} label={label} units={unitsOf(schema)} />}
     </FieldFrame>
   );
 }
@@ -100,7 +86,7 @@ function UnitControl({
   );
 }
 
-function QuantityField({ name, path, label, schema }: NodeProps) {
+function QuantityField({ name, path, label, schema, optional = false }: NodeProps) {
   const { control } = useFormContext();
   const quantity: unknown = useWatch({ control, name });
   const units = unitsOf(schema);
@@ -108,10 +94,17 @@ function QuantityField({ name, path, label, schema }: NodeProps) {
   const lacksUnit =
     isRecord(quantity) && quantity.value !== undefined && quantity.unit === undefined;
   return (
-    <FieldFrame name={name} path={path} label={label}>
+    <FieldFrame
+      name={name}
+      path={path}
+      label={label}
+      hint={boundsOf(valueSchema)}
+      description={schema.description}
+      required={!optional}
+    >
       {({ id, invalid, describedBy }) => (
         <>
-          <div className="flex items-center gap-1">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
             <ScalarControl
               id={id}
               name={`${name}.value`}
@@ -133,15 +126,79 @@ function QuantityField({ name, path, label, schema }: NodeProps) {
               unit missing
             </span>
           ) : null}
+          <ValueExtras name={name} label={label} schema={schema} />
         </>
       )}
     </FieldFrame>
   );
 }
 
-function ScalarField({ name, path, label, schema }: NodeProps) {
+function ExtraField({ name, label, schema }: { name: string; label: string; schema: JsonSchema }) {
   return (
-    <FieldFrame name={name} path={path} label={label} unit={schema.unit}>
+    <ScalarControl
+      id={name}
+      name={name}
+      schema={schema}
+      invalid={false}
+      describedBy={undefined}
+      label={label}
+    />
+  );
+}
+
+function Extra({
+  title,
+  name,
+  label,
+  schema,
+}: {
+  title: string;
+  name: string;
+  label: string;
+  schema: JsonSchema | undefined;
+}) {
+  if (schema === undefined) return null;
+  return (
+    <details className="text-[12px] text-muted">
+      <summary className="cursor-pointer">{title}</summary>
+      <div className="mt-1 grid grid-cols-2 gap-1">
+        {Object.entries(schema.properties ?? {}).map(([key, child]) => (
+          <div key={key} className="flex min-w-0 flex-col gap-0.5">
+            <span>{labelOf(key, child)}</span>
+            <ExtraField
+              name={`${name}.${key}`}
+              label={`${labelOf(key, child)} of the ${title.toLowerCase()} of ${label}`}
+              schema={child}
+            />
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function ValueExtras({ name, label, schema }: { name: string; label: string; schema: JsonSchema }) {
+  const { range, uncertainty } = schema.properties ?? {};
+  if (range === undefined && uncertainty === undefined) return null;
+  return (
+    <div className="flex gap-3">
+      <Extra title="Range" name={`${name}.range`} label={label} schema={range} />
+      <Extra title="Uncertainty" name={`${name}.uncertainty`} label={label} schema={uncertainty} />
+    </div>
+  );
+}
+
+function ScalarField({ name, path, label, schema, optional = false }: NodeProps) {
+  return (
+    <FieldFrame
+      name={name}
+      path={path}
+      label={label}
+      unit={schema.unit}
+      hint={boundsOf(schema) ?? toPatternHint(schema)}
+      description={schema.description}
+      required={!optional}
+    >
       {({ id, invalid, describedBy }) => (
         <ScalarControl
           id={id}
@@ -155,32 +212,48 @@ function ScalarField({ name, path, label, schema }: NodeProps) {
   );
 }
 
+function ListItem({ name, path, label, schema, onRemove }: NodeProps & { onRemove: () => void }) {
+  const { control } = useFormContext();
+  const { describeItem } = useFieldContext();
+  const value: unknown = useWatch({ control, name });
+  const title = isRecord(value) && typeof value.name === "string" ? value.name : label;
+  const sentence = describeItem?.(value) ?? null;
+  return (
+    <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="font-mono text-[13px] font-medium">{title}</h3>
+          {sentence === null ? null : <p className="text-[12.5px] text-muted">{sentence}</p>}
+        </div>
+        <Button aria-label={`Remove ${label}`} onClick={onRemove}>
+          <Trash2 aria-hidden="true" className="size-3.5" />
+        </Button>
+      </div>
+      <div className="[&>fieldset]:border-0 [&>fieldset]:p-0 [&>fieldset>legend]:sr-only">
+        <FieldNode name={name} path={path} label={label} schema={schema} />
+      </div>
+    </div>
+  );
+}
+
 function ListField({ name, path, label, schema }: NodeProps) {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const item = schema.items ?? {};
   return (
-    <fieldset className="flex flex-col gap-2 rounded-card border border-border p-3">
-      <legend className="px-1 text-[12.5px] text-muted">{label}</legend>
+    <div className="flex flex-col gap-2">
+      {path.includes(".") ? <h3 className="text-[13px] font-medium">{label}</h3> : null}
       {fields.map((field, index) => (
-        <div key={field.id} className="flex items-start gap-2 rounded-control bg-sunken p-2">
-          <div className="min-w-0 flex-1">
-            <FieldNode
-              name={`${name}.${String(index)}`}
-              path={toChildPath(path, String(index))}
-              label={`${label} ${String(index + 1)}`}
-              schema={item}
-            />
-          </div>
-          <Button
-            aria-label={`Remove ${label} ${String(index + 1)}`}
-            onClick={() => {
-              remove(index);
-            }}
-          >
-            <Trash2 aria-hidden="true" className="size-3.5" />
-          </Button>
-        </div>
+        <ListItem
+          key={field.id}
+          name={`${name}.${String(index)}`}
+          path={toChildPath(path, String(index))}
+          label={`${label} ${String(index + 1)}`}
+          schema={item}
+          onRemove={() => {
+            remove(index);
+          }}
+        />
       ))}
       <Button
         className="self-start"
@@ -189,9 +262,9 @@ function ListField({ name, path, label, schema }: NodeProps) {
         }}
       >
         <Plus aria-hidden="true" className="size-3.5" />
-        Add {label.toLowerCase()}
+        Add {toSingular(label).toLowerCase()}
       </Button>
-    </fieldset>
+    </div>
   );
 }
 
@@ -274,11 +347,25 @@ function GroupFields(props: NodeProps) {
   const nested = entries.filter(
     ([, childSchema]) => !isInline(pickVariant(childSchema, undefined)),
   );
+  const someRequired = inline.some(([key]) => required.has(key));
+  const basic = inline.filter(([key]) => !someRequired || required.has(key));
+  const advanced = inline.filter(([key]) => someRequired && !required.has(key));
   const body = (
     <>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-x-3 gap-y-2.5">
-        {inline.map(child)}
+      {schema.description === undefined ? null : (
+        <p className="text-[12.5px] text-muted">{schema.description}</p>
+      )}
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-start gap-x-3 gap-y-2.5">
+        {basic.map(child)}
       </div>
+      {advanced.length === 0 ? null : (
+        <details className="rounded-control border border-border p-2">
+          <summary className="cursor-pointer text-[12.5px] text-muted">Advanced</summary>
+          <div className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-start gap-x-3 gap-y-2.5">
+            {advanced.map(child)}
+          </div>
+        </details>
+      )}
       {nested.map(child)}
     </>
   );
@@ -286,7 +373,7 @@ function GroupFields(props: NodeProps) {
   if (optional) return <OptionalGroup {...props}>{body}</OptionalGroup>;
   return (
     <fieldset className="flex flex-col gap-2.5 rounded-card border border-border p-3">
-      <legend className="px-1 text-[12.5px] text-muted">{label}</legend>
+      <legend className="px-1 text-[13px] font-medium text-text">{label}</legend>
       {body}
     </fieldset>
   );
