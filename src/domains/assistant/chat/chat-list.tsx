@@ -4,7 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
 import type { Chat } from "@/shared/api/types";
+import { Ellipsis } from "lucide-react";
+import { toDateLabel } from "@/lib/datelabel";
 import { Button } from "@/shared/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 const ChatDialog = lazy(() =>
   import("./chat-actions").then((module) => ({ default: module.ChatDialog })),
@@ -12,40 +20,74 @@ const ChatDialog = lazy(() =>
 
 type Props = { projectId: string; activeChatId: string | null };
 
+const dots: Record<string, string> = {
+  running: "bg-accent",
+  waiting: "bg-warn",
+  queued: "bg-border",
+  done: "bg-ok",
+  failed: "bg-bad",
+  cancelled: "bg-border",
+};
+
+function ChatMenu({
+  title,
+  onRename,
+  onDelete,
+}: {
+  title: string;
+  onRename: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={`Actions of ${title}`}
+        className="mt-1.5 rounded-control p-1 text-muted hover:bg-surface"
+      >
+        <Ellipsis aria-hidden="true" className="size-4" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+        <DropdownMenuItem onClick={onDelete}>Delete</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function ChatItem({ projectId, chat, active }: { projectId: string; chat: Chat; active: boolean }) {
   const [mode, setMode] = useState<"rename" | "delete" | null>(null);
   const navigate = useNavigate();
   const base = `/projects/${projectId}/assistant/chat`;
   return (
-    <li className={`flex items-center gap-1 rounded-control ${active ? "bg-sunken" : ""}`}>
+    <li
+      className={`group relative flex items-start gap-1 rounded-control ${active ? "bg-sunken" : ""}`}
+    >
       <Link
         to={`${base}/${chat.id}`}
         aria-current={active ? "page" : undefined}
-        className="min-w-0 flex-1 px-2.5 py-2"
+        className="min-w-0 flex-1 px-2.5 py-2 text-text no-underline"
       >
-        <span className="block truncate font-medium">{chat.title}</span>
-        <span className="text-[12px] text-muted">
-          {chat.last_run === null ? "no run yet" : chat.last_run.status}
+        <span className="line-clamp-2 font-medium" title={chat.title}>
+          {chat.title}
+        </span>
+        <span className="flex items-center gap-1.5 text-[12px] text-muted">
+          <span
+            aria-hidden="true"
+            className={`size-2 rounded-full ${dots[chat.last_run?.status ?? "none"] ?? "bg-border"}`}
+          />
+          {chat.last_run === null ? "no run yet" : chat.last_run.status} ·{" "}
+          {toDateLabel(chat.created)}
         </span>
       </Link>
-      <Button
-        variant="link"
-        aria-label={`Rename ${chat.title}`}
-        onClick={() => {
+      <ChatMenu
+        title={chat.title}
+        onRename={() => {
           setMode("rename");
         }}
-      >
-        Rename
-      </Button>
-      <Button
-        variant="link"
-        aria-label={`Delete ${chat.title}`}
-        onClick={() => {
+        onDelete={() => {
           setMode("delete");
         }}
-      >
-        Delete
-      </Button>
+      />
       {mode === null ? null : (
         <Suspense fallback={null}>
           <ChatDialog

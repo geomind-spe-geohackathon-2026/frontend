@@ -29,7 +29,7 @@ export function useCaseEditor(saved: Case) {
   const content = state.draft ?? saved.content;
   const dirty = state.draft !== null && !isEqualDocument(state.draft, saved.content);
   const settled = useDebouncedValue(content, validationDelayMs);
-  const checked = useQuery(caseValidationQuery(saved.project, settled, dirty));
+  const checked = useQuery(caseValidationQuery(saved.project, settled, true));
   const server = dirty ? checked.data : saved;
   const formProblems = Object.entries(state.sectionProblems).flatMap(([section, problems]) =>
     prefixed(section, problems),
@@ -47,5 +47,7 @@ export function useCaseEditor(saved: Case) {
     setState({ draft: null, sectionProblems: {} });
   };
   const isChecking = dirty && (checked.isFetching || settled !== content);
-  return { content, dirty, problems, missing, isChecking, edit, reset };
+  const plantMissing: MissingValue[] = checked.data?.plant_missing ?? [];
+  const hasPlant = checked.data?.has_plant ?? true;
+  return { content, dirty, problems, missing, plantMissing, hasPlant, isChecking, edit, reset };
 }

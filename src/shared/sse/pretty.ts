@@ -82,3 +82,33 @@ function fromQuotedMessage(summary: string): string | null {
 export function toFailureText(error: string): string {
   return fromQuotedMessage(error) ?? error;
 }
+
+function toCount(key: string, value: unknown): string | null {
+  const words = key.replaceAll("_", " ");
+  if (Array.isArray(value)) {
+    const name = value.length === 1 && words.endsWith("s") ? words.slice(0, -1) : words;
+    return `${String(value.length)} ${name}`;
+  }
+  if (typeof value === "string" || typeof value === "number") {
+    return `${words} ${String(value).slice(0, 30)}`;
+  }
+  return null;
+}
+
+/** Writes a tool result as a few words: counts of its lists and its short values. */
+export function toSummary(summary: string): string {
+  const value = fromText(summary.trim());
+  if (Array.isArray(value)) return `${String(value.length)} items`;
+  if (typeof value !== "object" || value === null) return summary;
+  const parts = Object.entries(value).flatMap(([key, item]) => toCount(key, item) ?? []);
+  return parts.length === 0 ? "See the details" : parts.slice(0, 3).join(", ");
+}
+
+/** Writes a permission question as what was asked for. */
+export function toRequestText(message: string): string {
+  const found = /^Allow (\S+) \((\w+)\)\?$/.exec(message);
+  if (found === null) return `You answered: ${message}`;
+  const tool = (found[1] ?? "").replaceAll("_", " ");
+  const effect = found[2] === "write" ? "writes to the project" : found[2];
+  return `You answered: ${tool} (${effect ?? ""})`;
+}

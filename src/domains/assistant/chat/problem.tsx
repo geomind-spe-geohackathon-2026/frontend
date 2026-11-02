@@ -1,3 +1,5 @@
+import type { Project } from "@/shared/api/types";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -44,14 +46,41 @@ function isEmpty(value: unknown): boolean {
   return isRecord(value) && Object.keys(value).length === 0;
 }
 
-/** Shows the problem state the assistant has built, one entry per top-level key of the document. */
-export function ProblemView({ document }: { document: unknown }) {
-  const entries = isRecord(document)
-    ? Object.entries(document).filter(([, value]) => !isEmpty(value))
-    : [];
-  if (entries.length === 0) return <p className="text-muted">Nothing recorded yet.</p>;
+function Row({ name, value }: { name: string; value: string }) {
   return (
-    <dl className="space-y-1.5">
+    <div className="flex justify-between gap-2">
+      <dt className="text-muted">{name}</dt>
+      <dd className="m-0 text-right">{value}</dd>
+    </div>
+  );
+}
+
+function toVersion(version: number | null | undefined): string {
+  return version === null || version === undefined ? "none yet" : `version ${String(version)}`;
+}
+
+function toCaseText(document: unknown): string {
+  return isRecord(document) && isRecord(document.case) ? "read" : "not read yet";
+}
+
+const hidden = ["case", "case_origin", "compaction", "version"];
+
+/** Shows what the assistant works from: the project's versions and the notes of this chat. */
+export function ProblemView({
+  document,
+  project,
+}: {
+  document: unknown;
+  project?: Project | undefined;
+}) {
+  const entries = isRecord(document)
+    ? Object.entries(document).filter(([name, value]) => !hidden.includes(name) && !isEmpty(value))
+    : [];
+  return (
+    <dl className="m-0 space-y-1.5">
+      <Row name="Case" value={toVersion(project?.case_version)} />
+      <Row name="Plant" value={toVersion(project?.plant_version)} />
+      <Row name="Case in this chat" value={toCaseText(document)} />
       {entries.map(([name, value]) => (
         <Entry key={name} name={name} value={value} />
       ))}

@@ -1147,8 +1147,18 @@ export interface components {
         };
         /** CaseProblems */
         CaseProblems: {
+            /**
+             * Has Plant
+             * @default false
+             */
+            has_plant: boolean;
             /** Missing */
             missing: components["schemas"]["Missing"][];
+            /**
+             * Plant Missing
+             * @default []
+             */
+            plant_missing: components["schemas"]["Missing"][];
             /** Problems */
             problems: components["schemas"]["Problem"][];
         };
@@ -1215,10 +1225,18 @@ export interface components {
         };
         /** Constraint */
         Constraint: {
+            /** Limit */
+            limit: string;
+            /** Margin */
+            margin: number | null;
             /** Message */
             message: string;
+            /** Module */
+            module: string | null;
             /** Name */
             name: string;
+            /** Near */
+            near: boolean;
             /**
              * Status
              * @enum {string}
@@ -1226,6 +1244,12 @@ export interface components {
             status: "pass" | "fail" | "not_assessed";
             /** Title */
             title: string;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number | null;
+            /** Worst */
+            worst: string | null;
         };
         /** Coverage */
         Coverage: {

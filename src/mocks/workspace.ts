@@ -221,6 +221,9 @@ function projectChangeHandlers(projects: Project[]): RequestHandler[] {
 
 function documentHandlers(documents: Document[]): RequestHandler[] {
   return [
+    http.get(toRoute("/system/health"), () =>
+      HttpResponse.json({ status: "ok", assistant: "scripted" }),
+    ),
     http.get(toRoute("/workspace/documents/formats"), () => HttpResponse.json([".md", ".pdf"])),
     http.get(toRoute("/workspace/documents"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project");

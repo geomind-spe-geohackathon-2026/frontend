@@ -1,3 +1,6 @@
+import { Chip } from "@/shared/ui/chip";
+import { useQuery } from "@tanstack/react-query";
+import { projectQuery } from "@/shared/api/projects";
 import { toFailedCount } from "./blocks";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -56,15 +59,20 @@ function AgentTree({ view }: { view: View }) {
 export function RunPanel({ projectId, runId, view, run }: Props) {
   const status = view.blocks.length === 0 && run !== undefined ? run.status : view.status;
   const active = status === "queued" || status === "running" || status === "waiting";
+  const failed = toFailedCount(view.blocks);
+  const project = useQuery(projectQuery(projectId));
   return (
     <div className="space-y-3">
       <Card>
         <CardBody className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-muted">Run {toShortId(runId)}</span>
-            <RunStatusChip status={status} />
-            {toFailedCount(view.blocks) === 0 ? null : (
-              <span className="text-[12px] text-bad">{toFailedCount(view.blocks)} failed</span>
+            {status === "done" && failed > 0 ? (
+              <Chip tone="warn">
+                done with {failed} {failed === 1 ? "error" : "errors"}
+              </Chip>
+            ) : (
+              <RunStatusChip status={status} />
             )}
           </div>
           {run === undefined ? null : (
@@ -90,7 +98,7 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
           <h2>What it knows</h2>
         </CardHeader>
         <CardBody>
-          <ProblemView document={view.problem.document} />
+          <ProblemView document={view.problem.document} project={project.data} />
         </CardBody>
       </Card>
       <Link

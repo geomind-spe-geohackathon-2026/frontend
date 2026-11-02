@@ -16,7 +16,9 @@ export function CoverageCard({ coverage }: { coverage: Coverage | null }) {
       </CardHeader>
       <CardBody>
         {coverage === null ? (
-          <p className="text-muted">Daily coverage by source is not available for this result.</p>
+          <p className="text-muted">
+            Made before daily coverage existed. Run the study again to get it.
+          </p>
         ) : (
           <div className="flex flex-col gap-4">
             {services.map(({ key, label }) => (

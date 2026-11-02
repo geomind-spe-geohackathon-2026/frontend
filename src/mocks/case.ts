@@ -179,7 +179,12 @@ function readHandlers(stored: Store): RequestHandler[] {
     http.post<NoParams, CaseCheck>(toRoute("/design/case/validate"), async ({ request }) => {
       const { content } = await request.json();
       const view = toCase("", { version: emptyVersion, content, files: [] });
-      return HttpResponse.json<CaseProblems>({ missing: view.missing, problems: view.problems });
+      return HttpResponse.json<CaseProblems>({
+        missing: view.missing,
+        problems: view.problems,
+        plant_missing: [],
+        has_plant: true,
+      });
     }),
     http.get(toRoute("/design/case"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project") ?? "";

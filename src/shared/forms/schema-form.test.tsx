@@ -43,12 +43,12 @@ describe("SchemaForm", () => {
     await userEvent.type(screen.getByLabelText("Gradient"), "30");
     expect(onChange).toHaveBeenLastCalledWith({ ground: { gradient: { value: 30 } } }, []);
     expect(screen.getByRole("combobox", { name: "Unit of Gradient" })).toHaveValue("");
-    expect(screen.getByText("unit missing")).toBeVisible();
+    expect(screen.getByText("choose a unit")).toBeVisible();
     await userEvent.selectOptions(
       screen.getByRole("combobox", { name: "Unit of Gradient" }),
       "K/km",
     );
-    expect(screen.queryByText("unit missing")).toBeNull();
+    expect(screen.queryByText("choose a unit")).toBeNull();
   });
 
   it("keeps a nested optional group collapsed until it has a value or gemini reports a gap in it", () => {

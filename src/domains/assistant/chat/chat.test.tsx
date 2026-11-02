@@ -116,8 +116,9 @@ describe("chat page", () => {
     renderApp({ path: `${base}/example-chat-1` });
     const user = userEvent.setup();
     await user.click(
-      await screen.findByRole("button", { name: "Rename Design the example plant" }),
+      await screen.findByRole("button", { name: "Actions of Design the example plant" }),
     );
+    await user.click(await screen.findByRole("menuitem", { name: "Rename" }));
     const field = await screen.findByLabelText("Title");
     await user.clear(field);
     await user.type(field, "Renamed chat");
@@ -129,8 +130,9 @@ describe("chat page", () => {
     renderApp({ path: `${base}/example-chat-1` });
     const user = userEvent.setup();
     await user.click(
-      await screen.findByRole("button", { name: "Delete Design the example plant" }),
+      await screen.findByRole("button", { name: "Actions of Design the example plant" }),
     );
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }));
     expect(await screen.findByText(/This cannot be undone/)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Delete chat" }));
     expect(await screen.findByText("No chats yet.")).toBeVisible();

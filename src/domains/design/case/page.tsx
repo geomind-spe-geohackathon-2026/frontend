@@ -333,7 +333,7 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
         {sections.map((section) => (
           <TabsTrigger key={section} value={section}>
             {labelOf(section, schema.properties?.[section] ?? {})}
-            <MissingCount missing={editor.missing} section={section} />
+            <MissingCount missing={[...editor.missing, ...editor.plantMissing]} section={section} />
           </TabsTrigger>
         ))}
         <TabsTrigger value={filesTab}>Files</TabsTrigger>
@@ -461,7 +461,13 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
           />
         }
       />
-      <BlockerBanner missing={editor.missing} schema={schema} onShow={handleShow} />
+      <BlockerBanner
+        missing={editor.missing}
+        plantMissing={editor.plantMissing}
+        hasPlant={editor.hasPlant}
+        schema={schema}
+        onShow={handleShow}
+      />
       <ProblemList problems={editor.problems} />
       <SaveFailure error={flow.save.error} />
       <SectionTabs {...{ projectId, saved, schema, editor, tab, generation }} onTab={showTab} />

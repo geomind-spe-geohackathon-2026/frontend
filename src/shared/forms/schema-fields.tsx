@@ -76,7 +76,7 @@ function UnitControl({
         });
       }}
     >
-      {typeof unit === "string" && units.includes(unit) ? null : <option value="" />}
+      {typeof unit === "string" && units.includes(unit) ? null : <option value="">unit</option>}
       {units.map((option) => (
         <option key={option} value={option}>
           {option}
@@ -124,7 +124,7 @@ function QuantityField({ name, path, label, schema, optional = false }: NodeProp
           {lacksUnit ? (
             <span className="inline-flex items-center gap-1 text-[12px] text-warn">
               <TriangleAlert aria-hidden="true" className="size-3.5" />
-              unit missing
+              choose a unit
             </span>
           ) : null}
           <ValueExtras name={name} label={label} schema={schema} />

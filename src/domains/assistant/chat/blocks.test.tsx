@@ -49,7 +49,7 @@ describe("Blocks", () => {
     const { rerender } = render(<Blocks running blocks={[pending]} />);
     expect(screen.queryByText(/Allow save/)).not.toBeInTheDocument();
     rerender(<Blocks running blocks={[{ ...pending, resolved: true }]} />);
-    expect(screen.getByText("Answered: Allow save?")).toBeVisible();
+    expect(screen.getByText("You answered: Allow save?")).toBeVisible();
   });
 
   it("does not say Thinking once the run is over", () => {

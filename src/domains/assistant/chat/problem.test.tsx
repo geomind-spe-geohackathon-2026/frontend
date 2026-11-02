@@ -12,8 +12,10 @@ describe("ProblemView", () => {
     expect(screen.queryByText("none")).toBeNull();
   });
 
-  it("says nothing is recorded when every entry is empty", () => {
+  it("says what the chat has read", () => {
+    render(<ProblemView document={{ case: { name: "c" } }} />);
+    expect(screen.getByText("read")).toBeVisible();
     render(<ProblemView document={{ design: null }} />);
-    expect(screen.getByText("Nothing recorded yet.")).toBeVisible();
+    expect(screen.getByText("not read yet")).toBeVisible();
   });
 });

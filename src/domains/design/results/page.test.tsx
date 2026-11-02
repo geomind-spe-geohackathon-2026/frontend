@@ -8,7 +8,7 @@ const base = "/projects/example-project-1/design/results";
 describe("ResultsPage", () => {
   it("says coverage is not available when the result has none", async () => {
     renderApp({ path: `${base}/example-result-1` });
-    expect(await screen.findByText(/Daily coverage by source is not available/)).toBeVisible();
+    expect(await screen.findByText(/Made before daily coverage existed/)).toBeVisible();
     expect(screen.queryByRole("img", { name: /Days covered/ })).not.toBeInTheDocument();
   });
 

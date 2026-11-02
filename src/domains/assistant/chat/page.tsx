@@ -37,7 +37,7 @@ export function ChatPage() {
   return (
     <>
       <PageHeader title="Chat" />
-      <div className="grid grid-cols-[190px_minmax(0,1fr)_250px] gap-3.5 max-[1000px]:grid-cols-1">
+      <div className="grid grid-cols-[240px_minmax(0,1fr)_260px] gap-3.5 max-[1000px]:grid-cols-1">
         <ChatList projectId={projectId} activeChatId={chatId} />
         {chatId === null ? (
           <ChatWorkspace key="new" projectId={projectId} chatId={null} runId={null} messages={[]} />

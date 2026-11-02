@@ -2,7 +2,10 @@ import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import { toDepth, toGroups, toLabel, type Group } from "./agents";
 import { MarkdownText } from "@/shared/ui/markdown-text";
-import { toFailureText, toPretty } from "@/shared/sse/pretty";
+import { Copy } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { showToast } from "@/shared/ui/toast";
+import { toFailureText, toPretty, toRequestText, toSummary } from "@/shared/sse/pretty";
 import { fromRoute, toRouteLabel } from "@/shared/sse/route";
 import type { Block } from "./view";
 
@@ -16,6 +19,21 @@ export function toFailedCount(blocks: Block[]): number {
   return blocks.filter((block) => block.kind === "tool" && block.state === "failed").length;
 }
 
+function CopyButton({ text }: { text: string }) {
+  return (
+    <Button
+      aria-label="Copy the output"
+      onClick={() => {
+        void navigator.clipboard.writeText(text).then(() => {
+          showToast("Copied");
+        });
+      }}
+    >
+      <Copy aria-hidden="true" className="size-3.5" />
+    </Button>
+  );
+}
+
 function ToolCard({ block }: { block: ToolBlock }) {
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
   return (
@@ -26,7 +44,7 @@ function ToolCard({ block }: { block: ToolBlock }) {
         <span
           className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}
         >
-          {block.error === null ? block.summary : toFailureText(block.error)}
+          {block.error === null ? toSummary(block.summary) : toFailureText(block.error)}
         </span>
         {block.duration === null ? null : <Quantity value={block.duration} unit="s" />}
       </summary>
@@ -35,7 +53,10 @@ function ToolCard({ block }: { block: ToolBlock }) {
         <pre className="overflow-x-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
           {JSON.stringify(block.input, null, 2)}
         </pre>
-        <p className="text-[11.5px] tracking-wide text-muted uppercase">Output</p>
+        <p className="flex items-center justify-between text-[11.5px] tracking-wide text-muted uppercase">
+          Output
+          <CopyButton text={toPretty(block.summary)} />
+        </p>
         <pre
           className={`overflow-x-auto font-mono text-[12px] whitespace-pre-wrap ${block.error === null ? "" : "text-bad"}`}
         >
@@ -59,7 +80,7 @@ function TextView({ block, running }: { block: TextBlock; running: boolean }) {
 function FailedTools({ count }: { count: number }) {
   return (
     <p role="status" className="text-bad">
-      Run done with {count} failed {count === 1 ? "tool" : "tools"}
+      Done with {count} {count === 1 ? "error" : "errors"}
     </p>
   );
 }
@@ -72,7 +93,7 @@ function BlockView({ block, running, failed }: { block: Block; running: boolean;
       return <ToolCard block={block} />;
     case "request":
       if (!block.resolved) return null;
-      return <p className="text-[12px] text-muted">Answered: {block.request.message}</p>;
+      return <p className="text-[12px] text-muted">{toRequestText(block.request.message)}</p>;
     case "end":
       if (block.status === "done") return failed === 0 ? null : <FailedTools count={failed} />;
       return (

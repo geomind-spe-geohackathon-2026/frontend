@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Message } from "@/shared/api/types";
 import { runQuery, useAnswerRun, useCancelRun, useCreateChat, useSendMessage } from "./api";
 import { Composer } from "./composer";
-import { DemoNotice } from "./demo-notice";
+import { CaseNotice, DemoNotice } from "./demo-notice";
 import { Conversation } from "./conversation";
 import { RequestCard } from "./request-card";
 import { RunPanel } from "./run-panel";
@@ -43,6 +43,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
     <>
       <div className="flex min-h-[calc(100vh-15rem)] min-w-0 flex-col gap-3">
         <DemoNotice />
+        <CaseNotice projectId={projectId} />
         <div className="flex-1">
           <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
         </div>
