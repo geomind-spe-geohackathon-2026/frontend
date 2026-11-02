@@ -1,7 +1,12 @@
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const plugins = [remarkGfm];
+const svgImage = "data:image/svg+xml;base64,";
+
+function toSafeUrl(url: string): string {
+  return url.startsWith(svgImage) ? url : defaultUrlTransform(url);
+}
 
 const components = {
   pre: ({ children }: { children?: React.ReactNode }) => (
@@ -24,7 +29,7 @@ const components = {
 export function Markdown({ text }: { text: string }) {
   return (
     <div className="min-w-0 space-y-2 [&_code]:rounded-control [&_code]:bg-sunken [&_code]:px-1 [&_code]:font-mono [&_h1]:text-lg [&_h2]:text-base [&_h3]:font-semibold [&_ol]:list-decimal [&_ol]:pl-5 [&_pre_code]:whitespace-pre [&_ul]:list-disc [&_ul]:pl-5">
-      <ReactMarkdown remarkPlugins={plugins} components={components}>
+      <ReactMarkdown remarkPlugins={plugins} components={components} urlTransform={toSafeUrl}>
         {text}
       </ReactMarkdown>
     </div>

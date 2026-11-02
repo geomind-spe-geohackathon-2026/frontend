@@ -27,4 +27,14 @@ describe("Markdown", () => {
     render(<Markdown text={text} />);
     expect(document.querySelector("b")).toBeNull();
   });
+
+  it("shows an SVG image but no other data link", () => {
+    const svg = "data:image/svg+xml;base64,PHN2Zy8+";
+    render(<Markdown text={`![Figure](${svg})\n\n![Other](data:text/html;base64,AAAA)`} />);
+    expect(screen.getByRole("img", { name: "Figure" })).toHaveAttribute("src", svg);
+    expect(screen.getByRole("img", { name: "Other" })).not.toHaveAttribute(
+      "src",
+      "data:text/html;base64,AAAA",
+    );
+  });
 });
