@@ -1,4 +1,5 @@
 import type { RunStatus } from "@/shared/api/types";
+import { toBestValue } from "@/shared/sse/pretty";
 import type { RunEvent, RunRequest, Usage } from "@/shared/sse/types";
 import { applyChanges } from "./patch";
 
@@ -16,7 +17,17 @@ export type Block =
       error: string | null;
     }
   | { kind: "request"; id: string; agent: string; request: RunRequest; resolved: boolean }
-  | { kind: "end"; id: string; agent: string; status: RunStatus; message: string | null };
+  | {
+      kind: "end";
+      id: string;
+      agent: string;
+      status: RunStatus;
+      message: string | null;
+      reason: string;
+      studies: RecordedStudy[];
+    };
+
+export type RecordedStudy = { id: string; name: string; best: string | null };
 
 export type AgentNode = {
   path: string;
@@ -38,6 +49,7 @@ export type View = {
   request: RunRequest | null;
   problem: ProblemState;
   problemStale: boolean;
+  studies: RecordedStudy[];
 };
 
 /** The view before any event: nothing has happened yet. */
@@ -51,6 +63,7 @@ export const emptyView: View = {
   request: null,
   problem: { version: 0, document: null },
   problemStale: false,
+  studies: [],
 };
 
 function toStepKey(agent: string, index: number): string {
@@ -118,9 +131,30 @@ function finishStep(view: View, event: RunEvent & { type: "step.finished" }): Vi
   return { ...next, openSteps: rest };
 }
 
+const bestFormat = new Intl.NumberFormat("en", { maximumSignificantDigits: 4 });
+
+function toObjective(view: View, callId: string): string | null {
+  const block = view.blocks.find((item) => item.kind === "tool" && item.id === callId);
+  if (block?.kind !== "tool" || typeof block.input !== "object" || block.input === null)
+    return null;
+  const objective = "objective" in block.input ? block.input.objective : null;
+  return typeof objective === "string" ? objective.toUpperCase() : null;
+}
+
+function toBest(view: View, event: RunEvent & { type: "tool.finished" }): string | null {
+  const best = toBestValue(event.output_summary);
+  if (best === null) return null;
+  const figure = `${bestFormat.format(best.value)} ${best.unit}`.trim();
+  const objective = toObjective(view, event.call_id);
+  return objective === null ? figure : `${objective} ${figure}`;
+}
+
 function finishTool(view: View, event: RunEvent & { type: "tool.finished" }): View {
   return {
     ...view,
+    studies: view.studies.map((study) =>
+      study.id === event.call_id ? { ...study, best: toBest(view, event) } : study,
+    ),
     blocks: view.blocks.map((block) => {
       if (block.kind !== "tool" || block.id !== event.call_id) return block;
       const failed = event.error !== undefined;
@@ -190,9 +224,15 @@ function reduce(view: View, event: RunEvent): View {
       return reduceRequest(view, event);
     case "usage":
       return { ...view, usage: toUsage(event) };
+    case "study.recorded":
+      return { ...view, studies: [...view.studies, toRecordedStudy(event)] };
     case "run.finished":
       return reduceFinished(view, event);
   }
+}
+
+function toRecordedStudy(event: RunEvent & { type: "study.recorded" }): RecordedStudy {
+  return { id: event.call_id, name: event.study.replace(/^study\//, ""), best: null };
 }
 
 function toUsage(event: Usage): Usage {
@@ -229,6 +269,8 @@ function reduceFinished(view: View, event: RunEvent & { type: "run.finished" }):
     agent: event.agent,
     status: event.status,
     message: event.message ?? null,
+    reason: event.stop_reason,
+    studies: view.studies,
   });
   const agents = Object.fromEntries(
     Object.entries(next.agents).map(([path, agent]) => [

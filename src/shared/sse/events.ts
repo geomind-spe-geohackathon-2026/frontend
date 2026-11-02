@@ -175,11 +175,21 @@ function toStateBody(type: string, fields: Fields): RunEventBody | null {
       return { type, ...toRequest(fields) };
     case "usage":
       return { type, ...toUsage(fields, type) };
+    case "study.recorded":
+      return toStudyRecorded(fields);
     case "run.finished":
       return toFinished(fields);
     default:
       return null;
   }
+}
+
+function toStudyRecorded(fields: Fields): RunEventBody | null {
+  const call = optionalString(fields, "call_id");
+  const study = optionalString(fields, "study");
+  const method = optionalString(fields, "method");
+  if (call === null || study === null || method === null) return null;
+  return { type: "study.recorded", call_id: call, study, method };
 }
 
 function toFinished(fields: Fields): RunEventBody {

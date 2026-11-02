@@ -1,3 +1,4 @@
+import { Link, useParams } from "react-router-dom";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import { MarkdownText } from "@/shared/ui/markdown-text";
@@ -12,10 +13,14 @@ import {
   toSummary,
 } from "@/shared/sse/pretty";
 import { fromRoute } from "@/shared/sse/route";
-import type { Block } from "./view";
+import type { Block, RecordedStudy } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
 type TextBlock = Extract<Block, { kind: "text" }>;
+type EndBlock = Extract<Block, { kind: "end" }>;
+
+const internalStop = "error";
+const internalFailure = "The assistant stopped with an internal error in geomind";
 
 /** The tool an agent ends with; its text is the answer, shown as the message. */
 export const finishTool = "finish";
@@ -79,11 +84,31 @@ function ToolCard({ block }: { block: ToolBlock }) {
   );
 }
 
-function toEndText(status: string, message: string | null): string {
-  if (status === "cancelled") return "Run cancelled";
-  const budget = message === null ? null : toBudgetStop(message);
+function toEndText(block: EndBlock): string {
+  const { status, message, reason } = block;
+  if (status === "cancelled" || message === null) return `Run ${status}`;
+  const budget = toBudgetStop(message);
+  if (budget !== null) return budget;
+  return reason === internalStop ? internalFailure : `Run ${status}: ${message}`;
+}
+
+function RecordedStudies({ studies }: { studies: RecordedStudy[] }) {
+  const { projectId = "" } = useParams();
+  if (studies.length === 0) return null;
   return (
-    budget ?? "The assistant stopped because of an internal error. The full log has the details."
+    <div className="text-[12.5px]">
+      <p className="text-muted">Studies this run finished before it stopped:</p>
+      <ul className="list-inside list-disc">
+        {studies.map((study) => (
+          <li key={study.id}>
+            <Link to={`/projects/${projectId}/design/study`} className="underline">
+              {study.name}
+            </Link>
+            {study.best === null ? null : ` ${study.best}`}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -170,9 +195,12 @@ export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean 
       )}
       {answer === null ? null : <MarkdownText text={answer} />}
       {stopped ? (
-        <p role="status" className="text-bad">
-          {toEndText(end.status, end.message)}
-        </p>
+        <>
+          <p role="status" className="text-bad">
+            {toEndText(end)}
+          </p>
+          <RecordedStudies studies={end.studies} />
+        </>
       ) : null}
     </div>
   );

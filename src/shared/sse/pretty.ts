@@ -69,6 +69,18 @@ export function toPretty(summary: string): string {
   return value === undefined ? summary : JSON.stringify(value, null, 2);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+/** Reads the best value of a study from its tool summary, or null when it has none. */
+export function toBestValue(summary: string): { value: number; unit: string } | null {
+  const found = fromText(summary.trim());
+  const best = isRecord(found) ? found.best : undefined;
+  if (!isRecord(best) || typeof best.value !== "number") return null;
+  return { value: best.value, unit: typeof best.unit === "string" ? best.unit : "" };
+}
+
 function fromQuotedMessage(summary: string): string | null {
   const start = /['"]message['"]:\s*/.exec(summary);
   if (start === null) return null;
