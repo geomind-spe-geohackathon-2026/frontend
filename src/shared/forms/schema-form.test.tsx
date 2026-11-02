@@ -88,7 +88,7 @@ describe("SchemaForm", () => {
         prefix="economics"
       />,
     );
-    expect(screen.queryByRole("radiogroup", { name: "Form of the value" })).toBeNull();
+    expect(screen.getByRole("radio", { name: "Fill in here" })).toBeChecked();
     expect(screen.getByLabelText("Discount rate")).toBeVisible();
   });
 

@@ -67,16 +67,17 @@ function FileUpload({
   source,
   label,
   field,
+  accept,
+  title,
 }: {
   source: SeriesSource;
   label: string;
   field: string;
+  accept: string;
+  title: string;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-  if (source.uploadBlocked) {
-    return <p className="text-[12px] text-muted">Save your changes to upload a file here.</p>;
-  }
   return (
     <div
       role="group"
@@ -99,8 +100,8 @@ function FileUpload({
       <input
         ref={input}
         type="file"
-        accept=".csv,text/csv"
-        aria-label={`CSV file for ${label}`}
+        accept={accept}
+        aria-label={`File for ${label}`}
         className="sr-only"
         tabIndex={-1}
         onChange={(event) => {
@@ -114,9 +115,9 @@ function FileUpload({
         }}
       >
         <Upload aria-hidden="true" className="size-3.5" />
-        Upload CSV
+        {title}
       </Button>
-      <span className="text-[12px] text-muted">Saved to Case &gt; Files, then selected here</span>
+      <span className="text-[12px] text-muted">or drop it here</span>
     </div>
   );
 }
@@ -164,13 +165,32 @@ function Choice({
 /** Chooses a series: a file of the case, its column and unit, with a preview of the values. */
 export function SeriesPicker({ id, name, label, units }: Props) {
   const { series: source } = useFieldContext();
+  if (source === undefined) return <PlainFile id={id} name={`${name}.file`} label={label} />;
+  return <SourcedSeries id={id} name={name} label={label} units={units} source={source} />;
+}
+
+function PlainFile({ id, name, label }: { id: string; name: string; label: string }) {
+  const [file, setFile] = useField(name);
+  return (
+    <Input
+      id={id}
+      value={file}
+      aria-label={`File of ${label}`}
+      onChange={(event) => {
+        setFile(event.target.value);
+      }}
+    />
+  );
+}
+
+function SourcedSeries({ id, name, label, units, source }: Props & { source: SeriesSource }) {
   const [file, setFile] = useField(`${name}.file`);
   const [column, setColumn] = useField(`${name}.column`);
   const [unit, setUnit] = useField(`${name}.unit`);
   const content = useQuery({
-    queryKey: ["series-file", source?.scope, file],
-    queryFn: () => source?.read(file) ?? "",
-    enabled: source?.files.includes(file) === true,
+    queryKey: ["series-file", source.scope, file],
+    queryFn: () => source.read(file),
+    enabled: source.files.includes(file),
   });
   const columns = content.data === undefined ? [] : valueColumns(toTable(content.data));
   const [only] = columns;
@@ -178,18 +198,6 @@ export function SeriesPicker({ id, name, label, units }: Props) {
   useEffect(() => {
     if (column === "" && columns.length === 1 && only !== undefined) setColumn(only);
   }, [column, columns.length, only, setColumn]);
-  if (source === undefined) {
-    return (
-      <Input
-        id={id}
-        value={file}
-        aria-label={`File of ${label}`}
-        onChange={(event) => {
-          setFile(event.target.value);
-        }}
-      />
-    );
-  }
   return (
     <div className="flex flex-col gap-1.5">
       <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,3fr)_minmax(5rem,1fr)] gap-1">
@@ -208,9 +216,55 @@ export function SeriesPicker({ id, name, label, units }: Props) {
         />
         <Choice label={`Unit of ${label}`} options={units} value={unit} onChange={setUnit} />
       </div>
-      <FileUpload source={source} label={label} field={name} />
+      <FileUpload
+        source={source}
+        label={label}
+        field={name}
+        accept=".csv,text/csv"
+        title="Upload CSV"
+      />
       {content.data === undefined || column === "" ? null : (
         <SeriesPreview text={content.data} column={column} unit={unit} time={source.time} />
+      )}
+    </div>
+  );
+}
+
+/** Chooses a whole file of the case, with a look at what it holds. */
+export function FilePicker({ id, name, label }: Omit<Props, "units">) {
+  const { series: source } = useFieldContext();
+  if (source === undefined) return <PlainFile id={id} name={name} label={label} />;
+  return <SourcedFile id={id} name={name} label={label} source={source} />;
+}
+
+function SourcedFile({ id, name, label, source }: Omit<Props, "units"> & { source: SeriesSource }) {
+  const [file, setFile] = useField(name);
+  const content = useQuery({
+    queryKey: ["series-file", source.scope, file],
+    queryFn: () => source.read(file),
+    enabled: source.files.includes(file),
+  });
+  usePicked(source, name, setFile);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Choice
+        id={id}
+        label={`File of ${label}`}
+        options={source.files.filter((option) => option.endsWith(".json"))}
+        value={file}
+        onChange={setFile}
+      />
+      <FileUpload
+        source={source}
+        label={label}
+        field={name}
+        accept=".json,application/json"
+        title="Upload JSON"
+      />
+      {content.data === undefined ? null : (
+        <pre className="max-h-[320px] overflow-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
+          {content.data}
+        </pre>
       )}
     </div>
   );

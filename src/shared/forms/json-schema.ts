@@ -36,6 +36,12 @@ export function isLeaf(schema: JsonSchema): boolean {
   return properties.unit !== undefined || properties.value.type === "number";
 }
 
+/** Tells whether a quantity is a share of one: gemini gives such a value no unit. */
+export function isFraction(schema: JsonSchema): boolean {
+  const { value, unit } = schema.properties ?? {};
+  return value?.type === "number" && unit === undefined;
+}
+
 function fitsType(schema: JsonSchema, value: unknown): boolean {
   if (schema.type === "string") return typeof value === "string";
   if (schema.type === "number" || schema.type === "integer") return typeof value === "number";
@@ -52,13 +58,6 @@ export function pickVariant(schema: JsonSchema, value: unknown): JsonSchema {
   const fitting = variants.find((variant) => value !== undefined && fitsType(variant, value));
   const form = variants.find((variant) => variant.properties !== undefined);
   return fitting ?? variants.find(isLeaf) ?? form ?? variants[0] ?? schema;
-}
-
-/** Tells whether a choice of alternatives means anything: a plain text next to one form is only a file reference. */
-export function offersChoice(schema: JsonSchema, value: unknown): boolean {
-  const variants = variantsOf(schema);
-  const forms = variants.filter((variant) => variant.type !== "string");
-  return forms.length > 1 || typeof value === "string";
 }
 
 const headerKeys = ["format", "kind", "name"];

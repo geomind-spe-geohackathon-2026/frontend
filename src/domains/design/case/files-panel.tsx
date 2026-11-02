@@ -1,123 +1,66 @@
-import { useQuery } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardBody, CardHeader } from "@/shared/ui/card";
-import { ApiError } from "@/shared/api/errors";
-import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { Chip } from "@/shared/ui/chip";
 import { isRecord, labelOf } from "@/shared/forms/json-schema";
-import { caseSeriesQuery, useUploadCaseFile } from "./api";
-import { SeriesChart } from "./series-chart";
+import { Button } from "@/shared/ui/button";
+import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { useRemoveCaseFile } from "./api";
 import type { Case } from "@/shared/api/types";
 
-type Props = { projectId: string; saved: Case; dirty: boolean };
+type Props = { projectId: string; saved: Case; content: unknown };
 
 function findUses(node: unknown, path: string[], name: string): string[] {
+  if (node === name) return [path.map((part) => labelOf(part, {})).join(" › ")];
   if (!isRecord(node)) return [];
   if (node.file === name) return [path.map((part) => labelOf(part, {})).join(" › ")];
   return Object.entries(node).flatMap(([key, child]) => findUses(child, [...path, key], name));
 }
 
-function toUses(content: unknown, name: string): string {
-  const uses = findUses(content, [], name);
-  return uses.length === 0 ? "not used yet" : `used by ${uses.join(", ")}`;
-}
-
-function UploadForm({ projectId, saved, dirty }: Props) {
-  const [file, setFile] = useState<File | null>(null);
-  const [name, setName] = useState("");
-  const upload = useUploadCaseFile(projectId);
-  const replaces = saved.files.some((existing) => existing.name === name);
-  const canUpload = file !== null && name.trim() !== "" && !dirty && !upload.isPending;
+/** A button with the file count that opens the list of files, where an unused one can go. */
+export function FilesButton({ projectId, saved, content }: Props) {
+  const [open, setOpen] = useState(false);
+  const remove = useRemoveCaseFile(projectId);
   return (
-    <form
-      className="flex flex-wrap items-end gap-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (file === null) return;
-        upload.mutate({ base: saved.version, name: name.trim(), file });
-      }}
-    >
-      <Field label="Series file" htmlFor="case-file">
-        <Input
-          id="case-file"
-          type="file"
-          onChange={(event) => {
-            const chosen = event.target.files?.[0] ?? null;
-            setFile(chosen);
-            setName(chosen?.name ?? "");
-          }}
-        />
-      </Field>
-      <Field label="Name in the case" htmlFor="case-file-name">
-        <Input
-          id="case-file-name"
-          value={name}
-          onChange={(event) => {
-            setName(event.target.value);
-          }}
-        />
-      </Field>
-      <Button type="submit" variant="primary" disabled={!canUpload}>
-        {replaces ? "Replace file" : "Upload file"}
+    <>
+      <Button
+        onClick={() => {
+          setOpen(true);
+        }}
+      >
+        Files ({saved.files.length})
       </Button>
-      {dirty ? (
-        <p className="w-full text-muted">Save or discard your changes before uploading.</p>
-      ) : null}
-      {upload.error instanceof ApiError ? (
-        <p role="alert" className="w-full text-bad">
-          {upload.error.code}: {upload.error.message}
-        </p>
-      ) : null}
-    </form>
-  );
-}
-
-/** The files the case names, an upload or replace form, and a chart of every series read through gemini. */
-export function FilesPanel(props: Props) {
-  const { projectId, saved } = props;
-  const series = useQuery(caseSeriesQuery(projectId, saved.version));
-  return (
-    <div className="flex flex-col gap-3.5">
-      <Card>
-        <CardHeader>
-          <h2>Files</h2>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-3">
-          {saved.files.length === 0 ? <p className="text-muted">No files in this case.</p> : null}
-          <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-            {saved.files.map((file) => (
-              <li key={file.name}>
-                <Chip tone="ok">{file.name} loaded</Chip>
-                <span className="ml-1 text-[12px] text-muted">
-                  {toUses(saved.content, file.name)}
-                </span>
-              </li>
-            ))}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent title="Files of this case">
+          {saved.files.length === 0 ? (
+            <p className="text-muted">No files yet. Upload one where a field asks for it.</p>
+          ) : null}
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            {saved.files.map((file) => {
+              const uses = findUses(content, [], file.name);
+              return (
+                <li key={file.name} className="flex items-center justify-between gap-2">
+                  <span className="min-w-0">
+                    <span className="block font-mono text-[12.5px] break-all">{file.name}</span>
+                    <span className="text-[12px] text-muted">
+                      {uses.length === 0 ? "not used" : `used by ${uses.join(", ")}`}
+                    </span>
+                  </span>
+                  {uses.length > 0 ? null : (
+                    <Button
+                      aria-label={`Delete ${file.name}`}
+                      disabled={remove.isPending}
+                      onClick={() => {
+                        remove.mutate({ base: saved.version, name: file.name });
+                      }}
+                    >
+                      <Trash2 aria-hidden="true" className="size-3.5" />
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
-          <UploadForm {...props} />
-        </CardBody>
-      </Card>
-      <Card>
-        <CardHeader>
-          <h2>Series</h2>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-3">
-          {series.isPending ? <p className="text-muted">Reading the series…</p> : null}
-          {series.isError ? (
-            <p role="alert" className="text-bad">
-              The series could not be read.
-            </p>
-          ) : null}
-          {series.data?.series.length === 0 ? (
-            <p className="text-muted">No series in this case.</p>
-          ) : null}
-          {series.data?.series.map((item) => (
-            <SeriesChart key={item.name} series={item} />
-          ))}
-        </CardBody>
-      </Card>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

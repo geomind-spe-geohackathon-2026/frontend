@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError, hasCode } from "@/shared/api/errors";
 import { toItems } from "@/shared/api/pagination";
@@ -36,7 +36,7 @@ import {
   useUploadCaseFile,
 } from "./api";
 import { BlockerBanner } from "./blocker-banner";
-import { FilesPanel } from "./files-panel";
+import { FilesButton } from "./files-panel";
 import { HistoryPanel } from "./history-panel";
 import { toEmptyCase } from "./empty-case";
 import type { Case, MissingValue } from "@/shared/api/types";
@@ -51,7 +51,6 @@ const FIELD_HINTS = {
   "site.reservoir.temperature":
     "Leave empty to compute it from the surface temperature and the gradient",
 };
-const filesTab = "files";
 const historyTab = "history";
 
 function focusField(path: string): void {
@@ -291,22 +290,16 @@ function MissingCount({ missing, section }: { missing: MissingValue[]; section: 
   );
 }
 
-function useSeriesSource(
-  projectId: string,
-  saved: Case,
-  time: unknown,
-  dirty: boolean,
-): SeriesSource {
+function useSeriesSource(projectId: string, saved: Case, time: unknown): SeriesSource {
   const upload = useUploadCaseFile(projectId);
   const picked = useRef(new Map<string, string>());
   return {
     scope: `${projectId}-${String(saved.version)}`,
     files: saved.files.map((file) => file.name),
     time,
-    uploadBlocked: dirty,
     read: (file) => readCaseFile(projectId, saved.version, file),
     upload: (file, field) => {
-      const name = `data/${file.name}`;
+      const name = file.name.endsWith(".csv") ? `data/${file.name}` : file.name;
       upload.mutate(
         { base: saved.version, name, file },
         {
@@ -326,7 +319,7 @@ function useSeriesSource(
 
 function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
   const sections = sectionsOf(schema);
-  const series = useSeriesSource(projectId, saved, editor.content.time, editor.dirty);
+  const series = useSeriesSource(projectId, saved, editor.content.time);
   return (
     <Tabs value={tab} onValueChange={onTab}>
       <TabsList aria-label="Sections of the case">
@@ -336,7 +329,6 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
             <MissingCount missing={[...editor.missing, ...editor.plantMissing]} section={section} />
           </TabsTrigger>
         ))}
-        <TabsTrigger value={filesTab}>Files</TabsTrigger>
         <TabsTrigger value={historyTab}>History</TabsTrigger>
       </TabsList>
       {sections.map((section) => (
@@ -360,9 +352,6 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
           />
         </TabsContent>
       ))}
-      <TabsContent value={filesTab}>
-        <FilesPanel projectId={projectId} saved={saved} dirty={editor.dirty} />
-      </TabsContent>
       <TabsContent value={historyTab}>
         <HistoryPanel projectId={projectId} current={saved.version} />
       </TabsContent>
@@ -374,15 +363,17 @@ type ActionsProps = {
   version: number;
   dirty: boolean;
   canSave: boolean;
+  files: ReactNode;
   onDiscard: () => void;
   onSave: () => void;
 };
 
-function CaseActions({ version, dirty, canSave, onDiscard, onSave }: ActionsProps) {
+function CaseActions({ version, dirty, canSave, files, onDiscard, onSave }: ActionsProps) {
   return (
     <>
       <Chip tone="off">Case v{version}</Chip>
       {dirty ? <span className="text-[12px] text-warn">unsaved changes</span> : null}
+      {files}
       <Button disabled={!dirty} onClick={onDiscard}>
         Discard changes
       </Button>
@@ -433,7 +424,7 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
     setGeneration((value) => value + 1);
   });
   const blocker = useUnsavedGuard(editor.dirty);
-  const tab = params.get("tab") ?? sectionsOf(schema)[0] ?? filesTab;
+  const tab = params.get("tab") ?? sectionsOf(schema)[0] ?? historyTab;
   const canSave = editor.dirty && editor.problems.length === 0 && !editor.isChecking;
   const showTab = (next: string) => {
     setParams({ tab: next }, { replace: true });
@@ -454,6 +445,7 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
             version={saved.version}
             dirty={editor.dirty}
             canSave={canSave && !flow.save.isPending}
+            files={<FilesButton projectId={projectId} saved={saved} content={editor.content} />}
             onDiscard={flow.discard}
             onSave={() => {
               flow.setIsNoting(true);

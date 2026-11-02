@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { exampleCaseSchema } from "./example-schema";
-import {
-  formEntries,
-  offersChoice,
-  pickVariant,
-  sectionsOf,
-  unitsOf,
-  withHeader,
-} from "./json-schema";
+import { formEntries, pickVariant, sectionsOf, unitsOf, withHeader } from "./json-schema";
 
 describe("json schema helpers", () => {
   it("takes the sections from the top-level properties that are structured", () => {
@@ -43,12 +36,6 @@ describe("alternatives of a file of its own", () => {
       },
     ],
   };
-
-  it("offers no choice for an empty value or a filled form", () => {
-    expect(offersChoice(economics, undefined)).toBe(false);
-    expect(offersChoice(economics, { rate: 1 })).toBe(false);
-    expect(offersChoice(economics, "economics.json")).toBe(true);
-  });
 
   it("hides the header from the form and adds it to a filled form", () => {
     const form = pickVariant(economics, undefined);

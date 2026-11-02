@@ -9,8 +9,6 @@ export const caseKeys = {
   latest: (projectId: string) => [...caseKeys.all(projectId), "latest"] as const,
   schema: () => ["case", "schema"] as const,
   versions: (projectId: string) => [...caseKeys.all(projectId), "versions"] as const,
-  series: (projectId: string, version: number) =>
-    [...caseKeys.all(projectId), "series", version] as const,
   validation: (projectId: string, content: CaseContent) =>
     ["case", "validation", projectId, content] as const,
 };
@@ -42,16 +40,6 @@ export const caseVersionsQuery = (projectId: string) =>
           signal,
         }),
       ).items,
-  });
-
-/** Query options for the series of a case version, read through gemini. */
-export const caseSeriesQuery = (projectId: string, version: number) =>
-  queryOptions({
-    queryKey: caseKeys.series(projectId, version),
-    queryFn: async ({ signal }) =>
-      toData(
-        await api.GET("/design/case/series", { params: { query: { project: projectId } }, signal }),
-      ),
   });
 
 /** Query options for the server check of a draft; it keeps the last answer while a new one loads. */
@@ -128,6 +116,23 @@ export function useUploadCaseFile(projectId: string) {
       await queryClient.invalidateQueries({ queryKey: caseKeys.all(projectId) });
       await queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
     },
+  });
+}
+
+/** Mutation that saves a case version without an unused file. */
+export function useRemoveCaseFile(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { base: number; name: string }) =>
+      toData(
+        await api.DELETE("/design/case/files/{name}", {
+          params: {
+            path: { name: input.name },
+            query: { project: projectId, base: input.base },
+          },
+        }),
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: caseKeys.all(projectId) }),
   });
 }
 

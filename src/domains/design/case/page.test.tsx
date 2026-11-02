@@ -23,7 +23,7 @@ describe("Case page", { timeout: 20000 }, () => {
     const names = within(tabs)
       .getAllByRole("tab")
       .map((tab) => tab.textContent.replace(/\d+$/, ""));
-    expect(names).toEqual(["Demand", "Site", "Economics", "Requirements", "Files", "History"]);
+    expect(names).toEqual(["Demand", "Site", "Economics", "Requirements", "History"]);
     const banner = screen.getByRole("region", { name: "Missing values" });
     expect(banner).toHaveTextContent("2 values missing");
     expect(banner).toHaveTextContent("Economics › Gas price: value, unit missing");

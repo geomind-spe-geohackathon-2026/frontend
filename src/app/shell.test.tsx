@@ -98,11 +98,10 @@ describe("shell levels", () => {
     expect(within(sidebar).getByRole("link", { name: /3 Study.*1 running/ })).toBeInTheDocument();
   });
 
-  it("shows operation entries disabled with a later tag", async () => {
-    renderApp({ path: `${base}/overview` });
-    const button = await screen.findByRole("button", { name: /Time series/ });
-    expect(button).toBeDisabled();
-    expect(button).toHaveTextContent("later");
+  it("hides the operation entries unless the flag is on", async () => {
+    renderApp({ path: "/projects/example-project-1/overview" });
+    await screen.findByRole("link", { name: /Runs and logs/ });
+    expect(screen.queryByText("Time series")).toBeNull();
   });
 
   it("goes back to the projects with a message for an unknown project", async () => {

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { Input } from "@/shared/ui/input";
 import type { JsonSchema } from "./json-schema";
@@ -10,8 +11,10 @@ type Props = {
   describedBy: string | undefined;
   label?: string;
   words?: boolean;
+  scale?: number | undefined;
 };
 
+const displayDigits = 4;
 const selectClass =
   "w-full rounded-control border border-border bg-surface px-2.5 py-[7px] aria-invalid:border-warn";
 
@@ -23,6 +26,69 @@ function toNumber(text: string): number | undefined {
 
 function optionLabel(option: unknown): string {
   return typeof option === "string" || typeof option === "number" ? String(option) : "";
+}
+
+function toShown(current: unknown, scale: number): string {
+  if (typeof current !== "number") return "";
+  return String(Number((current * scale).toPrecision(displayDigits)));
+}
+
+function NumberControl({
+  common,
+  schema,
+  current,
+  scale,
+  update,
+}: {
+  common: Record<string, unknown>;
+  schema: JsonSchema;
+  current: unknown;
+  scale: number;
+  update: (next: unknown) => void;
+}) {
+  const [typed, setTyped] = useState<string | null>(null);
+  return (
+    <Input
+      {...common}
+      type="number"
+      step="any"
+      min={schema.minimum ?? schema.exclusiveMinimum}
+      max={schema.maximum ?? schema.exclusiveMaximum}
+      value={typed ?? toShown(current, scale)}
+      onChange={(event) => {
+        const text = event.target.value;
+        setTyped(text);
+        const number = toNumber(text);
+        update(number === undefined ? undefined : number / scale);
+      }}
+      onBlur={() => {
+        setTyped(null);
+      }}
+    />
+  );
+}
+
+function SwitchControl({
+  common,
+  current,
+  update,
+}: {
+  common: Record<string, unknown>;
+  current: unknown;
+  update: (next: unknown) => void;
+}) {
+  return (
+    <input
+      {...common}
+      type="checkbox"
+      role="switch"
+      className="size-4 accent-[var(--accent)]"
+      checked={current === true}
+      onChange={(event) => {
+        update(event.target.checked);
+      }}
+    />
+  );
 }
 
 function toWord(text: string): string {
@@ -62,7 +128,16 @@ function EnumControl({
 }
 
 /** One input for a scalar schema: number, text, checkbox or select; clearing it removes the value. */
-export function ScalarControl({ id, name, schema, invalid, describedBy, label, words }: Props) {
+export function ScalarControl({
+  id,
+  name,
+  schema,
+  invalid,
+  describedBy,
+  label,
+  words,
+  scale,
+}: Props) {
   const { control, setValue } = useFormContext();
   const current: unknown = useWatch({ control, name });
   const update = (next: unknown) => {
@@ -86,31 +161,28 @@ export function ScalarControl({ id, name, schema, invalid, describedBy, label, w
     );
   }
   if (schema.type === "boolean") {
+    return <SwitchControl common={common} current={current} update={update} />;
+  }
+  const isNumeric = schema.type === "number" || schema.type === "integer";
+  if (isNumeric) {
     return (
-      <input
-        {...common}
-        type="checkbox"
-        role="switch"
-        className="size-4 accent-[var(--accent)]"
-        checked={current === true}
-        onChange={(event) => {
-          update(event.target.checked);
-        }}
+      <NumberControl
+        common={common}
+        schema={schema}
+        current={current}
+        scale={scale ?? 1}
+        update={update}
       />
     );
   }
-  const isNumeric = schema.type === "number" || schema.type === "integer";
   return (
     <Input
       {...common}
-      type={isNumeric ? "number" : "text"}
-      step={isNumeric ? "any" : undefined}
-      min={schema.minimum ?? schema.exclusiveMinimum}
-      max={schema.maximum ?? schema.exclusiveMaximum}
+      type="text"
       value={typeof current === "string" || typeof current === "number" ? current : ""}
       onChange={(event) => {
         const text = event.target.value;
-        update(isNumeric ? toNumber(text) : text === "" ? undefined : text);
+        update(text === "" ? undefined : text);
       }}
     />
   );

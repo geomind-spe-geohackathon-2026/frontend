@@ -252,7 +252,8 @@ export interface paths {
         get: operations["get_file_api_v1_design_case_files__name__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Remove File */
+        delete: operations["remove_file_api_v1_design_case_files__name__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2881,6 +2882,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_file_api_v1_design_case_files__name__delete: {
+        parameters: {
+            query: {
+                base?: number | null;
+                project: string;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Case"];
+                };
             };
             /** @description Validation Error */
             422: {

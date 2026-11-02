@@ -22,7 +22,7 @@ export type NavItem = { to: string; label: string; icon: LucideIcon; progress?: 
 
 export type NavGroup = { label: string | null; items: NavItem[]; disabled?: boolean };
 
-export const projectNav: NavGroup[] = [
+const designNav: NavGroup[] = [
   { label: null, items: [{ to: "overview", label: "Overview", icon: LayoutDashboard }] },
   {
     label: "Assistant",
@@ -41,6 +41,9 @@ export const projectNav: NavGroup[] = [
       { to: "design/report", label: "Report", progress: "report", icon: FileText },
     ],
   },
+];
+
+const operationNav: NavGroup[] = [
   {
     label: "Operation",
     disabled: true,
@@ -51,6 +54,10 @@ export const projectNav: NavGroup[] = [
     ],
   },
 ];
+
+/** The sidebar groups; Operation shows only with VITE_FEATURE_OPERATION. */
+export const projectNav: NavGroup[] =
+  import.meta.env.VITE_FEATURE_OPERATION === "true" ? [...designNav, ...operationNav] : designNav;
 
 export const projectFooterNav: NavItem[] = [
   { to: "documents", label: "Documents", icon: Files },

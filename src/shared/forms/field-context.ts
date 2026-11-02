@@ -5,7 +5,6 @@ export type SeriesSource = {
   scope: string;
   files: string[];
   time: unknown;
-  uploadBlocked: boolean;
   read: (file: string) => Promise<string>;
   upload: (file: File, field: string) => void;
   takePicked: (field: string) => string | undefined;

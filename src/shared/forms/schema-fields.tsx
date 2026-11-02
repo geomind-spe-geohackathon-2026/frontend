@@ -7,17 +7,19 @@ import { FieldFrame, isReported } from "./field-frame";
 import {
   boundsOf,
   formEntries,
+  isFraction,
   isLeaf,
   isRecord,
   labelOf,
-  offersChoice,
   pickVariant,
   unitsOf,
   variantsOf,
   type JsonSchema,
 } from "./json-schema";
 import { ScalarControl } from "./scalar-control";
-import { SeriesPicker } from "./series-picker";
+import { FractionGroup, isFractionGroup } from "./fraction-group";
+import { FilePicker, SeriesPicker } from "./series-picker";
+import { ValueExtras } from "./value-extras";
 
 export type NodeProps = {
   name: string;
@@ -38,10 +40,29 @@ function toSingular(label: string): string {
 const selectClass =
   "rounded-control border border-border bg-surface px-2 py-[7px] aria-invalid:border-warn";
 
-function SeriesReference({ name, path, label, schema }: NodeProps) {
+function ModeButton({ text, onClick }: { text: string; onClick: () => void }) {
+  return (
+    <button type="button" className="self-start text-[12px] text-accent" onClick={onClick}>
+      {text}
+    </button>
+  );
+}
+
+function SeriesReference({
+  name,
+  path,
+  label,
+  schema,
+  onConstant,
+}: NodeProps & { onConstant?: (() => void) | undefined }) {
   return (
     <FieldFrame name={name} path={path} label={label} wide>
-      {({ id }) => <SeriesPicker id={id} name={name} label={label} units={unitsOf(schema)} />}
+      {({ id }) => (
+        <>
+          <SeriesPicker id={id} name={name} label={label} units={unitsOf(schema)} />
+          {onConstant === undefined ? null : <ModeButton text="constant" onClick={onConstant} />}
+        </>
+      )}
     </FieldFrame>
   );
 }
@@ -86,19 +107,40 @@ function UnitControl({
   );
 }
 
-function QuantityField({ name, path, label, schema, optional = false }: NodeProps) {
+function UnitWarning() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[12px] text-warn">
+      <TriangleAlert aria-hidden="true" className="size-3.5" />
+      choose a unit
+    </span>
+  );
+}
+
+function QuantityField({
+  name,
+  path,
+  label,
+  schema,
+  optional = false,
+  onSeries,
+}: NodeProps & { onSeries?: (() => void) | undefined }) {
   const { control } = useFormContext();
   const { hints, prefix } = useFieldContext();
   const quantity: unknown = useWatch({ control, name });
   const units = unitsOf(schema);
   const valueSchema = schema.properties?.value ?? {};
   const lacksUnit =
-    isRecord(quantity) && quantity.value !== undefined && quantity.unit === undefined;
+    units.length > 0 &&
+    isRecord(quantity) &&
+    quantity.value !== undefined &&
+    quantity.unit === undefined;
+  const percent = isFraction(schema);
   return (
     <FieldFrame
       name={name}
       path={path}
       label={label}
+      unit={percent ? "%" : undefined}
       hint={hints?.[toFullPath(prefix, path)] ?? boundsOf(valueSchema)}
       description={schema.description}
       required={!optional}
@@ -112,6 +154,7 @@ function QuantityField({ name, path, label, schema, optional = false }: NodeProp
               schema={valueSchema}
               invalid={invalid}
               describedBy={describedBy}
+              scale={percent ? 100 : undefined}
             />
             <UnitControl
               name={`${name}.unit`}
@@ -121,163 +164,14 @@ function QuantityField({ name, path, label, schema, optional = false }: NodeProp
               disabled={!invalid && (!isRecord(quantity) || quantity.value === undefined)}
             />
           </div>
-          {lacksUnit ? (
-            <span className="inline-flex items-center gap-1 text-[12px] text-warn">
-              <TriangleAlert aria-hidden="true" className="size-3.5" />
-              choose a unit
-            </span>
-          ) : null}
-          <ValueExtras name={name} label={label} schema={schema} />
+          {lacksUnit ? <UnitWarning /> : null}
+          <div className="flex flex-wrap items-center gap-3">
+            <ValueExtras name={name} label={label} schema={schema} />
+            {onSeries === undefined ? null : <ModeButton text="∿ series" onClick={onSeries} />}
+          </div>
         </>
       )}
     </FieldFrame>
-  );
-}
-
-function useExtra(name: string): Record<string, unknown> {
-  const { control } = useFormContext();
-  const value: unknown = useWatch({ control, name });
-  return isRecord(value) ? value : {};
-}
-
-function ExtraNumber({ name, label, title }: { name: string; label: string; title: string }) {
-  return (
-    <span className="flex min-w-0 flex-col gap-0.5">
-      {title}
-      <ScalarControl
-        id={name}
-        name={name}
-        schema={{ type: "number" }}
-        invalid={false}
-        describedBy={undefined}
-        label={label}
-      />
-    </span>
-  );
-}
-
-function toRangeBadge(range: Record<string, unknown>): string | null {
-  const { min, max } = range;
-  if (typeof min === "number" && typeof max === "number") {
-    return `${String(min)} to ${String(max)}`;
-  }
-  if (typeof min === "number") return `from ${String(min)}`;
-  return typeof max === "number" ? `to ${String(max)}` : null;
-}
-
-function toUncertaintyBadge(uncertainty: Record<string, unknown>): string | null {
-  const { kind, std } = uncertainty;
-  if (typeof kind !== "string") return null;
-  if (typeof std === "number") return `${kind} σ ${String(std)}`;
-  const spread = toRangeBadge(uncertainty);
-  return spread === null ? kind : `${kind} ${spread}`;
-}
-
-function Toggle({
-  title,
-  hint,
-  badge,
-  children,
-}: {
-  title: string;
-  hint: string;
-  badge: string | null;
-  children: ReactNode;
-}) {
-  return (
-    <details className="min-w-0 text-[12px] text-muted">
-      <summary className="cursor-pointer" title={hint}>
-        {title}
-        {badge === null ? null : (
-          <span className="ml-1 rounded-pill border border-border px-1.5 tabular-nums">
-            {badge}
-          </span>
-        )}
-      </summary>
-      <div className="mt-1 flex flex-col gap-1">{children}</div>
-    </details>
-  );
-}
-
-const rangeHint =
-  "Kept with the value. No study reads a range on the case: Optimise searches the ranges on the plant.";
-const uncertaintyHint =
-  "Uncertainty and Sensitivity move this value: draws from this distribution, or its low and high end.";
-const kinds: Record<string, string[]> = {
-  uniform: ["min", "max"],
-  triangular: ["min", "max"],
-  normal: ["std"],
-};
-
-function RangeToggle({ name, label }: { name: string; label: string }) {
-  const range = useExtra(`${name}.range`);
-  return (
-    <Toggle title="Range" hint={rangeHint} badge={toRangeBadge(range)}>
-      <div className="grid grid-cols-2 gap-1">
-        {["min", "max"].map((side) => (
-          <ExtraNumber
-            key={side}
-            name={`${name}.range.${side}`}
-            title={labelOf(side, {})}
-            label={`${labelOf(side, {})} of the range of ${label}`}
-          />
-        ))}
-      </div>
-    </Toggle>
-  );
-}
-
-function UncertaintyToggle({
-  name,
-  label,
-  schema,
-}: {
-  name: string;
-  label: string;
-  schema: JsonSchema;
-}) {
-  const uncertainty = useExtra(`${name}.uncertainty`);
-  const kind = typeof uncertainty.kind === "string" ? uncertainty.kind : "";
-  return (
-    <Toggle title="Uncertainty" hint={uncertaintyHint} badge={toUncertaintyBadge(uncertainty)}>
-      <span className="flex flex-col gap-0.5">
-        Distribution
-        <ScalarControl
-          id={`${name}.uncertainty.kind`}
-          name={`${name}.uncertainty.kind`}
-          schema={schema.properties?.kind ?? {}}
-          invalid={false}
-          describedBy={undefined}
-          label={`Distribution of ${label}`}
-          words
-        />
-      </span>
-      <div className="grid grid-cols-2 gap-1">
-        {(kinds[kind] ?? []).map((key) => (
-          <ExtraNumber
-            key={key}
-            name={`${name}.uncertainty.${key}`}
-            title={labelOf(key, {})}
-            label={`${labelOf(key, {})} of ${label}`}
-          />
-        ))}
-      </div>
-    </Toggle>
-  );
-}
-
-function ValueExtras({ name, label, schema }: { name: string; label: string; schema: JsonSchema }) {
-  const { hideRange } = useFieldContext();
-  const { range: rangeSchema, uncertainty } = schema.properties ?? {};
-  const range = hideRange === true ? undefined : rangeSchema;
-  if (range === undefined && uncertainty === undefined) return null;
-  return (
-    <div className="flex flex-wrap gap-3">
-      {range === undefined ? null : <RangeToggle name={name} label={label} />}
-      {uncertainty === undefined ? null : (
-        <UncertaintyToggle name={name} label={label} schema={uncertainty} />
-      )}
-    </div>
   );
 }
 
@@ -422,6 +316,7 @@ function OptionalGroup({ name, path, label, children }: NodeProps & { children: 
 
 function GroupFields(props: NodeProps) {
   const { name, path, label, schema, optional = false } = props;
+  if (isFractionGroup(schema) && path !== "") return <FractionGroup {...props} />;
   const entries = formEntries(schema);
   const required = new Set(schema.required ?? []);
   const child = ([key, childSchema]: [string, JsonSchema]) => (
@@ -473,11 +368,49 @@ function GroupFields(props: NodeProps) {
 }
 
 function toVariantLabel(variant: JsonSchema): string {
-  if (variant.title !== undefined) return variant.title;
   if (isLeaf(variant)) return "Constant";
   if (variant.properties?.file !== undefined) return "Series from a file";
-  if (variant.type === "string") return "Name of a file";
+  if (variant.type === "string") return "From a file";
   return "Fill in here";
+}
+
+function SeriesSwitch(props: NodeProps & { leaf: JsonSchema; file: JsonSchema }) {
+  const { leaf, file, ...node } = props;
+  const { control, setValue } = useFormContext();
+  const current: unknown = useWatch({ control, name: node.name });
+  const [chosen, setChosen] = useState<boolean | null>(null);
+  const series = chosen ?? (isRecord(current) && current.file !== undefined);
+  const choose = (next: boolean) => {
+    setChosen(next);
+    setValue(node.name, undefined, { shouldDirty: true, shouldValidate: true });
+  };
+  if (series) {
+    return (
+      <SeriesReference
+        {...node}
+        schema={file}
+        onConstant={() => {
+          choose(false);
+        }}
+      />
+    );
+  }
+  return (
+    <QuantityField
+      {...node}
+      schema={leaf}
+      onSeries={() => {
+        choose(true);
+      }}
+    />
+  );
+}
+
+function VariantBody(props: NodeProps) {
+  if (props.schema.type === "string") {
+    return <FilePicker id={props.path} name={props.name} label={props.label} />;
+  }
+  return <FieldNode {...props} />;
 }
 
 function VariantField(props: NodeProps) {
@@ -488,8 +421,10 @@ function VariantField(props: NodeProps) {
   const fitting = variants.indexOf(pickVariant(props.schema, current));
   const active = chosen ?? Math.max(0, fitting);
   const variant = variants[active] ?? {};
-  if (chosen === null && !offersChoice(props.schema, current)) {
-    return <FieldNode {...props} schema={variant} />;
+  const leaf = variants.find(isLeaf);
+  const file = variants.find((option) => option.properties?.file !== undefined);
+  if (leaf !== undefined && file !== undefined) {
+    return <SeriesSwitch {...props} leaf={leaf} file={file} />;
   }
   return (
     <div className="col-span-full flex flex-col gap-2">
@@ -514,7 +449,7 @@ function VariantField(props: NodeProps) {
           </button>
         ))}
       </div>
-      <FieldNode {...props} schema={variant} />
+      <VariantBody {...props} schema={variant} />
     </div>
   );
 }
