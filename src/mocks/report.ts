@@ -8,6 +8,7 @@ const parts: ReportPartInfo[] = [
   { key: "checks", title: "Constraint checks" },
   { key: "costs", title: "Costs and sources" },
   { key: "agentlog", title: "Agent log and tokens" },
+  { key: "summary", title: "Summary" },
 ];
 
 function toTitle(key: ReportPartInfo["key"]): string {

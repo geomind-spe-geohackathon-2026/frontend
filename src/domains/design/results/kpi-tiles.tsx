@@ -4,6 +4,15 @@ import type { Kpi } from "@/shared/api/types";
 
 type Props = { items: Kpi[]; label: string };
 
+const thousand = 1000;
+
+function toShown(item: Kpi): { value: string; unit: string } {
+  if (item.unit === "MWh" && (item.value ?? 0) >= thousand) {
+    return { value: formatFigure((item.value ?? 0) / thousand), unit: "GWh" };
+  }
+  return { value: formatFigure(item.value ?? 0), unit: item.unit };
+}
+
 /** A row of tiles, one per quantity: value and unit on separate lines; an absent value is muted with gemini's reason. */
 export function KpiTiles({ items, label }: Props) {
   return (
@@ -26,9 +35,9 @@ export function KpiTiles({ items, label }: Props) {
               ) : (
                 <div title={`${String(item.value)} ${item.unit}`}>
                   <div className="break-all text-[22px] font-semibold tabular-nums">
-                    {formatFigure(item.value)}
+                    {toShown(item).value}
                   </div>
-                  <div className="break-words text-[12px] text-muted">{item.unit}</div>
+                  <div className="break-words text-[12px] text-muted">{toShown(item).unit}</div>
                 </div>
               )}
             </CardBody>

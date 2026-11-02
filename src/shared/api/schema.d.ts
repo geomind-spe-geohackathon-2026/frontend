@@ -1804,7 +1804,7 @@ export interface components {
              */
             format: "md" | "pdf";
             /** Include */
-            include: ("capacities" | "design" | "checks" | "costs" | "agentlog")[];
+            include: ("summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix")[];
             /**
              * Project
              * Format: uuid
@@ -1824,14 +1824,14 @@ export interface components {
              * Key
              * @enum {string}
              */
-            key: "capacities" | "design" | "checks" | "costs" | "agentlog";
+            key: "summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix";
             /** Title */
             title: string;
         };
         /** ReportRequest */
         ReportRequest: {
             /** Include */
-            include: ("capacities" | "design" | "checks" | "costs" | "agentlog")[];
+            include: ("summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix")[];
             /**
              * Project
              * Format: uuid
@@ -1851,7 +1851,7 @@ export interface components {
              * Key
              * @enum {string}
              */
-            key: "capacities" | "design" | "checks" | "costs" | "agentlog";
+            key: "summary" | "design" | "capacities" | "coverage" | "checks" | "costs" | "findings" | "agentlog" | "appendix";
             /** Markdown */
             markdown: string;
             /** Title */

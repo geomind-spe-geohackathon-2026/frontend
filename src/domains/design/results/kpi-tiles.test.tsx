@@ -27,7 +27,7 @@ describe("KpiTiles", () => {
     render(<KpiTiles items={items} label="Key figures" />);
     const lcts = screen.getByTitle("47.81333 EUR/MWh");
     expect(lcts).toHaveTextContent("47.8");
-    expect(screen.getByTitle("51264.867 MWh")).toHaveTextContent("51,265");
+    expect(screen.getByTitle("51264.867 MWh")).toHaveTextContent("51.3");
     expect(screen.getByTitle("1500000 W/K")).toHaveTextContent("1,500,000");
     expect(screen.getByText("lcts_eur")).toBeVisible();
     expect(screen.getByText("heat_delivered")).toBeVisible();

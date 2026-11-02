@@ -1,4 +1,5 @@
 import { toShortId } from "@/lib/shortid";
+import { Button } from "@/shared/ui/button";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Field } from "@/shared/ui/field";
 import type { ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
@@ -14,6 +15,7 @@ type Props = {
   onResult: (id: string) => void;
   onRun: (id: string) => void;
   onPart: (part: ReportPart, checked: boolean) => void;
+  onCompact: () => void;
 };
 
 const selectClass = "w-full rounded-control border border-border bg-surface px-2.5 py-[7px]";
@@ -22,14 +24,24 @@ function PartsFieldset({
   parts,
   chosen,
   onPart,
+  onCompact,
 }: {
   parts: ReportPartInfo[];
   chosen: ReportPart[];
   onPart: (part: ReportPart, checked: boolean) => void;
+  onCompact: () => void;
 }) {
   return (
     <fieldset className="flex flex-col gap-1.5 border-0 p-0">
       <legend className="mb-1 text-[12.5px] text-muted">Sections</legend>
+      <Button
+        className="mb-1 self-start"
+        onClick={() => {
+          onCompact();
+        }}
+      >
+        Compact
+      </Button>
       {parts.map((entry) => (
         <label key={entry.key} className="inline-flex items-center gap-2">
           <input
@@ -57,6 +69,7 @@ export function ReportOptions({
   onResult,
   onRun,
   onPart,
+  onCompact,
 }: Props) {
   return (
     <Card>
@@ -95,7 +108,7 @@ export function ReportOptions({
             ))}
           </select>
         </Field>
-        <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} />
+        <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} onCompact={onCompact} />
       </CardBody>
     </Card>
   );

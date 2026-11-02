@@ -12,6 +12,15 @@ import { ReportDocument } from "./report-document";
 import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
 
+const compactParts: ReportPart[] = [
+  "summary",
+  "design",
+  "capacities",
+  "coverage",
+  "checks",
+  "costs",
+];
+
 type Props = { projectId: string; results: Result[]; runs: Run[]; parts: ReportPartInfo[] };
 
 function PreviewBody({
@@ -79,6 +88,9 @@ export function ReportEditor({ projectId, results, runs, parts }: Props) {
             handleParam("run", id);
           }}
           onPart={handlePart}
+          onCompact={() => {
+            setChosen(order.filter((part) => compactParts.includes(part)));
+          }}
         />
       </div>
     </>
