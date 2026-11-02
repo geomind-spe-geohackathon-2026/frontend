@@ -1,4 +1,5 @@
 import { toLinearScale, toNiceTicks, toPaddedDomain } from "./scale";
+import { toLabelPlaces, type LabelPlace } from "./scatter-labels";
 
 export type ScatterPoint = {
   id: string;
@@ -110,6 +111,55 @@ function Axes({ layout, xTitle, yTitle }: { layout: Layout; xTitle: string; yTit
   );
 }
 
+function Mark({
+  point,
+  onFront,
+  layout,
+  place,
+}: {
+  point: ScatterPoint;
+  onFront: boolean;
+  layout: Layout;
+  place: LabelPlace | undefined;
+}) {
+  const { toX, toY } = layout;
+  return (
+    <g>
+      {point.xRange === undefined ? null : (
+        <line
+          x1={toX(point.xRange[0])}
+          x2={toX(point.xRange[1])}
+          y1={toY(point.y)}
+          y2={toY(point.y)}
+          stroke="var(--muted)"
+        />
+      )}
+      {point.yRange === undefined ? null : (
+        <line
+          x1={toX(point.x)}
+          x2={toX(point.x)}
+          y1={toY(point.yRange[0])}
+          y2={toY(point.yRange[1])}
+          stroke="var(--muted)"
+        />
+      )}
+      <circle
+        cx={toX(point.x)}
+        cy={toY(point.y)}
+        r={onFront ? 7 : 5}
+        fill={onFront ? "var(--accent)" : "var(--surface)"}
+        stroke="var(--accent)"
+        strokeWidth={2}
+      >
+        <title>{`${point.label}: ${String(point.x)}, ${String(point.y)}`}</title>
+      </circle>
+      <text x={place?.x} y={place?.y} textAnchor={place?.anchor} className="fill-text text-[11px]">
+        {point.label}
+      </text>
+    </g>
+  );
+}
+
 function Marks({
   points,
   paretoIds,
@@ -119,47 +169,26 @@ function Marks({
   paretoIds: string[];
   layout: Layout;
 }) {
-  const { toX, toY } = layout;
+  const places = toLabelPlaces(
+    points.map(({ id, label, x, y }) => ({ id, label, x: layout.toX(x), y: layout.toY(y) })),
+    {
+      left: margin.left,
+      right: width - margin.right,
+      top: margin.top,
+      bottom: height - margin.bottom,
+    },
+  );
   return (
     <>
-      {points.map((point) => {
-        const onFront = paretoIds.includes(point.id);
-        return (
-          <g key={point.id}>
-            {point.xRange === undefined ? null : (
-              <line
-                x1={toX(point.xRange[0])}
-                x2={toX(point.xRange[1])}
-                y1={toY(point.y)}
-                y2={toY(point.y)}
-                stroke="var(--muted)"
-              />
-            )}
-            {point.yRange === undefined ? null : (
-              <line
-                x1={toX(point.x)}
-                x2={toX(point.x)}
-                y1={toY(point.yRange[0])}
-                y2={toY(point.yRange[1])}
-                stroke="var(--muted)"
-              />
-            )}
-            <circle
-              cx={toX(point.x)}
-              cy={toY(point.y)}
-              r={onFront ? 7 : 5}
-              fill={onFront ? "var(--accent)" : "var(--surface)"}
-              stroke="var(--accent)"
-              strokeWidth={2}
-            >
-              <title>{`${point.label}: ${String(point.x)}, ${String(point.y)}`}</title>
-            </circle>
-            <text x={toX(point.x) + 10} y={toY(point.y) - 8} className="fill-text text-[11px]">
-              {point.label}
-            </text>
-          </g>
-        );
-      })}
+      {points.map((point) => (
+        <Mark
+          key={point.id}
+          point={point}
+          onFront={paretoIds.includes(point.id)}
+          layout={layout}
+          place={places.get(point.id)}
+        />
+      ))}
     </>
   );
 }

@@ -42,3 +42,10 @@ export function toBestId(items: Result[], name: string): string | null {
   });
   return ranked.sort((first, second) => first.value - second.value)[0]?.id ?? null;
 }
+
+/** Says how a design's checks went: all passed only when every check was assessed and passed. */
+export function toChecksText({ checks }: Result): string {
+  if (checks.failed > 0) return `${String(checks.failed)} failed`;
+  if (checks.not_assessed > 0) return `${String(checks.not_assessed)} not assessed`;
+  return "all passed";
+}

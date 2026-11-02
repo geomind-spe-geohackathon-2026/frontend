@@ -2,7 +2,7 @@ import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import type { Kpi, Result, ResultComparison } from "@/shared/api/types";
-import { findKpi, toBestId } from "./compare";
+import { findKpi, toBestId, toChecksText } from "./compare";
 
 type Props = { comparison: ResultComparison; x: Kpi; y: Kpi; pareto: string[] };
 
@@ -16,9 +16,10 @@ function Cell({ kpi }: { kpi: Kpi | null }) {
 
 function Checks({ item }: { item: Result }) {
   const total = item.checks.passed + item.checks.failed + item.checks.not_assessed;
-  const text = item.checks.failed === 0 ? "all passed" : `${String(item.checks.failed)} failed`;
   return (
-    <span title={`${String(item.checks.passed)} of ${String(total)}. ${countHint}`}>{text}</span>
+    <span title={`${String(item.checks.passed)} of ${String(total)}. ${countHint}`}>
+      {toChecksText(item)}
+    </span>
   );
 }
 

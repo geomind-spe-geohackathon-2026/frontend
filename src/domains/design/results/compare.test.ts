@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Result } from "@/shared/api/types";
-import { toMergedPoints, toSharedKpis } from "./compare";
+import { toChecksText, toMergedPoints, toSharedKpis } from "./compare";
 
 function result(kpis: Result["kpis"]): Result {
   return {
@@ -39,5 +39,17 @@ describe("toMergedPoints", () => {
     expect(toMergedPoints([point, { ...point, id: "b", label: "B" }])).toEqual([
       { ...point, label: "A (+1)" },
     ]);
+  });
+});
+
+describe("toChecksText", () => {
+  it("says all passed only when every check was assessed", () => {
+    const checks = (passed: number, failed: number, notAssessed: number) => ({
+      ...result([]),
+      checks: { passed, failed, not_assessed: notAssessed },
+    });
+    expect(toChecksText(checks(9, 0, 0))).toBe("all passed");
+    expect(toChecksText(checks(8, 0, 1))).toBe("1 not assessed");
+    expect(toChecksText(checks(7, 2, 1))).toBe("2 failed");
   });
 });

@@ -183,11 +183,12 @@ export function ComparePane({ projectId, results }: Props) {
   const has = (name: string) => kpis.some((kpi) => kpi.name === name);
   const xName = params.get("x") ?? (has("co2") ? "co2" : (kpis[0]?.name ?? ""));
   const yName = params.get("y") ?? (has("lcts") ? "lcts" : (kpis[1]?.name ?? ""));
+  const designIds = designs.map((entry) => entry.id);
   const chosen =
     params
       .get("ids")
       ?.split(",")
-      .filter((id) => id !== "") ?? designs.map((entry) => entry.id);
+      .filter((id) => designIds.includes(id)) ?? designIds;
   const comparison = useQuery(comparisonQuery(projectId, chosen, xName, yName));
   const x = kpis.find((kpi) => kpi.name === xName) ?? null;
   const y = kpis.find((kpi) => kpi.name === yName) ?? null;
