@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { modulesOfProblem } from "./spec";
+import { modulesOfProblem } from "@/shared/plant/spec";
 import type { Problem } from "@/shared/api/types";
 import type { PlantGraph } from "./use-auto-layout";
 import type { usePlantEditor } from "./use-plant-editor";

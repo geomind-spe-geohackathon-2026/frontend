@@ -5,7 +5,7 @@ import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { templatesQuery } from "./api";
 import { toInlineParts } from "./rst";
-import { toWords } from "./spec";
+import { toWords } from "@/shared/plant/spec";
 
 type Props = {
   open: boolean;

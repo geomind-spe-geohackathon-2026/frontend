@@ -1,3 +1,4 @@
+import { toModuleTitle, toTitleLines } from "./flowsheet-svg";
 import { describe, expect, it } from "vitest";
 import type { ModulePorts } from "@/shared/api/types";
 import {
@@ -133,5 +134,19 @@ describe("toWords", () => {
     expect(toWords("HeatingFullCoolingPlant")).toEqual(["Heating", "Full", "Cooling", "Plant"]);
     expect(toWords("ATESPlant")).toEqual(["ATES", "Plant"]);
     expect(toWords("CHP")).toEqual(["CHP"]);
+  });
+});
+
+describe("flowsheet picture", () => {
+  it("names a module in words and keeps a short id", () => {
+    expect(toModuleTitle({ id: "peak_boiler", type: "Boiler", category: "heating" })).toBe(
+      "Peak boiler",
+    );
+    expect(toModuleTitle({ id: "d0", type: "Doublet", category: "plants" })).toBe("Doublet d0");
+  });
+
+  it("breaks a long title at a space", () => {
+    expect(toTitleLines("Compression chiller")).toEqual(["Compression", "chiller"]);
+    expect(toTitleLines("Flare")).toEqual(["Flare"]);
   });
 });

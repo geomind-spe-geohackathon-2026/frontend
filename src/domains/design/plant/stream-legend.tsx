@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { toStreamColor, toStreamDash, toStreamLabel } from "./stream-colors";
+import { toStreamColor, toStreamDash, toStreamLabel } from "@/shared/plant/stream-colors";
 
 type Props = {
   streams: string[];

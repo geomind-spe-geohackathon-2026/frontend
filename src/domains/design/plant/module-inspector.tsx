@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Field } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { checkModuleId, readConnections, splitPort } from "./spec";
+import { checkModuleId, readConnections, splitPort } from "@/shared/plant/spec";
 import type { PlantSpec } from "./types";
 
 type Props = {

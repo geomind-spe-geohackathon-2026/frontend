@@ -2,7 +2,7 @@ import { Fragment, useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { labelOf } from "@/shared/forms/json-schema";
 import { moduleDragType } from "./canvas";
-import { toWords } from "./spec";
+import { toWords } from "@/shared/plant/spec";
 import type { Palette } from "@/shared/api/types";
 
 type Props = { items: Palette[]; onAdd: (type: string) => void };

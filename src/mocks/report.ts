@@ -8,7 +8,6 @@ const parts: ReportPartInfo[] = [
   { key: "checks", title: "Constraint checks" },
   { key: "costs", title: "Costs and sources" },
   { key: "agentlog", title: "Agent log and tokens" },
-  { key: "summary", title: "Summary" },
 ];
 
 function toTitle(key: ReportPartInfo["key"]): string {
@@ -24,6 +23,7 @@ function toMarkdown(key: ReportRequest["include"][number]): string {
 function toPreview(body: ReportRequest): Report {
   return {
     title: `Example report for ${body.result}`,
+    flowsheet: { modules: [], connections: [] },
     sections: body.include.map((key) => ({
       key,
       title: toTitle(key),

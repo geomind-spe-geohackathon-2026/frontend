@@ -4,7 +4,7 @@ import { ModuleInspector } from "./module-inspector";
 import { PalettePanel } from "./palette-panel";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
 import { ProblemsPanel } from "./problems-panel";
-import { modulesOfProblem } from "./spec";
+import { modulesOfProblem } from "@/shared/plant/spec";
 import type { Flowsheet, Palette } from "@/shared/api/types";
 import type { PlantGraph } from "./use-auto-layout";
 import type { usePlantActions } from "./use-plant-actions";

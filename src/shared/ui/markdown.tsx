@@ -1,5 +1,6 @@
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { fromSvgUrl, ThemedImage } from "./themed-image";
 
 const plugins = [remarkGfm];
 const svgImage = "data:image/svg+xml;base64,";
@@ -20,6 +21,11 @@ const components = {
   th: ({ children }: { children?: React.ReactNode }) => (
     <th className="border-b border-border bg-sunken px-2 py-1 font-semibold">{children}</th>
   ),
+  img: ({ src, alt }: { src?: string | Blob | undefined; alt?: string | undefined }) => {
+    const svg = typeof src === "string" ? fromSvgUrl(src) : null;
+    if (svg !== null) return <ThemedImage svg={svg} alt={alt ?? ""} />;
+    return typeof src === "string" ? <img src={src} alt={alt ?? ""} /> : null;
+  },
   td: ({ children }: { children?: React.ReactNode }) => (
     <td className="border-b border-border px-2 py-1 align-top">{children}</td>
   ),

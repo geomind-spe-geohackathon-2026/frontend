@@ -1791,6 +1791,12 @@ export interface components {
         };
         /** Report */
         Report: {
+            /** Flowsheet */
+            flowsheet: {
+                [key: string]: {
+                    [key: string]: unknown;
+                }[];
+            };
             /** Sections */
             sections: components["schemas"]["ReportSection"][];
             /** Title */
@@ -1798,6 +1804,8 @@ export interface components {
         };
         /** ReportExport */
         ReportExport: {
+            /** Flowsheet Svg */
+            flowsheet_svg?: string | null;
             /**
              * Format
              * @enum {string}

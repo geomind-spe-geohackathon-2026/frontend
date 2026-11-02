@@ -1,5 +1,5 @@
 import { Button } from "@/shared/ui/button";
-import { modulesOfProblem, type SpecConnection } from "./spec";
+import { modulesOfProblem, type SpecConnection } from "@/shared/plant/spec";
 import type { Problem } from "@/shared/api/types";
 
 type Props = {

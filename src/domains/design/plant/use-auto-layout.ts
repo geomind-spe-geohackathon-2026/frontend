@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from "react";
-import { toAutoLayout, toFanConnections } from "./auto-layout";
-import { toModuleGroups } from "./groups";
-import { readConnections, readModules, toPorts } from "./spec";
-import { toConnectionStreams } from "./streams";
+import { toAutoLayout, toFanConnections } from "@/shared/plant/auto-layout";
+import { toModuleGroups } from "@/shared/plant/groups";
+import { readConnections, readModules, toPorts } from "@/shared/plant/spec";
+import { toConnectionStreams } from "@/shared/plant/streams";
 import type { Layout } from "@/shared/api/layout";
 import type { ModulePorts, Palette } from "@/shared/api/types";
 import type { PlantSpec } from "./types";

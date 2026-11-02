@@ -164,3 +164,9 @@ export async function toAutoLayout(
     (graph.children ?? []).map((child) => [child.id, { x: child.x ?? 0, y: child.y ?? 0 }]),
   );
 }
+
+/** Runs ELK on a graph and returns it with its positions and edge routes. */
+export async function toLaidOutGraph(graph: ElkNode): Promise<ElkNode> {
+  elk ??= createElk();
+  return (await elk).layout(graph);
+}

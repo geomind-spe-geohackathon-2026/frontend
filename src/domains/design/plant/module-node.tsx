@@ -1,8 +1,8 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { cn } from "@/lib/cn";
-import { headerHeight, portRowHeight } from "./auto-layout";
-import { toStreamColor } from "./stream-colors";
-import type { PortKinds } from "./spec";
+import { headerHeight, portRowHeight } from "@/shared/plant/auto-layout";
+import { toStreamColor } from "@/shared/plant/stream-colors";
+import type { PortKinds } from "@/shared/plant/spec";
 
 export type ModuleNodeData = {
   title: string;

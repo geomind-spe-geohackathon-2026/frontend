@@ -9,7 +9,7 @@ export type Day = {
   short?: Energy;
 };
 
-type Props = { days: Day[]; title: string };
+type Props = { days: Day[]; title: string; mainLabel?: string };
 
 const cell = 12;
 const gap = 2;
@@ -48,7 +48,7 @@ function toDayTitle(day: Day): string {
 }
 
 /** One cell per day, coloured by the source that covers it, with a legend and day counts as text. */
-export function DaysStrip({ days, title }: Props) {
+export function DaysStrip({ days, title, mainLabel }: Props) {
   const first = days[0];
   if (first === undefined) return null;
   const firstDay = toDayNumber(first.date);
@@ -56,6 +56,7 @@ export function DaysStrip({ days, title }: Props) {
   const width = last.x + cell;
   const counts = sources.map((entry) => ({
     ...entry,
+    label: entry.source === "geothermal" ? (mainLabel ?? entry.label) : entry.label,
     count: days.filter((day) => day.source === entry.source).length,
   }));
   const summary = counts.map((entry) => `${entry.label} ${String(entry.count)} days`).join(", ");

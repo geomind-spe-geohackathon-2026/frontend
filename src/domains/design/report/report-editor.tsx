@@ -8,6 +8,7 @@ import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
 import { toOrderedParts } from "./parts";
+import { useFlowsheetSvg } from "./use-flowsheet-svg";
 import { ReportDocument } from "./report-document";
 import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
@@ -26,14 +27,16 @@ type Props = { projectId: string; results: Result[]; runs: Run[]; parts: ReportP
 function PreviewBody({
   include,
   preview,
+  flowsheet,
 }: {
   include: ReportPart[];
   preview: UseQueryResult<Report>;
+  flowsheet: string | null;
 }) {
   if (include.length === 0) return <Notice status="empty">Choose at least one section.</Notice>;
   if (preview.isPending) return <Notice status="loading" what="the preview" />;
   if (preview.isError) return <Notice status="failed" error={preview.error} />;
-  return <ReportDocument preview={preview.data} />;
+  return <ReportDocument preview={preview.data} flowsheet={flowsheet} />;
 }
 
 /** The report workspace: options on the right, live preview on the left, export buttons in the header. */
@@ -47,7 +50,8 @@ export function ReportEditor({ projectId, results, runs, parts }: Props) {
   const request = { project: projectId, result, ...(run === "" ? {} : { run }), include };
   const preview = useQuery(previewQuery(request));
   const name = results.find((entry) => entry.id === result)?.name ?? result;
-  const { exporter, handleExport } = useReportExport(request, name);
+  const flowsheet = useFlowsheetSvg(preview.data?.flowsheet);
+  const { exporter, handleExport } = useReportExport(request, name, flowsheet);
 
   function handleParam(key: string, value: string): void {
     setParams((current) => new URLSearchParams({ ...Object.fromEntries(current), [key]: value }));
@@ -72,7 +76,7 @@ export function ReportEditor({ projectId, results, runs, parts }: Props) {
       {exporter.isError ? <Notice status="failed" error={exporter.error} /> : null}
       <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
-          <PreviewBody include={include} preview={preview} />
+          <PreviewBody include={include} preview={preview} flowsheet={flowsheet} />
         </div>
         <ReportOptions
           results={results}

@@ -14,12 +14,17 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import { Button } from "@/shared/ui/button";
-import { toAutoLayout, toNodeSize, toStartViewport } from "./auto-layout";
-import { toGroupFrames } from "./groups";
+import { toAutoLayout, toNodeSize, toStartViewport } from "@/shared/plant/auto-layout";
+import { toGroupFrames } from "@/shared/plant/groups";
 import { GroupFrameNode, ModuleNode, type GroupFlowNode, type ModuleFlowNode } from "./module-node";
 import { StreamLegend } from "./stream-legend";
-import { toLegendStreams, toStreamColor, toStreamDash, unknownStream } from "./stream-colors";
-import { isSameKind, splitPort, type PortKinds } from "./spec";
+import {
+  toLegendStreams,
+  toStreamColor,
+  toStreamDash,
+  unknownStream,
+} from "@/shared/plant/stream-colors";
+import { isSameKind, splitPort, type PortKinds } from "@/shared/plant/spec";
 import type { Palette } from "@/shared/api/types";
 import type { Layout } from "@/shared/api/layout";
 import type { PlantGraph } from "./use-auto-layout";

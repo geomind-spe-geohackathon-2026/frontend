@@ -10,7 +10,7 @@ import {
   withPosition,
   withRenamedModule,
   withRenamedPosition,
-} from "./spec";
+} from "@/shared/plant/spec";
 import type { Layout } from "@/shared/api/layout";
 import type { Flowsheet } from "@/shared/api/types";
 import type { usePlantEditor } from "./use-plant-editor";
