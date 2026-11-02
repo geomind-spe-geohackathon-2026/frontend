@@ -54,7 +54,7 @@ export function useCreateStudy(projectId: string) {
       toData(await api.POST("/design/study", { body: input })),
     onSuccess: () => {
       showToast("Study created");
-      return queryClient.invalidateQueries({ queryKey: studyKeys.all(projectId) });
+      return queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
 }
@@ -71,7 +71,7 @@ export function useStartStudy(projectId: string) {
       ),
     onSuccess: () => {
       showToast("Study started");
-      return queryClient.invalidateQueries({ queryKey: studyKeys.all(projectId) });
+      return queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
 }
@@ -88,7 +88,7 @@ export function useCancelStudy(projectId: string) {
       ),
     onSuccess: () => {
       showToast("Study cancelled");
-      return queryClient.invalidateQueries({ queryKey: studyKeys.all(projectId) });
+      return queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
 }

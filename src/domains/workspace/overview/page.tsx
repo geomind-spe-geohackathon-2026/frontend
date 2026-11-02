@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { projectQuery } from "@/shared/api/projects";
 import { useRequiredParam } from "@/shared/layout/params";
 import { PageHeader } from "@/shared/layout/page-header";
+import { resultsQuery } from "@/shared/api/results";
 import { overviewQuery } from "./api";
+import { toStaleSteps } from "./stale";
 import { ActivityList } from "./activity-list";
 import { AskBox } from "./ask-box";
 import { RecentChats } from "./recent-chats";
@@ -13,6 +15,9 @@ export function OverviewPage() {
   const projectId = useRequiredParam("projectId");
   const project = useQuery(projectQuery(projectId));
   const overview = useQuery(overviewQuery(projectId));
+  const results = useQuery(resultsQuery(projectId));
+  const stale =
+    project.data === undefined ? new Set<never>() : toStaleSteps(project.data, results.data?.[0]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -32,7 +37,7 @@ export function OverviewPage() {
             >
               Design progress
             </h2>
-            <Stepper projectId={projectId} progress={overview.data.progress} />
+            <Stepper projectId={projectId} progress={overview.data.progress} stale={stale} />
           </section>
           <div className="grid grid-cols-2 gap-3.5 max-[1000px]:grid-cols-1">
             <RecentChats projectId={projectId} chats={overview.data.chats} />

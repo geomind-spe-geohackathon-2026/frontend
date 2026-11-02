@@ -13,3 +13,12 @@ export function toDateLabel(iso: string, now: Date = new Date()): string {
   if (date.getFullYear() === now.getFullYear()) return monthDay.format(date);
   return full.format(date);
 }
+
+/** Labels a UTC ISO time with its clock time, and with the date unless it is today. */
+export function toDateTimeLabel(iso: string, now: Date = new Date()): string {
+  const date = new Date(iso);
+  const time = clock.format(date);
+  if (isSameDay(date, now)) return time;
+  const day = date.getFullYear() === now.getFullYear() ? monthDay.format(date) : full.format(date);
+  return `${day}, ${time}`;
+}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Project, ProgressStep } from "@/shared/api/types";
 import { Chip } from "@/shared/ui/chip";
+import type { StepKey } from "./stale";
 import { designSteps } from "./steps";
 
 const tones: Record<ProgressStep["state"], "ok" | "warn" | "info" | "off"> = {
@@ -15,9 +16,11 @@ const tones: Record<ProgressStep["state"], "ok" | "warn" | "info" | "off"> = {
 export function Stepper({
   projectId,
   progress,
+  stale,
 }: {
   projectId: string;
   progress: Project["progress"];
+  stale: ReadonlySet<StepKey>;
 }) {
   return (
     <ol className="grid grid-cols-5 gap-3 max-[1000px]:grid-cols-2 max-[720px]:grid-cols-1">
@@ -31,7 +34,11 @@ export function Stepper({
               <span aria-hidden="true" className="text-muted">
                 {step.number}
               </span>
-              <Chip tone={tones[progress[step.key].state]}>{progress[step.key].label}</Chip>
+              {stale.has(step.key) ? (
+                <Chip tone="warn">Out of date</Chip>
+              ) : (
+                <Chip tone={tones[progress[step.key].state]}>{progress[step.key].label}</Chip>
+              )}
             </span>
             <b>{step.name}</b>
             <span className="text-muted">{step.description}</span>

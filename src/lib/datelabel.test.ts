@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toDateLabel } from "./datelabel";
+import { toDateLabel, toDateTimeLabel } from "./datelabel";
 
 const now = new Date(2026, 10, 2, 15, 0);
 
@@ -14,5 +14,18 @@ describe("toDateLabel", () => {
 
   it("shows the year for other years", () => {
     expect(toDateLabel(new Date(2025, 0, 5, 9, 41).toISOString(), now)).toBe("Jan 5, 2025");
+  });
+});
+
+describe("toDateTimeLabel", () => {
+  it("shows only the clock time for today", () => {
+    expect(toDateTimeLabel(new Date(2026, 10, 2, 9, 41).toISOString(), now)).toBe("09:41");
+  });
+
+  it("adds the date for another day", () => {
+    expect(toDateTimeLabel(new Date(2026, 9, 31, 9, 41).toISOString(), now)).toBe("Oct 31, 09:41");
+    expect(toDateTimeLabel(new Date(2025, 0, 5, 9, 41).toISOString(), now)).toBe(
+      "Jan 5, 2025, 09:41",
+    );
   });
 });
