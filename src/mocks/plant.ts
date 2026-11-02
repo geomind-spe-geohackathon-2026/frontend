@@ -1,6 +1,350 @@
-import type { RequestHandler } from "msw";
+import { http, HttpResponse, type RequestHandler } from "msw";
+import { isRecord, type JsonSchema } from "@/shared/forms/json-schema";
+import { toErrorResponse } from "./errors";
+import { toRoute, type NoParams } from "./url";
 
-/** Example plant routes; empty until the owning domain adds them. */
+type PlantSpec = Record<string, unknown>;
+type Layout = Record<string, { x: number; y: number }>;
+type PaletteItem = { type: string; title: string; category: string; summary: string };
+type Template = { name: string; title: string; description: string; purpose: string | null };
+type PlantVersion = {
+  number: number;
+  note: string;
+  author: { id: string; name: string };
+  created: string;
+};
+type PlantProblem = { path: string; message: string; code: string };
+type Flowsheet = {
+  project: string;
+  version: number;
+  spec: PlantSpec;
+  layout: Layout;
+  modules: { id: string; type: string; title: string; category: string }[];
+  connections: { source: string; target: string; stream: string; kind: string | null }[];
+};
+type Parameters = {
+  module: string;
+  type: string;
+  schema: JsonSchema;
+  values: Record<string, unknown>;
+  missing: string[];
+  history: { valid_from: string; params: Record<string, unknown> }[];
+};
+
+function readModules(spec: PlantSpec): { id: string; type: string }[] {
+  const modules = isRecord(spec.modules) ? spec.modules : {};
+  return Object.entries(modules).flatMap(([id, body]) =>
+    isRecord(body) && typeof body.type === "string" ? [{ id, type: body.type }] : [],
+  );
+}
+
+function readConnections(spec: PlantSpec): { source: string; target: string }[] {
+  const list: unknown = spec.connections;
+  if (!Array.isArray(list)) return [];
+  return list.flatMap((item: unknown) =>
+    isRecord(item) && typeof item.source === "string" && typeof item.target === "string"
+      ? [{ source: item.source, target: item.target }]
+      : [],
+  );
+}
+
+function moduleOf(reference: string): string {
+  return reference.split(".")[0] ?? "";
+}
+
+const examplePalette: PaletteItem[] = [
+  {
+    type: "Doublet",
+    title: "Doublet",
+    category: "wells",
+    summary: "Example production and injection well pair.",
+  },
+  {
+    type: "HeatExchanger",
+    title: "HeatExchanger",
+    category: "exchangers",
+    summary: "Example heat exchanger.",
+  },
+  { type: "HeatPump", title: "HeatPump", category: "heating", summary: "Example heat pump." },
+  {
+    type: "HeatingGrid",
+    title: "HeatingGrid",
+    category: "grids",
+    summary: "Example heating consumer.",
+  },
+  {
+    type: "ElectricityGrid",
+    title: "ElectricityGrid",
+    category: "grids",
+    summary: "Example electricity supply.",
+  },
+];
+
+const exampleTemplates: Template[] = [
+  {
+    name: "ExampleHeatingPlant",
+    title: "ExampleHeatingPlant",
+    description: "Example plant with a doublet and a heat exchanger.",
+    purpose: "heating",
+  },
+  {
+    name: "ExampleHeatingCoolingPlant",
+    title: "ExampleHeatingCoolingPlant",
+    description: "Example plant with heating and cooling.",
+    purpose: "both",
+  },
+];
+
+const exampleSpec: PlantSpec = {
+  format: 1,
+  kind: "plant",
+  name: "ExamplePlant",
+  modules: {
+    doublet: { type: "Doublet" },
+    hx: { type: "HeatExchanger" },
+    users: { type: "HeatingGrid" },
+  },
+  connections: [
+    { source: "doublet.supply_out", target: "hx.hot_in" },
+    { source: "hx.cold_out", target: "users.supply_in" },
+  ],
+  params: { hx: { duty: { value: 20, unit: "MW" } } },
+};
+
+const exampleStreams: Record<string, string> = {
+  "doublet.supply_out": "brine",
+  "hx.cold_out": "hot_water",
+};
+
+const exampleAuthor = { id: "example-user-admin", name: "Example Admin" };
+
+type Stored = { version: PlantVersion; spec: PlantSpec; layout: Layout };
+
+function toFlowsheet(project: string, stored: Stored): Flowsheet {
+  const modules = readModules(stored.spec).map((module) => ({
+    ...module,
+    title: module.type,
+    category: examplePalette.find((item) => item.type === module.type)?.category ?? "",
+  }));
+  const connections = readConnections(stored.spec).map((connection) => ({
+    ...connection,
+    stream: exampleStreams[connection.source] ?? "",
+    kind: null,
+  }));
+  return {
+    project,
+    version: stored.version.number,
+    spec: stored.spec,
+    layout: stored.layout,
+    modules,
+    connections,
+  };
+}
+
+function toProblems(spec: PlantSpec): PlantProblem[] {
+  const ids = new Set(readModules(spec).map((module) => module.id));
+  const problems: PlantProblem[] = [];
+  readConnections(spec).forEach((connection, index) => {
+    const ends = [moduleOf(connection.source), moduleOf(connection.target)];
+    if (ends.every((id) => ids.has(id))) return;
+    problems.push({
+      path: `connections.${String(index)}`,
+      message: "connects a module that does not exist",
+      code: "invalid_connection",
+    });
+  });
+  if (ids.has("hx") && !hasApproach(spec)) {
+    problems.push({
+      path: "params.hx.approach_temperature",
+      message: "hx.approach_temperature: no value",
+      code: "missing_value",
+    });
+  }
+  return problems;
+}
+
+function hasApproach(spec: PlantSpec): boolean {
+  const params = spec.params;
+  if (typeof params !== "object" || params === null || !("hx" in params)) return false;
+  const hx = params.hx;
+  return typeof hx === "object" && hx !== null && "approach_temperature" in hx;
+}
+
+function conflict(latest: number) {
+  return HttpResponse.json(
+    { error: { code: "conflict", message: "The plant has a newer version", details: { latest } } },
+    { status: 409 },
+  );
+}
+
+function toVersion(number: number, note: string): PlantVersion {
+  return { number, note, author: exampleAuthor, created: new Date().toISOString() };
+}
+
+type SaveBody = {
+  project: string;
+  base: number | null;
+  note: string;
+  spec?: PlantSpec;
+  layout?: Layout;
+  template?: string;
+};
+
+type Store = Map<string, Stored[]>;
+
+function createStore(): Store {
+  const first: Stored = {
+    version: {
+      number: 1,
+      note: "Example first version",
+      author: exampleAuthor,
+      created: "2026-01-10T09:00:00Z",
+    },
+    spec: exampleSpec,
+    layout: { doublet: { x: 0, y: 0 }, hx: { x: 300, y: 0 }, users: { x: 600, y: 0 } },
+  };
+  return new Map([["example-project-1", [first]]]);
+}
+
+function catalogHandlers(): RequestHandler[] {
+  return [
+    http.get(toRoute("/plant/flowsheet/palette"), () =>
+      HttpResponse.json<PaletteItem[]>(examplePalette),
+    ),
+    http.get(toRoute("/plant/flowsheet/templates"), () =>
+      HttpResponse.json<Template[]>(exampleTemplates),
+    ),
+    http.post<NoParams, { spec: PlantSpec }>(
+      toRoute("/plant/flowsheet/validate"),
+      async ({ request }) => {
+        const { spec } = await request.json();
+        return HttpResponse.json({ problems: toProblems(spec) });
+      },
+    ),
+  ];
+}
+
+function readHandlers(store: Store): RequestHandler[] {
+  const latest = (project: string) => store.get(project)?.at(-1);
+  return [
+    http.get(toRoute("/plant/flowsheet"), ({ request }) => {
+      const project = new URL(request.url).searchParams.get("project") ?? "";
+      const current = latest(project);
+      if (current === undefined) return toErrorResponse(404, "plant_not_found", "No plant yet");
+      return HttpResponse.json<Flowsheet>(toFlowsheet(project, current));
+    }),
+    http.get(toRoute("/plant/flowsheet/versions"), ({ request }) => {
+      const project = new URL(request.url).searchParams.get("project") ?? "";
+      const versions = (store.get(project) ?? []).map((item) => item.version).reverse();
+      return HttpResponse.json<PlantVersion[]>(versions);
+    }),
+    http.get(toRoute("/plant/flowsheet/versions/:number"), ({ request, params }) => {
+      const project = new URL(request.url).searchParams.get("project") ?? "";
+      const found = store
+        .get(project)
+        ?.find((item) => String(item.version.number) === params.number);
+      if (found === undefined) return toErrorResponse(404, "plant_not_found", "No such version");
+      return HttpResponse.json<Flowsheet>(toFlowsheet(project, found));
+    }),
+    http.get(toRoute("/plant/parameters"), ({ request }) => {
+      const query = new URL(request.url).searchParams;
+      const current = latest(query.get("project") ?? "");
+      const module = readModules(current?.spec ?? {}).find(
+        (item) => item.id === query.get("module"),
+      );
+      if (current === undefined || module === undefined)
+        return toErrorResponse(404, "module_not_found", "No such module");
+      return HttpResponse.json<Parameters>(toParameters(module.id, module.type, current.spec));
+    }),
+  ];
+}
+
+function toValue(leaf: unknown): unknown {
+  return isRecord(leaf) && "value" in leaf ? leaf.value : leaf;
+}
+
+function toParameters(module: string, type: string, spec: PlantSpec): Parameters {
+  const all = isRecord(spec.params) ? spec.params : {};
+  const own = all[module];
+  const entries = isRecord(own) ? Object.entries(own) : [];
+  const values = Object.fromEntries(entries.map(([key, leaf]) => [key, toValue(leaf)]));
+  return {
+    module,
+    type,
+    schema: {
+      type: "object",
+      properties: {
+        duty: { type: "number", unit: "MW", minimum: 0 },
+        approach_temperature: { type: "number", unit: "K", minimum: 0 },
+      },
+    },
+    values,
+    missing: "approach_temperature" in values ? [] : ["approach_temperature"],
+    history: [],
+  };
+}
+
+function writeHandlers(store: Store): RequestHandler[] {
+  const latest = (project: string) => store.get(project)?.at(-1);
+  return [
+    http.post<NoParams, SaveBody>(toRoute("/plant/flowsheet"), async ({ request }) => {
+      const body = await request.json();
+      const current = latest(body.project);
+      if ((current?.version.number ?? null) !== body.base)
+        return conflict(current?.version.number ?? 0);
+      const spec = body.spec ?? { ...exampleSpec, name: body.template ?? "Template" };
+      const next: Stored = {
+        version: toVersion((current?.version.number ?? 0) + 1, body.note),
+        spec,
+        layout: body.layout ?? {},
+      };
+      store.set(body.project, [...(store.get(body.project) ?? []), next]);
+      return HttpResponse.json<Flowsheet>(toFlowsheet(body.project, next), { status: 201 });
+    }),
+    http.put<NoParams, { project: string; base: number; layout: Layout }>(
+      toRoute("/plant/flowsheet/layout"),
+      async ({ request }) => {
+        const body = await request.json();
+        const current = latest(body.project);
+        if (current === undefined) return toErrorResponse(404, "plant_not_found", "No plant yet");
+        current.layout = body.layout;
+        return HttpResponse.json<Flowsheet>(toFlowsheet(body.project, current));
+      },
+    ),
+    http.post<
+      NoParams,
+      {
+        project: string;
+        base: number;
+        module: string;
+        params: Record<string, unknown>;
+        note: string;
+      }
+    >(toRoute("/plant/parameters"), async ({ request }) => {
+      const body = await request.json();
+      const current = latest(body.project);
+      if (current === undefined) return toErrorResponse(404, "plant_not_found", "No plant yet");
+      if (current.version.number !== body.base) return conflict(current.version.number);
+      const leaves = Object.fromEntries(
+        Object.entries(body.params).map(([key, value]) => [key, { value }]),
+      );
+      const params = {
+        ...(typeof current.spec.params === "object" ? current.spec.params : {}),
+        [body.module]: leaves,
+      };
+      const next: Stored = {
+        ...current,
+        version: toVersion(current.version.number + 1, body.note),
+        spec: { ...current.spec, params },
+      };
+      store.set(body.project, [...(store.get(body.project) ?? []), next]);
+      return HttpResponse.json<PlantVersion>(next.version, { status: 201 });
+    }),
+  ];
+}
+
+/** In-memory example plants: palette, templates, validation, versions with conflicts, layout and parameters. */
 export function plantHandlers(): RequestHandler[] {
-  return [];
+  const store = createStore();
+  return [...catalogHandlers(), ...readHandlers(store), ...writeHandlers(store)];
 }

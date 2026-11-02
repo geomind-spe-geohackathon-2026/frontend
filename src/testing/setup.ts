@@ -1,9 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
 import { createHandlers } from "@/mocks/handlers";
 import { session } from "@/shared/api/session";
 import { server } from "./server";
+
+configure({ asyncUtilTimeout: 10_000 });
 
 const noop = (): undefined => undefined;
 

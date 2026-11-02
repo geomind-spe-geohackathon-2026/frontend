@@ -1,4 +1,4 @@
-import { cleanup, configure, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
@@ -6,7 +6,6 @@ import { toRoute } from "@/mocks/url";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
-configure({ asyncUtilTimeout: 10_000 });
 vi.setConfig({ testTimeout: 20_000 });
 
 const base = "/projects/example-project-1/assistant/chat";

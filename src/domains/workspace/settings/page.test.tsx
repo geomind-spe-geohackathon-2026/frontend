@@ -1,9 +1,7 @@
-import { configure, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderApp } from "@/testing/render-app";
-
-configure({ asyncUtilTimeout: 5000 });
 
 const path = "/projects/example-project-1/settings";
 
