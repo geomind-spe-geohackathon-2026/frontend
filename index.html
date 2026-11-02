@@ -7,7 +7,10 @@
       try {
         var stored = window.localStorage.getItem("geomind.theme");
         if (stored !== "system") {
-          document.documentElement.setAttribute("data-theme", stored === "light" ? "light" : "dark");
+          document.documentElement.setAttribute(
+            "data-theme",
+            stored === "light" ? "light" : "dark",
+          );
         }
       } catch (error) {
         void error;

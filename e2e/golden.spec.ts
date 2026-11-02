@@ -131,7 +131,7 @@ test("golden path", async ({ page }, info) => {
   await expect(page.getByText("No results yet")).toBeHidden();
   await shot(page, mode, "results");
 
-  await page.getByRole("link", { name: /^Report/ }).click();
+  await page.getByRole("link", { name: /^\d+ Report/ }).click();
   await expect(page.getByText(/Loading/)).toBeHidden();
   await shot(page, mode, "report");
   for (const format of ["Markdown", "PDF"]) {
@@ -147,7 +147,7 @@ test("golden path", async ({ page }, info) => {
   await page.getByRole("link", { name: "Project settings" }).click();
   await page.getByLabel("Name").fill("پروژه نمونه");
   await page.getByRole("button", { name: "Save name" }).click();
-  await page.getByRole("link", { name: /^Report/ }).click();
+  await page.getByRole("link", { name: /^\d+ Report/ }).click();
   const title = mode === "real" ? /پروژه نمونه/ : /Example report/;
   await expect(page.getByRole("heading", { name: title })).toBeVisible();
   const persian = page.waitForEvent("download");
