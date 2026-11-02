@@ -92,6 +92,7 @@ type Ends = {
 };
 
 function isAllowed(props: Props, connection: Ends): boolean {
+  if (connection.source === connection.target) return false;
   return isSameKind(
     props.ports,
     connection.source,

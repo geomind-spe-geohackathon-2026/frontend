@@ -115,7 +115,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
           {current === undefined ? (
             <p className="text-muted">Select a module to edit it.</p>
           ) : (
-            <Inspector {...props} moduleId={current.id} type={current.type} />
+            <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
           )}
         </CardBody>
       </Card>
