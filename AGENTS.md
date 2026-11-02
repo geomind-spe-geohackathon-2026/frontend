@@ -14,7 +14,8 @@ State: foundation done (build step B-F), Phase C not started. What exists:
 - `shared/ui`, `shared/quantity` (`Quantity`, `Missing`), `shared/layout` (`PageHeader`, theme, route types, `useRequiredParam`), toasts.
 - `src/mocks`: one file per domain; only `identity` and `workspace` have handlers (example sign in, three example projects).
 - `src/shared/api/schema.d.ts` is a hand-kept placeholder until `npm run gen:api` reads `../backend/openapi.json`. Adjust names in `src/shared/api/types.ts` after the first real generation.
-- Not built yet: `shared/sse`, `shared/forms`, `shared/charts` (owned by Phase C agents C6, C7, C8).
+- Not built yet: `shared/sse`, `shared/charts` (owned by Phase C agents C6, C8).
+- C7 built `shared/forms` (schema forms, see `docs/forms.md`), the Problem page (`design/case`) and the Plant page (`design/plant`: @xyflow/react canvas, ELK layout, parameters, versions). Feature API types are hand-written in each `types.ts` and merged into the `paths` interface until `npm run gen:api` runs; delete those blocks then.
 
 Commands: `npm run dev` (mock API), `npm run check` (types, lint, tests), `npm run build` (production build plus the bundle check), `npm run gen:api`, `npm run e2e`.
 

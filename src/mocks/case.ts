@@ -1,10 +1,26 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { Case, CaseContent, CaseVersion, SeriesPoints } from "@/domains/design/case/types";
 import type { JsonSchema } from "@/shared/forms/json-schema";
 import { findMissing } from "@/shared/forms/missing";
 import { validateDocument } from "@/shared/forms/resolver";
 import { toErrorResponse } from "./errors";
 import { toRoute, type NoParams } from "./url";
+
+type CaseContent = Record<string, unknown>;
+type CaseVersion = {
+  number: number;
+  note: string;
+  author: { id: string; name: string };
+  created: string;
+};
+type Case = {
+  project: string;
+  version: number;
+  content: CaseContent;
+  files: { name: string; size: number }[];
+  missing: { path: string; message: string }[];
+  problems: { path: string; message: string; code: string }[];
+};
+type SeriesPoints = { name: string; unit: string; points: (string | number)[][] };
 
 const quantity = (units: string[]): JsonSchema => ({
   type: "object",

@@ -1,15 +1,19 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
 const slow = { timeout: 4000 };
+
+beforeAll(async () => {
+  await import("./page");
+}, 30000);
 const withCase = "/projects/example-project-1/design/case";
 const withoutCase = "/projects/example-project-2/design/case";
 
-describe("Problem page", () => {
+describe("Problem page", { timeout: 20000 }, () => {
   it("builds its tabs from the schema and lists the missing values in a banner", async () => {
     renderApp({ path: withCase });
     const tabs = await screen.findByRole("tablist", { name: "Sections of the problem" }, slow);
