@@ -69,6 +69,10 @@ export function toPretty(summary: string): string {
   return value === undefined ? summary : JSON.stringify(value, null, 2);
 }
 
+const noCaseMessage = "the problem state has no case";
+const noCaseText =
+  "The project's case is not complete yet, so the assistant cannot use it. Fill in the missing values on the Case page, then ask again.";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -92,7 +96,8 @@ function fromQuotedMessage(summary: string): string | null {
 
 /** Returns the message of a failed tool, read from a dict when the tool returned one. */
 export function toFailureText(error: string): string {
-  return fromQuotedMessage(error) ?? error;
+  const message = fromQuotedMessage(error) ?? error;
+  return message.includes(noCaseMessage) ? noCaseText : message;
 }
 
 function toCount(key: string, value: unknown): string | null {

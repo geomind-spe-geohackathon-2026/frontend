@@ -112,6 +112,12 @@ function RecordedStudies({ studies }: { studies: RecordedStudy[] }) {
   );
 }
 
+function toLastFailure(blocks: Block[]): string | null {
+  const tools = blocks.filter((block) => block.kind === "tool" && block.tool !== finishTool);
+  const last = tools.at(-1);
+  return last?.kind === "tool" && last.error !== null ? toFailureText(last.error) : null;
+}
+
 function isHiddenText(text: string): boolean {
   return text.trim() === "" || /^[a-z]+ loop: \{.*\}$/.test(text.trim());
 }
@@ -183,6 +189,7 @@ export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean 
   const work = blocks.filter((block) => isWork(block) && block.id !== last?.id);
   const end = blocks.find((block) => block.kind === "end");
   const stopped = end?.kind === "end" && end.status !== "done";
+  const failure = toLastFailure(blocks);
   return (
     <div className="space-y-2.5">
       {running ? (
@@ -194,6 +201,11 @@ export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean 
         <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />
       )}
       {answer === null ? null : <MarkdownText text={answer} />}
+      {!running && !stopped && failure !== null ? (
+        <p role="status" className="text-bad">
+          {failure}
+        </p>
+      ) : null}
       {stopped ? (
         <>
           <p role="status" className="text-bad">

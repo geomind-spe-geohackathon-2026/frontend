@@ -7,7 +7,31 @@ function text(id: string, value: string): Block {
   return { kind: "text", id, agent: "coordinator", text: value, open: false };
 }
 
+function tool(id: string, error: string | null): Block {
+  return {
+    kind: "tool",
+    id,
+    agent: "analyst",
+    tool: "save_profile",
+    input: {},
+    state: error === null ? "done" : "failed",
+    summary: "",
+    duration: 0,
+    error,
+  };
+}
+
 describe("Blocks", () => {
+  it("shows a failure the run ended on, outside the closed steps", () => {
+    render(<Blocks running={false} blocks={[tool("t1", "No such file")]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("No such file");
+  });
+
+  it("does not repeat a failure the agent went on from", () => {
+    render(<Blocks running={false} blocks={[tool("t1", "No such file"), tool("t2", null)]} />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("hides the coordinator's route", () => {
     render(
       <Blocks

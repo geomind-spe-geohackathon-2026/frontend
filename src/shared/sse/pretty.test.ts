@@ -51,3 +51,10 @@ describe("toBudgetStop", () => {
     expect(toBudgetStop("it broke")).toBeNull();
   });
 });
+
+describe("toFailureText on a chat without a case", () => {
+  it("says what to do instead of naming the assistant's tools", () => {
+    const error = "{'error': {'message': \"case: the problem state has no case; expected one.\"}}";
+    expect(toFailureText(error)).toMatch(/case is not complete yet/);
+  });
+});

@@ -60,6 +60,31 @@ async function openFixture(page: Page, name: string): Promise<void> {
   await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
 }
 
+async function saveProfileToCase(page: Page): Promise<void> {
+  await page.getByRole("link", { name: "Chat", exact: true }).click();
+  await page.getByRole("link", { name: "+ New chat" }).click();
+  await expect(page).toHaveURL(/assistant\/chat\?new/);
+  await expect(page.getByLabel("Message")).toBeEditable();
+  await expect(async () => {
+    await page.getByLabel("Message").fill("Please save a demand profile for heating");
+    await expect(page.getByRole("button", { name: "Send" })).toBeEnabled({ timeout: 1000 });
+  }).toPass();
+  await page.getByRole("button", { name: "Send" }).click();
+  await page.getByRole("button", { name: "Approve" }).click({ timeout: 60_000 });
+  await page.getByRole("button", { name: "Add to Case" }).click({ timeout: 60_000 });
+  await expect(page.getByText(/Case v\d+ saved/)).toBeVisible();
+  await expect(page.getByText(/case is not complete yet/)).toBeHidden();
+  await page.getByRole("link", { name: "1 Case" }).click();
+  await page.getByRole("button", { name: /^Files/ }).click();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByText(/scripted/)
+      .first(),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+}
+
 test("golden path", async ({ page }, info) => {
   const mode = info.project.name;
   const login = mode === "real" ? real : mock;
@@ -89,6 +114,12 @@ test("golden path", async ({ page }, info) => {
   await page.getByRole("button", { name: "Approve" }).click();
   await expect(page.getByRole("button", { name: "Approve" })).toBeHidden({ timeout: 60_000 });
   await shot(page, mode, "chat-approved");
+  if (mode === "real") {
+    await expect(
+      page.getByRole("status").filter({ hasText: /case is not complete yet/ }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add to Case" })).toBeHidden();
+  }
 
   await page.getByRole("link", { name: "Runs and logs" }).click();
   await shot(page, mode, "runs");
@@ -108,6 +139,7 @@ test("golden path", async ({ page }, info) => {
   await page.getByRole("dialog").getByRole("button", { name: "Save version" }).click();
   await expect(page.getByText(/Case v\d+ saved/)).toBeVisible();
   await shot(page, mode, "problem-filled");
+  if (mode === "real") await saveProfileToCase(page);
 
   await page.getByRole("link", { name: "2 Plant" }).click();
   await expect(page.getByRole("tab", { name: "Flowsheet" })).toBeVisible();
