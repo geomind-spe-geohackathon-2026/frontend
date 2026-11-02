@@ -3,12 +3,7 @@
   "title": "Case",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "format",
-    "kind",
-    "name",
-    "time"
-  ],
+  "required": ["format", "kind", "name", "time"],
   "properties": {
     "format": {
       "const": 1
@@ -23,11 +18,7 @@
     "time": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "start",
-        "end",
-        "step"
-      ],
+      "required": ["start", "end", "step"],
       "properties": {
         "start": {
           "type": "string"
@@ -38,10 +29,7 @@
         "step": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "value",
-            "unit"
-          ],
+          "required": ["value", "unit"],
           "properties": {
             "value": {
               "type": "number"
@@ -61,16 +49,10 @@
             "uncertainty": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "kind"
-              ],
+              "required": ["kind"],
               "properties": {
                 "kind": {
-                  "enum": [
-                    "uniform",
-                    "triangular",
-                    "normal"
-                  ]
+                  "enum": ["uniform", "triangular", "normal"]
                 },
                 "min": {
                   "type": "number"
@@ -84,13 +66,7 @@
               }
             },
             "unit": {
-              "enum": [
-                "d",
-                "h",
-                "min",
-                "s",
-                "yr"
-              ]
+              "enum": ["d", "h", "min", "s", "yr"]
             }
           }
         }

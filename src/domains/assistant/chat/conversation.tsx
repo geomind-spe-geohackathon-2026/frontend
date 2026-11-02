@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { ApiError } from "@/shared/api/errors";
 import type { Message } from "@/shared/api/types";
 import { Blocks } from "./blocks";
-import { MarkdownText } from "./markdown-text";
+import { MarkdownText } from "@/shared/ui/markdown-text";
 import type { View } from "./view";
 
 type Props = {

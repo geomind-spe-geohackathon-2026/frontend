@@ -31,4 +31,11 @@ describe("Missing", () => {
     expect(screen.getByText("missing")).toBeVisible();
     expect(screen.getByText("blocks cost results")).toBeVisible();
   });
+
+  it("keeps what a missing value blocks out of the text when compact", () => {
+    render(<Missing compact blocks="LCOC" />);
+    expect(screen.getByText("missing")).toBeVisible();
+    expect(screen.queryByText(/blocks/)).not.toBeInTheDocument();
+    expect(screen.getByTitle("blocks LCOC")).toBeVisible();
+  });
 });

@@ -1,7 +1,7 @@
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
 import { toDepth, toGroups, toLabel, type Group } from "./agents";
-import { MarkdownText } from "./markdown-text";
+import { MarkdownText } from "@/shared/ui/markdown-text";
 import type { Block } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
