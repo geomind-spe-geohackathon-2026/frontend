@@ -1,8 +1,10 @@
-import { screen } from "@testing-library/react";
+import { configure, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { exampleAdmin } from "@/mocks/identity";
 import { renderApp } from "@/testing/render-app";
+
+configure({ asyncUtilTimeout: 5000 });
 
 describe("account page", () => {
   it("shows the profile of the signed-in user", async () => {

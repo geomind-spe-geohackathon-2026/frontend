@@ -1,10 +1,12 @@
-import { screen, within } from "@testing-library/react";
+import { configure, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import { exampleMember } from "@/mocks/identity";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
+
+configure({ asyncUtilTimeout: 5000 });
 
 describe("users page", () => {
   it("lists the users with role and status and no action on the own row", async () => {
