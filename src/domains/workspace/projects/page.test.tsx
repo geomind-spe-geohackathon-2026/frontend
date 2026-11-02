@@ -68,6 +68,15 @@ describe("projects home", () => {
     expect(screen.getByText("Project created")).toBeVisible();
   });
 
+  it("says a name is needed when the dialog is submitted without one", async () => {
+    renderApp({ path: "/projects" });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "+ New project" }));
+    await user.type(screen.getByLabelText("Name"), "   ");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+    expect(await screen.findByText("Enter a name for the project.")).toBeVisible();
+  });
+
   it("imports a project zip and opens its overview", async () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
