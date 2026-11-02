@@ -23,6 +23,13 @@ function applyTheme(theme: Theme): void {
 /** Applies the remembered theme to the page; call once before the first render. */
 export function startTheme(): void {
   applyTheme(toTheme());
+  window.addEventListener("storage", (event) => {
+    if (event.key !== storageKey) return;
+    applyTheme(toTheme());
+    listeners.forEach((listener) => {
+      listener();
+    });
+  });
 }
 
 /** Remembers and applies a theme: system follows the operating system. */
