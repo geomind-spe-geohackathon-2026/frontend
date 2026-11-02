@@ -772,6 +772,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reporting/design/parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Parts */
+        get: operations["list_parts_api_v1_reporting_design_parts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reporting/design/preview": {
         parameters: {
             query?: never;
@@ -1652,6 +1669,16 @@ export interface components {
             result: string;
             /** Run */
             run?: string | null;
+        };
+        /** ReportPart */
+        ReportPart: {
+            /**
+             * Key
+             * @enum {string}
+             */
+            key: "capacities" | "design" | "checks" | "costs" | "agentlog";
+            /** Title */
+            title: string;
         };
         /** ReportRequest */
         ReportRequest: {
@@ -3695,6 +3722,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_parts_api_v1_reporting_design_parts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportPart"][];
                 };
             };
         };

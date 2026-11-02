@@ -1,14 +1,18 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { Report, ReportExport, ReportRequest } from "@/shared/api/types";
+import type { Report, ReportExport, ReportPartInfo, ReportRequest } from "@/shared/api/types";
 import { toRoute, type NoParams } from "./url";
 
-const titles: Record<ReportRequest["include"][number], string> = {
-  capacities: "Capacities",
-  design: "Design",
-  checks: "Checks",
-  costs: "Costs and sources",
-  agentlog: "Agent log",
-};
+const parts: ReportPartInfo[] = [
+  { key: "capacities", title: "Capacities" },
+  { key: "design", title: "Design" },
+  { key: "checks", title: "Constraint checks" },
+  { key: "costs", title: "Costs and sources" },
+  { key: "agentlog", title: "Agent log and tokens" },
+];
+
+function toTitle(key: ReportPartInfo["key"]): string {
+  return parts.find((part) => part.key === key)?.title ?? key;
+}
 
 function toMarkdown(key: ReportRequest["include"][number]): string {
   if (key === "costs") return "Cost per unit: **missing**";
@@ -21,7 +25,7 @@ function toPreview(body: ReportRequest): Report {
     title: `Example report for ${body.result}`,
     sections: body.include.map((key) => ({
       key,
-      title: titles[key],
+      title: toTitle(key),
       markdown: toMarkdown(key),
     })),
   };
@@ -30,6 +34,7 @@ function toPreview(body: ReportRequest): Report {
 /** Example report routes: a preview built from the chosen parts and a small export file. */
 export function reportHandlers(): RequestHandler[] {
   return [
+    http.get(toRoute("/reporting/design/parts"), () => HttpResponse.json<ReportPartInfo[]>(parts)),
     http.post<NoParams, ReportRequest>(toRoute("/reporting/design/preview"), async ({ request }) =>
       HttpResponse.json<Report>(toPreview(await request.json())),
     ),

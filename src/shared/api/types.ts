@@ -66,3 +66,4 @@ export type RunStatus = Run["status"];
 export type StudyStatus = Study["status"];
 export type ConstraintStatus = Constraint["status"];
 export type ReportPart = ReportRequest["include"][number];
+export type ReportPartInfo = Schemas["ReportPart"];

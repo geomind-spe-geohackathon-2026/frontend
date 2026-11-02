@@ -24,10 +24,10 @@ describe("ReportPage", () => {
   it("drops a section from the preview when it is unchecked", async () => {
     const user = userEvent.setup();
     renderApp({ path });
-    await screen.findByRole("heading", { name: "Agent log" });
+    await screen.findByRole("heading", { name: "Agent log and tokens" });
     await user.click(screen.getByRole("checkbox", { name: "Agent log and tokens" }));
     expect(await screen.findByRole("heading", { name: "Capacities" })).toBeVisible();
-    expect(screen.queryByRole("heading", { name: "Agent log" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Agent log and tokens" })).not.toBeInTheDocument();
   });
 
   it("exports Markdown as a download and toasts", async () => {
