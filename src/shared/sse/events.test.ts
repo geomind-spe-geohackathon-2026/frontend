@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@/shared/api/errors";
-import { fromEvent } from "./events";
+import { fromEvent, fromRunId } from "./events";
 
 const origin = { agent: "coordinator", parent: null };
 
@@ -28,6 +28,20 @@ describe("fromEvent", () => {
       text: "So far",
       buffered: true,
     });
+  });
+
+  it("writes the run ids of an event in the dashed form the API uses", () => {
+    const hex = "0123456789abcdef0123456789abcdef";
+    const dashed = "01234567-89ab-cdef-0123-456789abcdef";
+    const started = JSON.stringify({ ...origin, run: hex, loop: "design" });
+    expect(fromEvent("run.started", started, "1")).toMatchObject({ run: dashed });
+    const nested = JSON.stringify({
+      agent: "coordinator.designer",
+      parent: hex,
+      index: 0,
+      model: "m",
+    });
+    expect(fromEvent("step.started", nested, "2")).toMatchObject({ parent: dashed });
   });
 
   it("keeps a missing id as a null sequence", () => {
@@ -73,5 +87,17 @@ describe("fromEvent", () => {
   it("throws invalid_event for an unknown run status", () => {
     const data = JSON.stringify({ ...origin, status: "paused", stop_reason: "x" });
     expect(() => fromEvent("run.finished", data, "1")).toThrow(ApiError);
+  });
+});
+
+describe("fromRunId", () => {
+  it("turns 32 hex characters into a dashed UUID and leaves other ids as they are", () => {
+    expect(fromRunId("0123456789ABCDEF0123456789abcdef")).toBe(
+      "01234567-89ab-cdef-0123-456789abcdef",
+    );
+    expect(fromRunId("01234567-89ab-cdef-0123-456789abcdef")).toBe(
+      "01234567-89ab-cdef-0123-456789abcdef",
+    );
+    expect(fromRunId("example-run-1")).toBe("example-run-1");
   });
 });

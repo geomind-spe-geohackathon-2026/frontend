@@ -46,6 +46,14 @@ function requireNumber(fields: Fields, key: string, type: string): number {
   return value;
 }
 
+const hexRunId = /^([0-9a-f]{8})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{12})$/;
+
+/** Writes a run id of an event (32 hex characters) in the dashed form the API uses; other ids are kept. */
+export function fromRunId(id: string): string {
+  const match = hexRunId.exec(id.toLowerCase());
+  return match === null ? id : match.slice(1).join("-");
+}
+
 function optionalString(fields: Fields, key: string): string | null {
   const value = fields[key];
   return typeof value === "string" ? value : null;
@@ -121,7 +129,7 @@ function toStepBody(type: string, fields: Fields): RunEventBody | null {
     case "run.started":
       return {
         type,
-        run: requireString(fields, "run", type),
+        run: fromRunId(requireString(fields, "run", type)),
         loop: requireString(fields, "loop", type),
       };
     case "step.started":
@@ -193,6 +201,11 @@ function toFields(type: string, data: string): Fields {
   return value;
 }
 
+function toParent(fields: Fields): string | null {
+  const parent = optionalString(fields, "parent");
+  return parent === null ? null : fromRunId(parent);
+}
+
 /** Converts one server-sent event (name, JSON data, id) into a RunEvent; unknown names give null. */
 export function fromEvent(type: string, data: string, id: string): RunEvent | null {
   if (data === "") return null;
@@ -204,6 +217,6 @@ export function fromEvent(type: string, data: string, id: string): RunEvent | nu
     ...body,
     sequence: Number.isNaN(sequence) ? null : sequence,
     agent: requireString(fields, "agent", type),
-    parent: optionalString(fields, "parent"),
+    parent: toParent(fields),
   };
 }
