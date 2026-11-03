@@ -76,7 +76,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
   const { modules, connections } = graph;
   const current = modules.find((module) => module.id === selected);
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 lg:grid-cols-[180px_minmax(0,1fr)_300px]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 @min-[640px]:grid-cols-[170px_minmax(0,1fr)] @min-[1080px]:grid-cols-[180px_minmax(0,1fr)_300px]">
       <Card>
         <CardBody>
           <PalettePanel
