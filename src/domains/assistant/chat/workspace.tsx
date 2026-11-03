@@ -115,6 +115,10 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
       <div className="flex min-h-0 flex-1 flex-col">
         <Conversation
           projectId={projectId}
+          chatId={chatId}
+          onSuggest={(content) => {
+            if (!active) void handleSend(content);
+          }}
           messages={messages}
           liveRunId={runId}
           view={view}

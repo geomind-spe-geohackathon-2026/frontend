@@ -143,7 +143,13 @@ export function toClosing(answer: Answer): Draft[] {
     { type: "step.finished", agent: coordinatorPath, index: 1, usage: small, text: "" },
     ...speak(coordinatorPath, 2, `The designer reports: ${text}`, "example/model-large"),
     { type: "usage", agent: coordinatorPath, input_tokens: 5200, output_tokens: 900, cost: 0.021 },
-    { type: "run.finished", agent: coordinatorPath, status: "done", stop_reason: "completed" },
+    {
+      type: "run.finished",
+      agent: coordinatorPath,
+      status: "done",
+      stop_reason: "completed",
+      suggestions: exampleNextSteps,
+    },
   ];
 }
 
@@ -161,6 +167,12 @@ export function toRecording(
 ): Draft[] {
   return [...toOpening(stateVersion, runId, question), toApprovalRequest(), ...toClosing(answer)];
 }
+
+/** The next steps the example run offers when it ends. */
+export const exampleNextSteps = [
+  { label: "Optimise the plant", message: "Optimise the plant for the lowest heat cost." },
+  { label: "Write the report", message: "Write the report for this design." },
+];
 
 /** The last event of a run that the user cancelled. */
 export function toCancelled(): Draft {

@@ -89,6 +89,9 @@ export type PendingPaths = {
   "/workspace/mcp/{connector_id}/check": Omit<Route, "post"> & {
     post: Act<Connector, ConnectorPath>;
   };
+  "/assistant/suggestions": Omit<Route, "get"> & {
+    get: Read<{ suggestions: unknown }, { project: string; chat?: string }>;
+  };
   "/plant/flowsheet/suggest": Omit<Route, "get"> & {
     get: Read<PortSuggestions, { project: string; port: string; limit?: number }>;
   };

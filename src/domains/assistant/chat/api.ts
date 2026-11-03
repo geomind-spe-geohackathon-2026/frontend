@@ -1,3 +1,4 @@
+import { toNextSteps, type NextStep } from "@/shared/sse/next-steps";
 import { chatsKey } from "@/shared/sse/chats";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
@@ -159,4 +160,17 @@ export const chatRunsQuery = (projectId: string, chatId: string) =>
       );
       return page.items.filter((run) => run.chat === chatId);
     },
+  });
+
+/** Query options for the next steps an empty chat offers; any failure gives none, as the server does. */
+export const chatSuggestionsQuery = (projectId: string, chatId: string | null) =>
+  queryOptions({
+    queryKey: [...chatKeys.all(projectId), "suggestions", chatId],
+    queryFn: async ({ signal }): Promise<NextStep[]> => {
+      const query = chatId === null ? { project: projectId } : { project: projectId, chat: chatId };
+      const answer = await api.GET("/assistant/suggestions", { params: { query }, signal });
+      return answer.data === undefined ? [] : toNextSteps(answer.data.suggestions);
+    },
+    retry: false,
+    staleTime: 30_000,
   });

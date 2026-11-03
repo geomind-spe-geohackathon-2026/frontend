@@ -104,6 +104,27 @@ describe("chat page", () => {
     expect(document.querySelector("main")?.textContent).toBe(live);
   });
 
+  it("offers next steps under the last answer and sends one as a message", async () => {
+    renderApp({ path: `${base}/example-chat-1` });
+    await sendMessage("Check the uncertainty");
+    const card = await screen.findByRole("region", { name: "Approval needed" });
+    const user = userEvent.setup();
+    await user.click(within(card).getByRole("button", { name: "Approve" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Write the report" }, { timeout: 15000 }),
+    );
+    expect(
+      (await screen.findAllByText("Write the report for this design.")).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("offers next steps in an empty chat", async () => {
+    renderApp({ path: `${base}?new` });
+    expect(
+      await screen.findByRole("button", { name: "Build the case from my files" }),
+    ).toBeVisible();
+  });
+
   it("starts a new chat from the first message", async () => {
     const { router } = renderApp({ path: `${base}?new` });
     expect(await screen.findByText(/New chat. Add files/)).toBeVisible();

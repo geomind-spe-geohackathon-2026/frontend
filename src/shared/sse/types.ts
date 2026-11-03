@@ -1,3 +1,4 @@
+import type { NextStep } from "./next-steps";
 import type { RunStatus, Tokens } from "@/shared/api/types";
 
 export type Usage = Tokens;
@@ -52,6 +53,12 @@ export type RunEventBody =
   | ({ type: "request" } & RunRequest)
   | ({ type: "usage" } & Usage)
   | { type: "study.recorded"; call_id: string; study: string; method: string }
-  | { type: "run.finished"; status: RunStatus; stop_reason: string; message?: string };
+  | {
+      type: "run.finished";
+      status: RunStatus;
+      stop_reason: string;
+      message?: string;
+      suggestions?: NextStep[];
+    };
 
 export type RunEvent = Origin & RunEventBody;

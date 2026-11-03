@@ -188,6 +188,17 @@ function runHandlers(world: World): RequestHandler[] {
       const mock = findRun(world, params.id);
       return mock === null ? runMissing() : HttpResponse.json(mock.run);
     }),
+    http.get(toRoute("/assistant/suggestions"), () =>
+      HttpResponse.json({
+        suggestions: [
+          {
+            label: "Build the case from my files",
+            message: "Build the case from the project's files.",
+          },
+          { label: "Build the case by questions", message: "Ask me questions to build the case." },
+        ],
+      }),
+    ),
     http.get(toRoute("/assistant/usage"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project");
       const runs = world.runs.filter((item) => item.run.project === project);

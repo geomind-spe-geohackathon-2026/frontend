@@ -1,3 +1,4 @@
+import type { NextStep } from "@/shared/sse/next-steps";
 import type { RunStatus } from "@/shared/api/types";
 import { toBestValue } from "@/shared/sse/pretty";
 import type { RunEvent, RunRequest, ToolProblem, Usage } from "@/shared/sse/types";
@@ -49,6 +50,7 @@ export type View = {
   usage: Usage;
   context: number;
   window: number | null;
+  suggestions: NextStep[];
   request: RunRequest | null;
   problem: ProblemState;
   problemStale: boolean;
@@ -65,6 +67,7 @@ export const emptyView: View = {
   usage: { input_tokens: 0, output_tokens: 0, cost: 0 },
   context: 0,
   window: null,
+  suggestions: [],
   request: null,
   problem: { version: 0, document: null },
   problemStale: false,
@@ -297,7 +300,7 @@ function reduceFinished(view: View, event: RunEvent & { type: "run.finished" }):
       { ...agent, state: "done" as const },
     ]),
   );
-  return { ...next, agents, status: event.status };
+  return { ...next, agents, status: event.status, suggestions: event.suggestions ?? [] };
 }
 
 /** Pure reducer of the live run view: the same events always give the same view, live or replayed. */

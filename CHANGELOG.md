@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.24 (2026-11-04)
+
+- Chat: two or three suggested next steps as chips under the last answer (AI Elements Suggestion), from `run.finished.suggestions` live and `message.suggestions` after a reload; a click sends the step's message like a typed one. An empty chat shows `GET /assistant/suggestions?project=[&chat=]`. Contract: geomind contract-suggestions.md v3. Without the backend release nothing shows (a 404 gives no chips).
+
 ## 1.1.23 (2026-11-04)
 
 - Chat box: the log button is off for now; the usage ring stays. Each answer still links to its run's log.

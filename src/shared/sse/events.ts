@@ -1,3 +1,4 @@
+import { toNextSteps } from "./next-steps";
 import { ApiError } from "@/shared/api/errors";
 import type { RunStatus } from "@/shared/api/types";
 import type {
@@ -233,7 +234,9 @@ function toFinished(fields: Fields): RunEventBody {
     stop_reason: requireString(fields, "stop_reason", type),
   };
   const message = optionalString(fields, "message");
-  return message === null ? body : { ...body, message };
+  const withMessage = message === null ? body : { ...body, message };
+  const steps = toNextSteps(fields.suggestions);
+  return steps.length === 0 ? withMessage : { ...withMessage, suggestions: steps };
 }
 
 function toParent(fields: Fields): string | null {

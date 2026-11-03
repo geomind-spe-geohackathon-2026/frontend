@@ -71,6 +71,7 @@ function finishRun(
       content: mock.finalText,
       created: mock.run.ended,
       run: mock.run.id,
+      ...(event.suggestions === undefined ? {} : { suggestions: event.suggestions }),
     });
   }
 }
