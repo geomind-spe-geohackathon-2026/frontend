@@ -22,16 +22,49 @@ function toValueText(entry: Entry): string {
   return typeof entry.value === "number" ? String(entry.value) : "";
 }
 
+type UnitProps = {
+  label: string;
+  entry: Entry;
+  unit: string | null;
+  onUnit: (unit: string) => void;
+};
+
 type RowProps = {
   path: string;
   entry: Entry;
   value: string | undefined;
+  unit: string | null;
   edit: RangeEdit | undefined;
   onValue: (name: string, text: string | null) => void;
+  onUnit: (name: string, unit: string | null) => void;
   onEdit: (name: string, edit: RangeEdit | null) => void;
 };
 
-function Row({ path, entry, value, edit, onValue, onEdit }: RowProps) {
+function UnitChoice({ label, entry, unit, onUnit }: UnitProps) {
+  const choices = Object.keys(entry.units);
+  if (choices.length > 1) {
+    return (
+      <select
+        aria-label={`Unit of ${label}`}
+        className="max-w-[92px] min-w-0 shrink-0 rounded-control border border-border bg-surface px-1.5 py-[7px]"
+        value={unit ?? ""}
+        onChange={(event) => {
+          onUnit(event.target.value);
+        }}
+      >
+        {choices.map((choice) => (
+          <option key={choice} value={choice}>
+            {choice}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  if (unit === null) return null;
+  return <span className="shrink-0 text-[12.5px] text-muted">{unit}</span>;
+}
+
+function Row({ path, entry, value, unit, edit, onValue, onUnit, onEdit }: RowProps) {
   const label = toLabel(path);
   const stored = toValueText(entry);
   const id = `plant-${path}`;
@@ -52,9 +85,15 @@ function Row({ path, entry, value, edit, onValue, onEdit }: RowProps) {
             onValue(path, text === stored ? null : text);
           }}
         />
-        {entry.unit === null ? null : (
-          <span className="shrink-0 text-[12.5px] text-muted">{entry.unit}</span>
-        )}
+        <UnitChoice
+          label={label}
+          entry={entry}
+          unit={unit}
+          onUnit={(next) => {
+            onValue(path, value ?? stored);
+            onUnit(path, next === entry.unit ? null : next);
+          }}
+        />
       </div>
       {entry.value === null ? (
         <p className="text-[11.5px] text-muted">Set a value first to allow a range.</p>
@@ -63,7 +102,7 @@ function Row({ path, entry, value, edit, onValue, onEdit }: RowProps) {
           name={path}
           label={label}
           search={entry}
-          unit={entry.unit}
+          unit={unit}
           edit={edit}
           onEdit={onEdit}
         />
@@ -76,11 +115,16 @@ function withoutKey<Item>(items: Record<string, Item>, name: string) {
   return Object.fromEntries(Object.entries(items).filter(([key]) => key !== name));
 }
 
-function toValues(texts: Record<string, string>, search: PlantSearch["search"]) {
+function toValues(
+  texts: Record<string, string>,
+  units: Record<string, string>,
+  search: PlantSearch["search"],
+) {
   return Object.fromEntries(
-    Object.entries(texts).flatMap(([path, text]) =>
-      text.trim() === "" ? [] : [[path, { value: Number(text), unit: search[path]?.unit ?? null }]],
-    ),
+    Object.entries(texts).flatMap(([path, text]) => {
+      const unit = units[path] ?? search[path]?.unit ?? null;
+      return text.trim() === "" ? [] : [[path, { value: Number(text), unit }]];
+    }),
   );
 }
 
@@ -94,6 +138,7 @@ function usePlantSave(props: Props, data: PlantSearch["search"]) {
   const save = useSavePlantRanges(props.projectId);
   const [edits, setEdits] = useState<Record<string, RangeEdit>>({});
   const [texts, setTexts] = useState<Record<string, string>>({});
+  const [units, setUnits] = useState<Record<string, string>>({});
   const [isNoting, setIsNoting] = useState(false);
   const onEdit = (name: string, edit: RangeEdit | null) => {
     const others = withoutKey(edits, name);
@@ -103,21 +148,28 @@ function usePlantSave(props: Props, data: PlantSearch["search"]) {
     const others = withoutKey(texts, name);
     setTexts(text === null ? others : { ...others, [name]: text });
   };
+  const onUnit = (name: string, unit: string | null) => {
+    const others = withoutKey(units, name);
+    setUnits(unit === null ? others : { ...others, [name]: unit });
+    if (edits[name] !== undefined) onEdit(name, null);
+  };
   const submit = (note: string) => {
     const onSuccess = (saved: { number: number }) => {
       setIsNoting(false);
       setEdits({});
       setTexts({});
+      setUnits({});
       showToast(`Plant v${String(saved.number)} saved`);
     };
     const onError = () => {
       setIsNoting(false);
     };
-    const input = { values: toValues(texts, data), ranges: toRanges(edits), note };
+    const input = { values: toValues(texts, units, data), ranges: toRanges(edits), note };
     save.mutate({ base: props.version, ...input }, { onSuccess, onError });
   };
   const isUnchanged = Object.keys(edits).length === 0 && Object.keys(texts).length === 0;
-  return { save, edits, texts, isNoting, setIsNoting, isUnchanged, onEdit, onValue, submit };
+  const fields = { edits, texts, units, onEdit, onValue, onUnit };
+  return { save, isNoting, setIsNoting, isUnchanged, submit, ...fields };
 }
 
 function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) {
@@ -132,8 +184,10 @@ function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) 
           path={path}
           entry={entry}
           value={form.texts[path]}
+          unit={form.units[path] ?? entry.unit}
           edit={form.edits[path]}
           onValue={form.onValue}
+          onUnit={form.onUnit}
           onEdit={form.onEdit}
         />
       ))}

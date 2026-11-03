@@ -220,6 +220,38 @@ describe("Plant page", { timeout: 20000 }, () => {
     });
   });
 
+  it("lets the Plant section set a value in another unit", async () => {
+    const saved: unknown[] = [];
+    const ends = { min: null, max: null };
+    const units = { m: ends, km: ends };
+    const depth = { ...ends, unit: "m", units, value: 2500 };
+    server.use(
+      http.get("*/api/v1/plant/parameters/plant", () => HttpResponse.json({ search: { depth } })),
+      http.post("*/api/v1/plant/parameters/plant", async ({ request }) => {
+        saved.push(await request.json());
+        return HttpResponse.json(
+          { error: { code: "conflict", message: "newer", details: { latest: 4 } } },
+          { status: 409 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderApp({ path: withPlant });
+    const unit = await screen.findByRole("combobox", { name: "Unit of Depth" }, slow);
+    await user.selectOptions(unit, "km");
+    const value = screen.getByRole("spinbutton", { name: "Depth" });
+    await user.clear(value);
+    await user.type(value, "2.5");
+    await user.click(screen.getByRole("button", { name: "Save plant" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.type(within(dialog).getByRole("textbox"), "deeper");
+    await user.click(within(dialog).getByRole("button", { name: /Save/ }));
+    await waitFor(() => {
+      expect(saved).toHaveLength(1);
+    });
+    expect(saved[0]).toMatchObject({ values: { depth: { value: 2.5, unit: "km" } } });
+  });
+
   it("saves an edited search range, and clearing both ends removes it", async () => {
     const saved: unknown[] = [];
     server.use(
