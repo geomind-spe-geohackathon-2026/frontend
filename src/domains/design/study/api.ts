@@ -6,7 +6,7 @@ import {
   type Query,
 } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
-import { showToast } from "@/shared/ui/toast";
+import { toast } from "sonner";
 import { pagedQuery, toItems, type Page } from "@/shared/api/pagination";
 import type { StudyCreate, Study, StudyStatus } from "@/shared/api/types";
 
@@ -53,7 +53,7 @@ export function useCreateStudy(projectId: string) {
     mutationFn: async (input: StudyCreate) =>
       toData(await api.POST("/design/study", { body: input })),
     onSuccess: () => {
-      showToast("Study created");
+      toast("Study created");
       return queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
@@ -70,7 +70,7 @@ export function useStartStudy(projectId: string) {
         }),
       ),
     onSuccess: () => {
-      showToast("Study started");
+      toast("Study started");
       return queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
@@ -87,7 +87,7 @@ export function useCancelStudy(projectId: string) {
         }),
       ),
     onSuccess: () => {
-      showToast("Study cancelled");
+      toast("Study cancelled");
       return queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });

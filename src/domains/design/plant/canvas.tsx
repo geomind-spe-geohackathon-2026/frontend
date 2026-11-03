@@ -13,7 +13,7 @@ import {
   type Edge,
   type ReactFlowInstance,
 } from "@xyflow/react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { toAutoLayout, toNodeSize, toStartViewport } from "@/shared/plant/auto-layout";
 import { toGroupFrames } from "@/shared/plant/groups";
 import { GroupFrameNode, ModuleNode, type GroupFlowNode, type ModuleFlowNode } from "./module-node";

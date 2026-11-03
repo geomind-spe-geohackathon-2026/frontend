@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import { labelOf } from "@/shared/forms/json-schema";
 import { moduleDragType } from "./canvas";
 import { toWords } from "@/shared/plant/spec";

@@ -1,11 +1,11 @@
-import { Button } from "@/shared/ui/button";
-import { Chip } from "@/shared/ui/chip";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { modulesOfProblem } from "@/shared/plant/spec";
 import type { Problem } from "@/shared/api/types";
 import type { PlantGraph } from "./use-auto-layout";
@@ -48,9 +48,9 @@ function MissingStatus({ editor, graph, selected, onSelect }: Props) {
     <span className="inline-flex items-center gap-1.5">
       <DropdownMenu>
         <DropdownMenuTrigger className="cursor-pointer rounded-pill border-0 bg-transparent p-0">
-          <Chip tone="off">
+          <Badge variant="off">
             {missing.length} {missing.length === 1 ? "value" : "values"} missing
-          </Chip>
+          </Badge>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="max-h-[60vh] max-w-[min(420px,calc(100vw-32px))] overflow-y-auto">
           {missing.map((problem) => (
@@ -84,13 +84,13 @@ function MissingStatus({ editor, graph, selected, onSelect }: Props) {
 export function ValidityStatus(props: Props) {
   const { editor } = props;
   const blocking = editor.problems.filter((problem) => !isMissing(problem)).length;
-  if (editor.isChecking) return <Chip tone="off">checking</Chip>;
+  if (editor.isChecking) return <Badge variant="off">checking</Badge>;
   if (blocking > 0)
     return (
-      <Chip tone="bad">
+      <Badge variant="bad">
         {blocking} {blocking === 1 ? "problem" : "problems"}
-      </Chip>
+      </Badge>
     );
   if (editor.problems.length > 0) return <MissingStatus {...props} />;
-  return <Chip tone="ok">valid</Chip>;
+  return <Badge variant="ok">valid</Badge>;
 }

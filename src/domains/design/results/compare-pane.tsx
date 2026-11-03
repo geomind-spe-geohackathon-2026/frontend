@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { Scatter, type ScatterPoint } from "@/shared/charts/scatter";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Field } from "@/shared/ui/field";
 import { Notice } from "@/shared/ui/notice";
 import type { ResultComparison, Kpi, Result } from "@/shared/api/types";
@@ -206,7 +206,7 @@ export function ComparePane({ projectId, results }: Props) {
   }
   return (
     <Card>
-      <CardBody className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4">
         <Controls
           results={designs}
           kpis={kpis}
@@ -226,7 +226,7 @@ export function ComparePane({ projectId, results }: Props) {
             <TestLinks projectId={projectId} results={results} />
           </>
         )}
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

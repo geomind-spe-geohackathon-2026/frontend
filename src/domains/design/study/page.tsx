@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toItems } from "@/shared/api/pagination";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { Notice } from "@/shared/ui/notice";
 import { hasActiveStudy, studiesQuery, useCancelStudy, useStartStudy } from "./api";
 import { NewStudyDialog } from "./new-study-dialog";
@@ -28,7 +28,7 @@ export function StudyPage() {
         description="Heavy calculations run in the background. This list refreshes while one is running."
         actions={
           <Button
-            variant="primary"
+            variant="default"
             onClick={() => {
               setDialogOpen(true);
             }}

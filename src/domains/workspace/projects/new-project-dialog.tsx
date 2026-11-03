@@ -1,13 +1,19 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { toFieldMessage } from "@/shared/api/errors";
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { showToast } from "@/shared/ui/toast";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { projectsQuery, useCreateProject, useImportProject } from "./api";
 
 type Source = "empty" | "copy" | "zip";
@@ -97,7 +103,7 @@ function FormButtons({ pending }: { pending: boolean }) {
       <DialogClose asChild>
         <Button>Cancel</Button>
       </DialogClose>
-      <Button type="submit" variant="primary" disabled={pending}>
+      <Button type="submit" variant="default" disabled={pending}>
         Create
       </Button>
     </div>
@@ -113,11 +119,11 @@ function NewProjectForm() {
   const error = create.error ?? importZip.error;
 
   function handleCreated(project: { id: string }) {
-    showToast("Project created");
+    toast("Project created");
     void navigate(`/projects/${project.id}/overview`);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const name = form.get("name");
@@ -167,7 +173,10 @@ function NewProjectForm() {
 export function NewProjectDialog({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="New project">
+      <DialogContent aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>New project</DialogTitle>
+        </DialogHeader>
         <NewProjectForm />
       </DialogContent>
     </Dialog>

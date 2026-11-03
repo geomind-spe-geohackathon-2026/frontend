@@ -8,11 +8,11 @@ import { NoteDialog } from "@/shared/forms/note-dialog";
 import { UnsavedChangesDialog, useUnsavedGuard } from "@/shared/forms/unsaved-guard";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
-import { Button } from "@/shared/ui/button";
-import { Card, CardBody } from "@/shared/ui/card";
-import { Chip } from "@/shared/ui/chip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import {
   flowsheetQuery,
   paletteQuery,
@@ -55,7 +55,7 @@ function useSaveFlow(projectId: string): PlantSaveFlow {
       (saved) => {
         setIsNoting(false);
         then();
-        showToast(`Plant v${String(saved.version)} saved`);
+        toast(`Plant v${String(saved.version)} saved`);
       },
       (error: unknown) => {
         setIsNoting(false);
@@ -113,13 +113,13 @@ function PlantActions({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ValidityStatus editor={editor} graph={graph} selected={selected} onSelect={onSelect} />
-      <Chip tone="off">v{version}</Chip>
+      <Badge variant="off">v{version}</Badge>
       {dirty ? <span className="text-[12.5px] text-muted">unsaved changes</span> : null}
       <Button onClick={handlers.onTemplate}>Start from template</Button>
       <Button disabled={!dirty} onClick={handlers.onDiscard}>
         Discard changes
       </Button>
-      <Button variant="primary" disabled={!canSave} onClick={handlers.onSave}>
+      <Button variant="default" disabled={!canSave} onClick={handlers.onSave}>
         Save version
       </Button>
     </div>
@@ -282,7 +282,7 @@ function useRestore(
   return async (number: number) => {
     editor.restore(await queryClient.query(plantVersionQuery(projectId, number)));
     setParam("tab", null);
-    showToast(`Version ${String(number)} loaded into the editor; save to keep it`);
+    toast(`Version ${String(number)} loaded into the editor; save to keep it`);
   };
 }
 
@@ -353,13 +353,13 @@ function EmptyPlant({ projectId }: { projectId: string }) {
   const { follow } = usePlantParams();
   return (
     <Card>
-      <CardBody className="flex flex-col items-start gap-2">
+      <CardContent className="flex flex-col items-start gap-2">
         <p className="font-medium">This project has no plant yet.</p>
         <p className="text-muted">
           Start from one of gemini's plant templates, then edit the modules.
         </p>
         <Button
-          variant="primary"
+          variant="default"
           onClick={() => {
             setIsPicking(true);
           }}
@@ -383,7 +383,7 @@ function EmptyPlant({ projectId }: { projectId: string }) {
             );
           }}
         />
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

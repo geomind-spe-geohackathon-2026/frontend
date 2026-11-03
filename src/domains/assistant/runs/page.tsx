@@ -10,7 +10,7 @@ import { RunStatusChip } from "@/shared/sse/status-chip";
 import { toDateTimeLabel } from "@/lib/datelabel";
 import { toShortId } from "@/lib/shortid";
 import { useRequiredParam } from "@/shared/layout/params";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import type { Run } from "@/shared/api/types";
 import { runsQuery, usageQuery } from "./api";
 

@@ -4,8 +4,8 @@ import { ApiError } from "@/shared/api/errors";
 import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { labelOf } from "@/shared/forms/json-schema";
-import { Button } from "@/shared/ui/button";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { parametersQuery, useSaveParameters } from "./api";
 import {
   toFieldResult,
@@ -147,7 +147,7 @@ function useParameterSave(props: Props, edited: ParameterDraft | null) {
       onSuccess: (saved) => {
         setIsNoting(false);
         props.onDraft(null);
-        showToast(`Plant v${String(saved.number)} saved`);
+        toast(`Plant v${String(saved.number)} saved`);
       },
       onError: (error) => {
         setIsNoting(false);
@@ -200,7 +200,7 @@ function ParameterEditor(props: EditorProps) {
         </p>
       ) : null}
       <Button
-        variant="primary"
+        variant="default"
         className="self-start"
         disabled={cannotSave}
         onClick={() => {

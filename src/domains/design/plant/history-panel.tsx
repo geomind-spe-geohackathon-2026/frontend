@@ -2,9 +2,9 @@ import { TableScroll } from "@/shared/ui/table-scroll";
 import { useQuery } from "@tanstack/react-query";
 import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-import { Chip } from "@/shared/ui/chip";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { plantVersionsQuery } from "./api";
 import type { Version } from "@/shared/api/types";
 
@@ -80,7 +80,7 @@ function VersionRow({
       <td className="p-2.5 tabular-nums">{toDisplayTime(version.created)}</td>
       <td className="p-2.5">
         {version.number === current ? (
-          <Chip tone="ok">current</Chip>
+          <Badge variant="ok">current</Badge>
         ) : (
           <Button
             aria-label={`Restore version ${String(version.number)}`}

@@ -5,9 +5,9 @@ import { meQuery } from "@/shared/api/me";
 import { toItems } from "@/shared/api/pagination";
 import type { User } from "@/shared/api/types";
 import { PageHeader } from "@/shared/layout/page-header";
-import { Button } from "@/shared/ui/button";
-import { Chip } from "@/shared/ui/chip";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { AddUserDialog } from "./add-user-dialog";
 import { useUpdateUser, usersQuery } from "./api";
 import { RoleSelect } from "./role-select";
@@ -20,7 +20,7 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
       { id: user.id, changes },
       {
         onSuccess: () => {
-          showToast(text);
+          toast(text);
         },
       },
     );
@@ -41,7 +41,7 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
         />
       </td>
       <td className="px-3 py-2">
-        <Chip tone={user.active ? "ok" : "off"}>{user.active ? "active" : "inactive"}</Chip>
+        <Badge variant={user.active ? "ok" : "off"}>{user.active ? "active" : "inactive"}</Badge>
       </td>
       <td className="px-3 py-2 text-right">
         {isSelf ? null : (

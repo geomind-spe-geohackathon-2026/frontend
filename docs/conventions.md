@@ -28,6 +28,7 @@ export function fromCsv(text: string): Point[] {
 
 ```
 src/
+  components/ui/   shadcn/ui components (new-york style), copied in as source
   app/      router, layouts, providers, auth guard, error boundary
   domains/<domain>/<feature>/   pages, components, api.ts, hooks, tests
   shared/   ui, api, sse, forms, charts, quantity, layout
@@ -35,7 +36,10 @@ src/
   lib/
 ```
 
-Direction is one way: `shared` -> `domains/*/*` -> `app` (bulletproof-react).
+Direction is one way: `components` -> `shared` -> `domains/*/*` -> `app` (bulletproof-react).
+
+- Use an open-source component before writing one. The base is shadcn/ui: its components live in `src/components/ui` as copied source (see `components.json`), with Radix underneath. Add a new one from the shadcn registry (`apps/v4/registry/new-york-v4/ui` on GitHub) instead of writing it by hand. Keep edits to these files small: colours go through the token aliases in `docs/tokens.md`.
+- `components` imports only `components` and `lib`. Lint relaxes some rules there because the code is upstream's.
 
 - `shared` imports nothing from `domains` or `app`.
 - A feature imports only from `shared` and from itself. Never from another feature, not even a type. If two features need it, move it to `shared`.

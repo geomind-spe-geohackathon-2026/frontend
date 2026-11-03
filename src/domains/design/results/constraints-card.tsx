@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { TableScroll } from "@/shared/ui/table-scroll";
-import { Card, CardBody, CardHeader } from "@/shared/ui/card";
-import { Chip } from "@/shared/ui/chip";
+import { Card, CardContent, CardAction, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/types";
 import { toCheckTitle, toModuleName } from "./names";
 
@@ -45,13 +45,13 @@ function Row({ constraint }: { constraint: Constraint }) {
       <th scope="row" className="text-left font-medium">
         {toCheckTitle(constraint.title)}
         {constraint.module === null ? null : (
-          <Chip tone="off" className="ml-1.5">
+          <Badge variant="off" className="ml-1.5">
             {toModuleName(constraint.module)}
-          </Chip>
+          </Badge>
         )}
       </th>
       <td>
-        <Chip tone={tones[constraint.status]}>{words[constraint.status]}</Chip>
+        <Badge variant={tones[constraint.status]}>{words[constraint.status]}</Badge>
       </td>
       <td className="tabular-nums">{toValue(constraint)}</td>
       <td className="text-muted tabular-nums">{constraint.limit}</td>
@@ -92,9 +92,13 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
     <Card>
       <CardHeader>
         <h2>Constraints</h2>
-        <Chip tone={result.checks.failed > 0 ? "bad" : "ok"}>{toSummary(result.checks)}</Chip>
+        <CardAction>
+          <Badge variant={result.checks.failed > 0 ? "bad" : "ok"}>
+            {toSummary(result.checks)}
+          </Badge>
+        </CardAction>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         {result.constraints.length === 0 ? (
           <p className="text-muted">No constraint checks in this result.</p>
         ) : null}
@@ -132,7 +136,7 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
             setAll(true);
           }}
         />
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

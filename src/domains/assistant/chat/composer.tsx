@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { useAttachments } from "@/shared/attach/use-attachments";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type Props = {
   projectId: string;
@@ -19,7 +19,7 @@ export function Composer({ projectId, sending, active, cancelling, onSend, onCan
   const [text, setText] = useState("");
   const files = useAttachments(projectId);
 
-  function handleSubmit(event: FormEvent): void {
+  function handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
     const content = text.trim();
     if (content === "" || active || files.reading) return;
@@ -43,7 +43,7 @@ export function Composer({ projectId, sending, active, cancelling, onSend, onCan
         />
         <Button
           type="submit"
-          variant="primary"
+          variant="default"
           disabled={sending || active || files.reading || text.trim() === ""}
         >
           Send

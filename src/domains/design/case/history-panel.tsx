@@ -1,7 +1,7 @@
 import { TableScroll } from "@/shared/ui/table-scroll";
 import { useQuery } from "@tanstack/react-query";
-import { Chip } from "@/shared/ui/chip";
-import { Card } from "@/shared/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
 import { caseVersionsQuery } from "./api";
@@ -45,7 +45,7 @@ export function HistoryPanel({ projectId, current }: { projectId: string; curren
               <tr key={version.number} className="border-t border-border">
                 <td className="p-2.5 tabular-nums">
                   v{version.number}{" "}
-                  {version.number === current ? <Chip tone="ok">current</Chip> : null}
+                  {version.number === current ? <Badge variant="ok">current</Badge> : null}
                 </td>
                 <td className="p-2.5">{version.note}</td>
                 <td className="p-2.5">{version.author.name}</td>

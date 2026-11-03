@@ -1,4 +1,4 @@
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 
 type Props = { disabled: boolean; onExport: (format: "md" | "pdf") => void };
 

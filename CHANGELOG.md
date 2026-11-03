@@ -2,6 +2,12 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.0 (2026-11-03)
+
+- shadcn/ui (Radix underneath) is the component base, in `src/components/ui`. Buttons, cards, dialogs, badges, tabs, inputs, menus and toasts on every page now use it; the hand-written versions in `shared/ui` are gone.
+- Toasts use Sonner; cards keep their action (link or badge) on the title row.
+- React 19.
+
 ## 1.0.1 (2026-11-03)
 
 - Removed the Editor page and everything only it used (its route, sidebar link, Overview button, the plant embed option, the outline of changed modules and the plant version choice in New study). The work now goes into a better structure for the existing pages.

@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { useAttachments } from "@/shared/attach/use-attachments";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { useAskAssistant } from "./api";
 
 const starters = [
@@ -35,7 +35,7 @@ export function AskBox({ projectId }: { projectId: string }) {
   const files = useAttachments(projectId);
   const blocked = ask.isPending || files.reading || text.trim() === "";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (blocked) return;
     ask.mutate(toMessageWithFiles(text.trim(), files.names), {
@@ -74,7 +74,7 @@ export function AskBox({ projectId }: { projectId: string }) {
         <AttachButton onFiles={files.add} />
         <Starters onPick={setText} />
         <div className="flex-1" />
-        <Button type="submit" variant="primary" disabled={blocked}>
+        <Button type="submit" variant="default" disabled={blocked}>
           Ask
         </Button>
       </div>

@@ -1,5 +1,5 @@
 import { formatFigure } from "@/shared/quantity/figure";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Kpi } from "@/shared/api/types";
 
 type Props = { items: Kpi[]; label: string };
@@ -23,7 +23,7 @@ export function KpiTiles({ items, label }: Props) {
       {items.map((item) => (
         <li key={item.name} className="min-w-0">
           <Card>
-            <CardBody>
+            <CardContent>
               <div className="break-words text-[12.5px] text-muted">{item.title}</div>
               {item.value === null ? (
                 <div className="text-muted">
@@ -40,7 +40,7 @@ export function KpiTiles({ items, label }: Props) {
                   <div className="break-words text-[12px] text-muted">{toShown(item).unit}</div>
                 </div>
               )}
-            </CardBody>
+            </CardContent>
           </Card>
         </li>
       ))}

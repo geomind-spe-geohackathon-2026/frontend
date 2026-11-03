@@ -1,7 +1,7 @@
 import { Paperclip, X } from "lucide-react";
 import { useRef, type ChangeEvent, type DragEvent } from "react";
-import { Button } from "@/shared/ui/button";
-import { Chip } from "@/shared/ui/chip";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { Attachment } from "./use-attachments";
 
 const tones = { reading: "info", ready: "ok", failed: "bad" } as const;
@@ -69,7 +69,7 @@ export function AttachmentList({
           className="flex items-center gap-2 rounded-control border border-border bg-surface px-2 py-1"
         >
           <span className="max-w-56 truncate">{item.name}</span>
-          <Chip tone={tones[item.state]}>{words[item.state]}</Chip>
+          <Badge variant={tones[item.state]}>{words[item.state]}</Badge>
           {item.message === null ? null : <span className="text-bad">{item.message}</span>}
           <button
             type="button"

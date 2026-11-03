@@ -2,11 +2,9 @@ import { describe, expect, it } from "vitest";
 import { findCommentProblems, findMissingDocs } from "./comments";
 import { listFiles, toText } from "./files";
 
-const sourceFiles = listFiles(["src", "tests", "e2e", "scripts"], /\.(ts|tsx|mjs)$/).concat([
-  "eslint.config.js",
-  "vite.config.ts",
-  "playwright.config.ts",
-]);
+const sourceFiles = listFiles(["src", "tests", "e2e", "scripts"], /\.(ts|tsx|mjs)$/)
+  .filter((file) => !file.startsWith("src/components/"))
+  .concat(["eslint.config.js", "vite.config.ts", "playwright.config.ts"]);
 
 describe("no comments rule", () => {
   it("accepts a one-line JSDoc above an export and an eslint directive", () => {

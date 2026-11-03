@@ -1,5 +1,5 @@
 import { TableScroll } from "@/shared/ui/table-scroll";
-import { Card, CardBody, CardHeader } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatFigure } from "@/shared/quantity/figure";
 import type { ResultDetail } from "@/shared/api/types";
 
@@ -31,7 +31,7 @@ export function TornadoCard({ rows }: { rows: NonNullable<ResultDetail["tornado"
       <CardHeader>
         <h2>Sensitivity</h2>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         <TableScroll label="Sensitivity">
           <table className={`w-full border-collapse text-left ${cellClass}`}>
             <caption className="sr-only">How each uncertain value moves each metric</caption>
@@ -67,7 +67,7 @@ export function TornadoCard({ rows }: { rows: NonNullable<ResultDetail["tornado"
             </tbody>
           </table>
         </TableScroll>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }
@@ -85,7 +85,7 @@ export function SpreadCard({ rows }: { rows: NonNullable<ResultDetail["spread"]>
       <CardHeader>
         <h2>{toSpreadTitle(rows[0])}</h2>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         <TableScroll label="Uncertainty">
           <table className={`w-full border-collapse text-left ${cellClass}`}>
             <caption className="sr-only">Spread of each metric</caption>
@@ -113,7 +113,7 @@ export function SpreadCard({ rows }: { rows: NonNullable<ResultDetail["spread"]>
             </tbody>
           </table>
         </TableScroll>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

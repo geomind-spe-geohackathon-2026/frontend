@@ -4,6 +4,7 @@
 @import "@fontsource/ibm-plex-mono/latin-400.css";
 @import "@fontsource/ibm-plex-mono/latin-500.css";
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
   --background: #eef1f4;
@@ -27,6 +28,7 @@
   --gas: #7c8a96;
   --power: #7a5bc0;
   --shadow: 0 10px 30px rgba(20, 30, 40, 0.18);
+  --radius: 8px;
   color-scheme: light;
 }
 
@@ -53,6 +55,7 @@
     --gas: #9aa8b4;
     --power: #a78be6;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --radius: 8px;
     color-scheme: dark;
   }
 }
@@ -79,6 +82,7 @@
   --gas: #9aa8b4;
   --power: #a78be6;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --radius: 8px;
   color-scheme: dark;
 }
 
@@ -104,6 +108,34 @@
   --color-cold: var(--cold);
   --color-gas: var(--gas);
   --color-power: var(--power);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--on-accent);
+  --color-secondary: var(--sunken);
+  --color-secondary-foreground: var(--text);
+  --color-muted-foreground: var(--muted);
+  --color-destructive: var(--bad);
+  --color-input: var(--border);
+  --color-ring: var(--accent);
+  --color-sidebar: var(--sunken);
+  --color-sidebar-foreground: var(--text);
+  --color-sidebar-primary: var(--accent);
+  --color-sidebar-primary-foreground: var(--on-accent);
+  --color-sidebar-accent: var(--accent-soft);
+  --color-sidebar-accent-foreground: var(--text);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--accent);
+  --color-chart-1: var(--heat);
+  --color-chart-2: var(--cold);
+  --color-chart-3: var(--hot);
+  --color-chart-4: var(--power);
+  --color-chart-5: var(--ok);
+  --color-black: #000;
+  --color-white: #fff;
   --color-transparent: transparent;
   --color-current: currentColor;
   --shadow-float: var(--shadow);
@@ -116,6 +148,11 @@
 }
 
 @layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
   html,
   body {
     height: 100%;

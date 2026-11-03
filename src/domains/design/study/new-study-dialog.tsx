@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Notice } from "@/shared/ui/notice";
 import { kindsQuery, useCreateStudy } from "./api";
 import { NewStudyForm } from "./new-study-form";
@@ -12,7 +12,10 @@ export function NewStudyDialog({ projectId, open, onOpenChange }: Props) {
   const create = useCreateStudy(projectId);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="New study" className="max-h-[85vh] overflow-y-auto">
+      <DialogContent aria-describedby={undefined} className="max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>New study</DialogTitle>
+        </DialogHeader>
         {kinds.isPending ? <Notice status="loading" what="study kinds" /> : null}
         {kinds.isError ? <Notice status="failed" error={kinds.error} /> : null}
         {kinds.data?.length === 0 ? (

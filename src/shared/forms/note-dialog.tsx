@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 
 type Props = {
   open: boolean;
@@ -21,7 +21,10 @@ export function NoteDialog({ open, pending, onSave, onClose }: Props) {
         if (!next) onClose();
       }}
     >
-      <DialogContent title="Save a new version">
+      <DialogContent aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Save a new version</DialogTitle>
+        </DialogHeader>
         <form
           className="flex flex-col gap-3"
           onSubmit={(event) => {
@@ -40,7 +43,7 @@ export function NoteDialog({ open, pending, onSave, onClose }: Props) {
           </Field>
           <div className="flex justify-end gap-2">
             <Button onClick={onClose}>Cancel</Button>
-            <Button type="submit" variant="primary" disabled={pending}>
+            <Button type="submit" variant="default" disabled={pending}>
               Save version
             </Button>
           </div>

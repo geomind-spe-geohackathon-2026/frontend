@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from "react";
-import { Button } from "@/shared/ui/button";
+import { useState, type SubmitEvent } from "react";
+import { Button } from "@/components/ui/button";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import type { Answer } from "@/shared/api/types";
 import type { RunRequest } from "@/shared/sse/types";
 
@@ -27,7 +27,7 @@ function Approval({ pending, onAnswer }: Pick<Props, "pending" | "onAnswer">) {
       </Field>
       <div className="flex gap-2">
         <Button
-          variant="primary"
+          variant="default"
           disabled={pending}
           onClick={() => {
             onAnswer({ approved: true });
@@ -51,7 +51,7 @@ function Approval({ pending, onAnswer }: Pick<Props, "pending" | "onAnswer">) {
 function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
   const [text, setText] = useState("");
 
-  function handleSubmit(event: FormEvent): void {
+  function handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
     if (text.trim() !== "") onAnswer({ text });
   }
@@ -84,7 +84,7 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
               />
             </Field>
           </div>
-          <Button type="submit" variant="primary" disabled={pending || text.trim() === ""}>
+          <Button type="submit" variant="default" disabled={pending || text.trim() === ""}>
             Answer
           </Button>
         </form>

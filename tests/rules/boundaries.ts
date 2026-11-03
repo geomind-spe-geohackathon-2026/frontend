@@ -3,7 +3,7 @@ import ts from "typescript";
 
 type Zone = { layer: string; domain?: string; feature?: string };
 
-const layers = ["app", "domains", "shared", "mocks", "lib", "testing"];
+const layers = ["app", "domains", "shared", "components", "mocks", "lib", "testing"];
 
 function toZone(path: string): Zone | null {
   const [layer, domain, feature] = path.replace(/^src\//, "").split("/");
@@ -20,11 +20,12 @@ function resolveImport(from: string, specifier: string): string | null {
 }
 
 const allowed: Record<string, string[]> = {
-  shared: ["shared", "lib"],
+  shared: ["shared", "components", "lib"],
+  components: ["components", "lib"],
   lib: ["lib"],
-  domains: ["shared", "lib", "domains"],
+  domains: ["shared", "components", "lib", "domains"],
   mocks: ["shared", "lib", "mocks"],
-  app: ["shared", "lib", "domains", "app"],
+  app: ["shared", "components", "lib", "domains", "app"],
   testing: layers,
 };
 

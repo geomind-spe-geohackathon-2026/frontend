@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api, toData, toFormData } from "@/shared/api/client";
 import { isRecord } from "@/shared/forms/json-schema";
-import { Button } from "@/shared/ui/button";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type Props = { projectId: string; chatId: string };
 
@@ -63,7 +63,7 @@ export function AddToCase({ projectId, chatId }: Props) {
     mutationFn: () => addToCase(projectId, chatId),
     onSuccess: async (version) => {
       setFailure(null);
-      showToast(`Case v${String(version)} saved`);
+      toast(`Case v${String(version)} saved`);
       await queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
     onError: (error) => {

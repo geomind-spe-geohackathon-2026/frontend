@@ -2,6 +2,8 @@
 
 Source: the mockup (`../docs/ui-mockup.html`). Defined in `src/styles/index.css` as role-named CSS variables, exposed to Tailwind through `@theme inline` (`bg-surface`, `text-muted`, `border-border`, `text-ok`, `bg-warn-soft`, `text-hot`, `rounded-card`, `shadow-float`). Tailwind's default colour palette is switched off: only these roles exist.
 
+shadcn/ui components use their own names (`primary`, `muted-foreground`, `card`, `destructive`, `ring`, `sidebar-*`, `chart-1`…`chart-5`, `--radius`). `@theme inline` maps each of these to one of our roles (for example `primary` -> `accent`, `destructive` -> `bad`, `chart-1` -> `heat`), so copied components follow the theme without edits.
+
 | Role | Light | Dark | Use |
 |---|---|---|---|
 | `background` | `#eef1f4` | `#0f151b` | page |

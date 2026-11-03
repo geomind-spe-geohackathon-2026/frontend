@@ -1,4 +1,4 @@
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import type { Parameters } from "@/shared/api/types";
 
 export type RangeEdit = { min: string; max: string; unit: string | null };

@@ -6,13 +6,13 @@ import { ErrorNotice } from "@/shared/sse/notice";
 import type { Chat } from "@/shared/api/types";
 import { Ellipsis } from "lucide-react";
 import { toDateLabel } from "@/lib/datelabel";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 const ChatDialog = lazy(() =>
   import("./chat-actions").then((module) => ({ default: module.ChatDialog })),
@@ -112,7 +112,7 @@ export function ChatList({ projectId, activeChatId }: Props) {
   const chats = useQuery(chatsQuery(projectId));
   return (
     <nav aria-label="Chats" className="space-y-2">
-      <Button variant="primary" asChild className="w-full justify-center">
+      <Button variant="default" asChild className="w-full justify-center">
         <Link to={`/projects/${projectId}/assistant/chat?new`}>+ New chat</Link>
       </Button>
       {chats.isPending ? <p className="text-muted">Loading chats</p> : null}

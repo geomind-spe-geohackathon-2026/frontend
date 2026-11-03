@@ -1,5 +1,5 @@
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Props = { open: boolean; what: string; onReload: () => void; onKeep: () => void };
 
@@ -12,14 +12,17 @@ export function ConflictDialog({ open, what, onReload, onKeep }: Props) {
         if (!next) onKeep();
       }}
     >
-      <DialogContent title="A newer version exists">
+      <DialogContent aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>A newer version exists</DialogTitle>
+        </DialogHeader>
         <p>
           The {what} was saved by someone else while you were editing. Reload to see the latest
           version; your unsaved changes will be discarded.
         </p>
         <div className="flex justify-end gap-2">
           <Button onClick={onKeep}>Keep editing</Button>
-          <Button variant="primary" onClick={onReload}>
+          <Button variant="default" onClick={onReload}>
             Reload latest
           </Button>
         </div>

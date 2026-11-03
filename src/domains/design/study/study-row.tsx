@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ProgressBar } from "@/shared/charts/progress-bar";
-import { Button } from "@/shared/ui/button";
-import { Chip } from "@/shared/ui/chip";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Missing } from "@/shared/quantity/missing";
 import { toProgress } from "./progress";
 import type { Study, StudyStatus } from "@/shared/api/types";
@@ -101,7 +101,7 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
         <ProgressCell study={study} />
       </td>
       <td>
-        <Chip tone={tones[study.status]}>{study.status}</Chip>
+        <Badge variant={tones[study.status]}>{study.status}</Badge>
       </td>
       <td>
         <OutcomeCell study={study} projectId={projectId} />
@@ -119,7 +119,7 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
         ) : null}
         {active ? (
           <Button
-            variant="danger"
+            variant="destructive"
             disabled={busy}
             onClick={() => {
               onCancel(study.id);

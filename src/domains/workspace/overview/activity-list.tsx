@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { toDateTimeLabel } from "@/lib/datelabel";
-import { Card, CardHeader } from "@/shared/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { toActivityPath } from "./link";
 import type { Activity } from "@/shared/api/types";
 

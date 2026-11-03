@@ -1,5 +1,5 @@
 import { TableScroll } from "@/shared/ui/table-scroll";
-import { Card } from "@/shared/ui/card";
+import { Card } from "@/components/ui/card";
 import { StudyRow } from "./study-row";
 import type { Study } from "@/shared/api/types";
 

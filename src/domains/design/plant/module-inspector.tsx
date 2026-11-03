@@ -1,8 +1,8 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import { checkModuleId, readConnections, splitPort } from "@/shared/plant/spec";
 import type { PlantSpec } from "./types";
 
@@ -57,7 +57,11 @@ export function ModuleInspector(props: Props) {
     <section aria-label={`Module ${moduleId}`} className="flex min-w-0 flex-col gap-3">
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
         <h2 className="min-w-0 [overflow-wrap:anywhere]">{title}</h2>
-        <Button variant="danger" aria-label={`Remove module ${moduleId}`} onClick={props.onRemove}>
+        <Button
+          variant="destructive"
+          aria-label={`Remove module ${moduleId}`}
+          onClick={props.onRemove}
+        >
           <Trash2 aria-hidden="true" className="size-3.5" />
           Remove
         </Button>

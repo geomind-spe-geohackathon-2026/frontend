@@ -1,5 +1,5 @@
-import { Card, CardBody } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { labelOf, type JsonSchema } from "@/shared/forms/json-schema";
 import type { MissingValue } from "@/shared/api/types";
 
@@ -67,7 +67,7 @@ export function BlockerBanner({ missing, plantMissing, hasPlant, schema, onShow 
   const count = missing.length + plantMissing.length;
   return (
     <Card className="mb-3.5 border-warn" role="region" aria-label="Missing values">
-      <CardBody className="flex flex-col gap-2">
+      <CardContent className="flex flex-col gap-2">
         <p className="font-medium">
           {count} {count === 1 ? "value" : "values"} missing
         </p>
@@ -87,7 +87,7 @@ export function BlockerBanner({ missing, plantMissing, hasPlant, schema, onShow 
         {hasPlant ? null : (
           <p className="text-muted">More values will be required once you choose a plant.</p>
         )}
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

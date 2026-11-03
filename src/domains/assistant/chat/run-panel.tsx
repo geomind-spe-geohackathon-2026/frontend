@@ -1,5 +1,5 @@
 import { AlternativesTable } from "./alternatives-table";
-import { Chip } from "@/shared/ui/chip";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { projectQuery } from "@/shared/api/projects";
 import { toFailedCount } from "./blocks";
@@ -9,7 +9,7 @@ import { toShortId } from "@/lib/shortid";
 import type { Run } from "@/shared/api/types";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
-import { Card, CardBody, CardHeader } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toDepth, toLabel } from "./agents";
 import { ProblemView } from "./problem";
 import type { View } from "./view";
@@ -65,13 +65,13 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
   return (
     <div className="min-w-0 space-y-3">
       <Card>
-        <CardBody className="space-y-1.5">
+        <CardContent className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-muted">Assistant</span>
             {status === "done" && failed > 0 ? (
-              <Chip tone="warn">
+              <Badge variant="warn">
                 done with {failed} {failed === 1 ? "error" : "errors"}
-              </Chip>
+              </Badge>
             ) : (
               <RunStatusChip status={status} />
             )}
@@ -91,15 +91,15 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
               <AgentTree view={view} />
             </div>
           </details>
-        </CardBody>
+        </CardContent>
       </Card>
       <Card>
         <CardHeader>
           <h2>What it knows</h2>
         </CardHeader>
-        <CardBody>
+        <CardContent>
           <ProblemView document={view.problem.document} project={project.data} />
-        </CardBody>
+        </CardContent>
       </Card>
       <AlternativesTable document={view.problem.document} projectId={projectId} />
       <Link

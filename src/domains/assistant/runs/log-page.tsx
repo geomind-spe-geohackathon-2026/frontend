@@ -9,7 +9,7 @@ import type { LogStep } from "@/shared/sse/runlog";
 import { ErrorNotice } from "@/shared/sse/notice";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { downloadLog, runLogQuery } from "./api";
 import { StepDetail } from "./step-detail";
 import { toStepTokens, toTotals } from "./totals";

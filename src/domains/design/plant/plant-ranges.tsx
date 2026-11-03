@@ -4,9 +4,9 @@ import { ApiError } from "@/shared/api/errors";
 import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { labelOf } from "@/shared/forms/json-schema";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { plantSearchQuery, useSavePlantRanges } from "./api";
 import { ParameterRange, toRanges, type RangeEdit } from "./parameter-range";
 import type { PlantSearch } from "@/shared/api/types";
@@ -159,7 +159,7 @@ function usePlantSave(props: Props, data: PlantSearch["search"]) {
       setEdits({});
       setTexts({});
       setUnits({});
-      showToast(`Plant v${String(saved.number)} saved`);
+      toast(`Plant v${String(saved.number)} saved`);
     };
     const onError = () => {
       setIsNoting(false);
@@ -197,7 +197,7 @@ function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) 
         </p>
       )}
       <Button
-        variant="primary"
+        variant="default"
         className="self-start"
         disabled={form.isUnchanged || props.structureDirty || form.save.isPending}
         onClick={() => {

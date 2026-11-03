@@ -3,9 +3,9 @@ import { useDeferredValue, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
 import { PageHeader } from "@/shared/layout/page-header";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { projectsQuery, useImportProject } from "./api";
 import { NewProjectDialog } from "./new-project-dialog";
 import { ProjectCard } from "./project-card";
@@ -21,7 +21,7 @@ function ImportButton() {
     if (file === undefined) return;
     importZip.mutate(file, {
       onSuccess: (project) => {
-        showToast("Project imported");
+        toast("Project imported");
         void navigate(`/projects/${project.id}/overview`);
       },
     });
@@ -78,7 +78,7 @@ export function ProjectsPage() {
             />
             <ImportButton />
             <Button
-              variant="primary"
+              variant="default"
               onClick={() => {
                 setCreating(true);
               }}

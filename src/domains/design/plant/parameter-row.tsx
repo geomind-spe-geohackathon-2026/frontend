@@ -1,5 +1,5 @@
 import { TriangleAlert } from "lucide-react";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import { toFieldResult, toFieldText, toRangeText } from "./parameter-fields";
 import type { FieldEdit, ParameterField } from "./parameter-fields";
 import { ParameterRange, type RangeEdit, type Search } from "./parameter-range";

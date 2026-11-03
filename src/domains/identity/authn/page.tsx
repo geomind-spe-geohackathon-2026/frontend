@@ -1,11 +1,11 @@
 import { Logo } from "@/shared/ui/logo";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toFieldMessage } from "@/shared/api/errors";
 import { useSession } from "@/shared/api/session";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import { useLogin } from "./api";
 
 const homePath = "/projects";
@@ -19,7 +19,7 @@ function SignInForm({ target }: { target: string }) {
   const navigate = useNavigate();
   const login = useLogin();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const email = form.get("email");
@@ -54,7 +54,7 @@ function SignInForm({ target }: { target: string }) {
           {toFieldMessage(login.error)}
         </p>
       )}
-      <Button type="submit" variant="primary" disabled={login.isPending} className="justify-center">
+      <Button type="submit" variant="default" disabled={login.isPending} className="justify-center">
         Sign in
       </Button>
     </form>

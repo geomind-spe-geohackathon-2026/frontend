@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { DialogClose } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { DialogClose } from "@/components/ui/dialog";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import { Notice } from "@/shared/ui/notice";
 import { SchemaForm } from "@/shared/forms/schema-form";
 import { isRecord, type Problem } from "@/shared/forms/json-schema";
@@ -118,7 +118,7 @@ export function NewStudyForm({ projectId, kinds, error, pending, onSubmit }: Pro
         <DialogClose asChild>
           <Button>Cancel</Button>
         </DialogClose>
-        <Button type="submit" variant="primary" disabled={!ready || pending}>
+        <Button type="submit" variant="default" disabled={!ready || pending}>
           Create study
         </Button>
       </div>

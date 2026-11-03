@@ -1,4 +1,4 @@
-import { Chip } from "@/shared/ui/chip";
+import { Badge } from "@/components/ui/badge";
 import type { RunStatus } from "@/shared/api/types";
 
 const tones = {
@@ -12,5 +12,5 @@ const tones = {
 
 /** The status of a run as a chip; the word carries the meaning. */
 export function RunStatusChip({ status }: { status: RunStatus }) {
-  return <Chip tone={tones[status]}>{status}</Chip>;
+  return <Badge variant={tones[status]}>{status}</Badge>;
 }

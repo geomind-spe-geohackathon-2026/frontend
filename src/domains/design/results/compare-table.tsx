@@ -1,7 +1,7 @@
 import { TableScroll } from "@/shared/ui/table-scroll";
 import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
-import { Chip } from "@/shared/ui/chip";
+import { Badge } from "@/components/ui/badge";
 import type { Kpi, Result, ResultComparison } from "@/shared/api/types";
 import { findKpi, toBestId, toChecksText } from "./compare";
 
@@ -70,9 +70,9 @@ export function CompareTable({ comparison, x, y, pareto }: Props) {
               </td>
               <td>
                 {pareto.includes(item.id) ? (
-                  <Chip tone="ok" title="No other design here is better on both figures.">
+                  <Badge variant="ok" title="No other design here is better on both figures.">
                     on the trade-off line
-                  </Chip>
+                  </Badge>
                 ) : null}
               </td>
             </tr>

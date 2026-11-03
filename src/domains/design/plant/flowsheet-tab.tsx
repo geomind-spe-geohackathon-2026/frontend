@@ -1,5 +1,5 @@
 import { PlantRanges } from "./plant-ranges";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Canvas, type Issues } from "./canvas";
 import { ModuleInspector } from "./module-inspector";
 import { PalettePanel } from "./palette-panel";
@@ -78,14 +78,14 @@ export function FlowsheetTab(props: FlowsheetProps) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 lg:grid-cols-[180px_minmax(0,1fr)_300px]">
       <Card>
-        <CardBody>
+        <CardContent>
           <PalettePanel
             items={palette}
             onAdd={(type) => {
               actions.add(type);
             }}
           />
-        </CardBody>
+        </CardContent>
       </Card>
       <div className="min-w-0">
         <Canvas
@@ -111,7 +111,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
         />
       </div>
       <Card>
-        <CardBody className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-4">
           {current === undefined ? (
             <>
               <p className="text-muted">Select a module to edit it.</p>
@@ -124,7 +124,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
           ) : (
             <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
           )}
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );

@@ -3,8 +3,8 @@ import { TriangleAlert, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { TimeSeriesChart } from "@/shared/charts/time-series-chart";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useFieldContext, type SeriesSource } from "./field-context";
 import { expectedSteps, toPoints, toTable, valueColumns } from "./series-data";
 

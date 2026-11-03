@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Project, ProgressStep } from "@/shared/api/types";
 import { cn } from "@/lib/cn";
-import { Chip } from "@/shared/ui/chip";
+import { Badge } from "@/components/ui/badge";
 import type { StepKey } from "./stale";
 import { toNextStep } from "./next-step";
 import { designSteps } from "./steps";
@@ -41,9 +41,9 @@ export function Stepper({
                 {step.number}
               </span>
               {stale.has(step.key) ? (
-                <Chip tone="warn">Out of date</Chip>
+                <Badge variant="warn">Out of date</Badge>
               ) : (
-                <Chip tone={tones[progress[step.key].state]}>{progress[step.key].label}</Chip>
+                <Badge variant={tones[progress[step.key].state]}>{progress[step.key].label}</Badge>
               )}
               {step.key === next ? <span className="ml-auto text-accent">Next</span> : null}
             </span>

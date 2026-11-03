@@ -1,11 +1,11 @@
 import { memo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Quantity } from "@/shared/quantity/quantity";
-import { Chip } from "@/shared/ui/chip";
+import { Badge } from "@/components/ui/badge";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { Copy } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   toFailureText,
   toToolName,
@@ -40,7 +40,7 @@ function CopyButton({ text }: { text: string }) {
       aria-label="Copy the output"
       onClick={() => {
         void navigator.clipboard.writeText(text).then(() => {
-          showToast("Copied");
+          toast("Copied");
         });
       }}
     >
@@ -54,7 +54,7 @@ function ToolCard({ block }: { block: ToolBlock }) {
   return (
     <details className="rounded-control border border-border bg-surface">
       <summary className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5">
-        <Chip tone={tone}>{block.state}</Chip>
+        <Badge variant={tone}>{block.state}</Badge>
         <span>{toToolName(block.tool)}</span>
         <span
           className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}

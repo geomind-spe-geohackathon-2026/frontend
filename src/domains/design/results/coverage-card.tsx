@@ -1,5 +1,5 @@
 import { DaysStrip } from "@/shared/charts/days-strip";
-import { Card, CardBody, CardHeader } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Coverage } from "@/shared/api/types";
 
 const services = [
@@ -14,7 +14,7 @@ export function CoverageCard({ coverage }: { coverage: Coverage | null }) {
       <CardHeader>
         <h2>Days covered</h2>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         {coverage === null ? (
           <p className="text-muted">
             Made before daily coverage existed. Run the study again to get it.
@@ -33,7 +33,7 @@ export function CoverageCard({ coverage }: { coverage: Coverage | null }) {
             ))}
           </div>
         )}
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

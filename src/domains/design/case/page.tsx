@@ -19,12 +19,12 @@ import {
 } from "@/shared/forms/json-schema";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
-import { Button } from "@/shared/ui/button";
-import { Card, CardBody } from "@/shared/ui/card";
-import { Chip } from "@/shared/ui/chip";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/shared/ui/notice";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { showToast } from "@/shared/ui/toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import {
   caseKeys,
   caseQuery,
@@ -69,7 +69,7 @@ function ProblemList({ problems }: { problems: { path: string; message: string }
   if (problems.length === 0) return null;
   return (
     <Card className="mb-3.5 border-bad" role="region" aria-label="Problems">
-      <CardBody>
+      <CardContent>
         <p className="font-medium text-bad">
           {problems.length} {problems.length === 1 ? "problem" : "problems"} to fix before saving
         </p>
@@ -80,7 +80,7 @@ function ProblemList({ problems }: { problems: { path: string; message: string }
             </li>
           ))}
         </ul>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }
@@ -185,13 +185,13 @@ function StartProblem({ projectId, schema }: { projectId: string; schema: JsonSc
   const save = useSaveCase(projectId);
   return (
     <Card>
-      <CardBody className="flex flex-col items-start gap-4">
+      <CardContent className="flex flex-col items-start gap-4">
         <p className="font-medium">This project has no case yet.</p>
         <p className="text-muted">
           Start empty and fill in the sections in this order: {toStepHint(schema)}.
         </p>
         <Button
-          variant="primary"
+          variant="default"
           disabled={project.data === undefined || save.isPending}
           onClick={() => {
             if (project.data === undefined) return;
@@ -211,7 +211,7 @@ function StartProblem({ projectId, schema }: { projectId: string; schema: JsonSc
           }}
         />
         <SaveFailure error={save.error} />
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }
@@ -245,7 +245,7 @@ function useSaveFlow(projectId: string, saved: Case, onDiscard: () => void) {
         onSuccess: (next) => {
           setIsNoting(false);
           discard();
-          showToast(`Case v${String(next.version)} saved`);
+          toast(`Case v${String(next.version)} saved`);
         },
         onError: (error) => {
           setIsNoting(false);
@@ -298,9 +298,9 @@ function MissingCount({ missing, section }: { missing: MissingValue[]; section: 
   ).length;
   if (count === 0) return null;
   return (
-    <Chip tone="warn" className="ml-1.5" aria-hidden="true">
+    <Badge variant="warn" className="ml-1.5" aria-hidden="true">
       {count}
-    </Chip>
+    </Badge>
   );
 }
 
@@ -385,13 +385,13 @@ type ActionsProps = {
 function CaseActions({ version, dirty, canSave, files, onDiscard, onSave }: ActionsProps) {
   return (
     <>
-      <Chip tone="off">Case v{version}</Chip>
+      <Badge variant="off">Case v{version}</Badge>
       {dirty ? <span className="text-[12px] text-warn">unsaved changes</span> : null}
       {files}
       <Button disabled={!dirty} onClick={onDiscard}>
         Discard changes
       </Button>
-      <Button variant="primary" disabled={!canSave} onClick={onSave}>
+      <Button variant="default" disabled={!canSave} onClick={onSave}>
         Save version
       </Button>
     </>

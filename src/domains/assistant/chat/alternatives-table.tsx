@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { humanise } from "@/shared/quantity/figure";
-import { Chip } from "@/shared/ui/chip";
+import { Badge } from "@/components/ui/badge";
 import { toAlternatives, type Alternative } from "./alternatives";
 
 const verdictTones: Record<string, "ok" | "warn" | "bad" | "info" | "off"> = {
@@ -19,13 +19,13 @@ function Row({ item, projectId }: { item: Alternative; projectId: string }) {
       <td className="py-1 pr-2 font-medium">
         {humanise(item.family)}
         {item.isRecommended ? (
-          <Chip tone="ok" className="ml-1.5">
+          <Badge variant="ok" className="ml-1.5">
             Recommended
-          </Chip>
+          </Badge>
         ) : null}
       </td>
       <td className="py-1 pr-2">
-        <Chip tone={verdictTones[item.verdict] ?? "off"}>{item.verdict}</Chip>
+        <Badge variant={verdictTones[item.verdict] ?? "off"}>{item.verdict}</Badge>
       </td>
       <td className="py-1 text-muted">
         {item.reason}

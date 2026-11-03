@@ -1,10 +1,16 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { ApiError } from "@/shared/api/errors";
 import type { Chat } from "@/shared/api/types";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import { useDeleteChat, useRenameChat } from "./api";
 
 type Props = { projectId: string; chat: Chat; onClose: () => void; onDeleted: () => void };
@@ -13,7 +19,7 @@ function RenameForm({ projectId, chat, onClose }: Omit<Props, "onDeleted">) {
   const [title, setTitle] = useState(chat.title);
   const rename = useRenameChat(projectId);
 
-  function handleSubmit(event: FormEvent): void {
+  function handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
     rename.mutate({ chatId: chat.id, title }, { onSuccess: onClose });
   }
@@ -38,7 +44,7 @@ function RenameForm({ projectId, chat, onClose }: Omit<Props, "onDeleted">) {
         <DialogClose asChild>
           <Button>Cancel</Button>
         </DialogClose>
-        <Button type="submit" variant="primary" disabled={title.trim() === "" || rename.isPending}>
+        <Button type="submit" variant="default" disabled={title.trim() === "" || rename.isPending}>
           Rename
         </Button>
       </div>
@@ -71,7 +77,7 @@ function DeleteForm({ projectId, chat, onClose, onDeleted }: Props) {
         <DialogClose asChild>
           <Button>Keep</Button>
         </DialogClose>
-        <Button variant="danger" disabled={remove.isPending} onClick={handleDelete}>
+        <Button variant="destructive" disabled={remove.isPending} onClick={handleDelete}>
           Delete chat
         </Button>
       </div>
@@ -90,7 +96,10 @@ export function ChatDialog({ mode, ...props }: Props & { mode: Mode }) {
         if (!open) props.onClose();
       }}
     >
-      <DialogContent title={mode === "delete" ? "Delete chat" : "Rename chat"}>
+      <DialogContent aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>{mode === "delete" ? "Delete chat" : "Rename chat"}</DialogTitle>
+        </DialogHeader>
         {mode === "delete" ? <DeleteForm {...props} /> : <RenameForm {...props} />}
       </DialogContent>
     </Dialog>

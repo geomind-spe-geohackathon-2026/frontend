@@ -6,10 +6,16 @@ import { toDateLabel } from "@/lib/datelabel";
 import { toItems } from "@/shared/api/pagination";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
-import { Button } from "@/shared/ui/button";
-import { Chip } from "@/shared/ui/chip";
-import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { documentFormatsQuery, documentsQuery, useDeleteDocument, useUploadDocument } from "./api";
 import { toSizeLabel } from "./format";
 import type { Document } from "@/shared/api/types";
@@ -36,7 +42,7 @@ function UploadButton({ projectId }: { projectId: string }) {
     if (file === undefined) return;
     upload.mutate(file, {
       onSuccess: () => {
-        showToast(`${file.name} uploaded`);
+        toast(`${file.name} uploaded`);
       },
     });
   }
@@ -52,7 +58,7 @@ function UploadButton({ projectId }: { projectId: string }) {
         onChange={handleFile}
       />
       <Button
-        variant="primary"
+        variant="default"
         disabled={upload.isPending}
         onClick={() => {
           input.current?.click();
@@ -82,7 +88,10 @@ function DeleteDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent title="Delete document">
+      <DialogContent aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Delete document</DialogTitle>
+        </DialogHeader>
         <p>{document?.name} will be removed and the assistant can no longer search it.</p>
         {remove.error === null ? null : (
           <p role="alert" className="text-bad">
@@ -94,13 +103,13 @@ function DeleteDialog({
             <Button>Keep it</Button>
           </DialogClose>
           <Button
-            variant="danger"
+            variant="destructive"
             disabled={remove.isPending}
             onClick={() => {
               if (document === null) return;
               remove.mutate(document.id, {
                 onSuccess: () => {
-                  showToast("Document deleted");
+                  toast("Document deleted");
                   onClose();
                 },
               });
@@ -150,9 +159,9 @@ function DocumentsTable({
               <td className="px-3 py-2">{document.name}</td>
               <td className="px-3 py-2">{toSizeLabel(document.size)}</td>
               <td className="px-3 py-2">
-                <Chip tone={searchableTone[document.searchable]}>
+                <Badge variant={searchableTone[document.searchable]}>
                   {searchableText[document.searchable]}
-                </Chip>
+                </Badge>
               </td>
               <td className="px-3 py-2">{toDateLabel(document.created)}</td>
               <td className="px-3 py-2 text-right">

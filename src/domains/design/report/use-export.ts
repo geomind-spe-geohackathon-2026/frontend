@@ -1,4 +1,4 @@
-import { showToast } from "@/shared/ui/toast";
+import { toast } from "sonner";
 import type { ReportRequest } from "@/shared/api/types";
 import { useExportReport } from "./api";
 import { toDownload } from "./download";
@@ -24,7 +24,7 @@ export function useReportExport(
       {
         onSuccess: (blob) => {
           toDownload(blob, filename);
-          showToast(`${filename} exported`);
+          toast(`${filename} exported`);
         },
       },
     );

@@ -1,29 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { toFieldMessage } from "@/shared/api/errors";
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { projectQuery } from "@/shared/api/projects";
 import type { Project } from "@/shared/api/types";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
-import { Button } from "@/shared/ui/button";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { showToast } from "@/shared/ui/toast";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { useDeleteProject, useExportProject, useRenameProject, useSetBudget } from "./api";
 import { startDownload } from "./download";
 
 function RenameForm({ project }: { project: Project }) {
   const rename = useRenameProject(project.id);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = new FormData(event.currentTarget).get("name");
     if (typeof name !== "string" || name.trim() === "") return;
     rename.mutate(name.trim(), {
       onSuccess: () => {
-        showToast("Project renamed");
+        toast("Project renamed");
       },
     });
   }
@@ -38,7 +38,7 @@ function RenameForm({ project }: { project: Project }) {
           {toFieldMessage(rename.error)}
         </p>
       )}
-      <Button type="submit" variant="primary" disabled={rename.isPending} className="self-start">
+      <Button type="submit" variant="default" disabled={rename.isPending} className="self-start">
         Save name
       </Button>
     </form>
@@ -53,7 +53,7 @@ function toCap(value: FormDataEntryValue | null): number | null {
 function BudgetForm({ project }: { project: Project }) {
   const setBudget = useSetBudget(project.id);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const budget = {
@@ -62,7 +62,7 @@ function BudgetForm({ project }: { project: Project }) {
     };
     setBudget.mutate(budget, {
       onSuccess: () => {
-        showToast("Budget saved");
+        toast("Budget saved");
       },
     });
   }
@@ -122,7 +122,7 @@ function ExportRow({ project }: { project: Project }) {
           exportZip.mutate(undefined, {
             onSuccess: (blob) => {
               startDownload(blob, `${project.name}.zip`);
-              showToast(`${project.name}.zip exported`);
+              toast(`${project.name}.zip exported`);
             },
           });
         }}
@@ -146,7 +146,7 @@ function DeleteRow({ project }: { project: Project }) {
           <p className="text-muted">Removes the project and everything in it.</p>
         </div>
         <Button
-          variant="danger"
+          variant="destructive"
           onClick={() => {
             setConfirming(true);
           }}
@@ -162,12 +162,12 @@ function DeleteRow({ project }: { project: Project }) {
         >
           <span className="flex-1">This cannot be undone.</span>
           <Button
-            variant="danger"
+            variant="destructive"
             disabled={remove.isPending}
             onClick={() => {
               remove.mutate(undefined, {
                 onSuccess: () => {
-                  showToast("Project deleted");
+                  toast("Project deleted");
                   void navigate("/projects");
                 },
               });
@@ -205,12 +205,12 @@ export function SettingsPage() {
       {project.isError ? <p role="alert">{project.error.message}</p> : null}
       {project.data === undefined ? null : (
         <Card>
-          <CardBody className="flex flex-col gap-5">
+          <CardContent className="flex flex-col gap-5">
             <RenameForm key={project.data.updated} project={project.data} />
             <BudgetForm key={`budget-${project.data.updated}`} project={project.data} />
             <ExportRow project={project.data} />
             <DeleteRow project={project.data} />
-          </CardBody>
+          </CardContent>
         </Card>
       )}
     </div>

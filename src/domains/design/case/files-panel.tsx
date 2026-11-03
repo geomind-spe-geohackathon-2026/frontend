@@ -1,8 +1,8 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { isRecord, labelOf } from "@/shared/forms/json-schema";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRemoveCaseFile } from "./api";
 import type { Case } from "@/shared/api/types";
 
@@ -29,7 +29,10 @@ export function FilesButton({ projectId, saved, content }: Props) {
         Files ({saved.files.length})
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent title="Files of this case">
+        <DialogContent aria-describedby={undefined}>
+          <DialogHeader>
+            <DialogTitle>Files of this case</DialogTitle>
+          </DialogHeader>
           {saved.files.length === 0 ? (
             <p className="text-muted">No files yet. Upload one where a field asks for it.</p>
           ) : null}

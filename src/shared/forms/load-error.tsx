@@ -1,6 +1,6 @@
 import { ApiError } from "@/shared/api/errors";
-import { Button } from "@/shared/ui/button";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Props = { error: unknown; what: string; onRetry?: () => void };
 
@@ -10,13 +10,13 @@ export function LoadError({ error, what, onRetry }: Props) {
   const detail = error instanceof ApiError ? `${error.code}: ${error.message}` : "unexpected error";
   return (
     <Card role="alert">
-      <CardBody className="flex flex-col items-start gap-2">
+      <CardContent className="flex flex-col items-start gap-2">
         <p className="font-medium">
           {isForbidden ? `You do not have access to ${what}.` : `The ${what} could not be loaded.`}
         </p>
         {isForbidden ? null : <p className="text-muted">{detail}</p>}
         {isForbidden || onRetry === undefined ? null : <Button onClick={onRetry}>Try again</Button>}
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

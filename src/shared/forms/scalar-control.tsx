@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
-import { Input } from "@/shared/ui/input";
+import { Input } from "@/components/ui/input";
 import type { JsonSchema } from "./json-schema";
 
 type Props = {

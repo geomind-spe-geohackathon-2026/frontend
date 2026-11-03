@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { toDateTimeLabel } from "@/lib/datelabel";
-import { Card, CardHeader } from "@/shared/ui/card";
-import { Chip } from "@/shared/ui/chip";
+import { Card, CardAction, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { Chat } from "@/shared/api/types";
 
 const activeStatuses = ["queued", "running", "waiting"];
@@ -12,7 +12,9 @@ export function RecentChats({ projectId, chats }: { projectId: string; chats: Ch
     <Card>
       <CardHeader>
         <h2>Recent chats</h2>
-        <Link to={`/projects/${projectId}/assistant/chat`}>All chats</Link>
+        <CardAction>
+          <Link to={`/projects/${projectId}/assistant/chat`}>All chats</Link>
+        </CardAction>
       </CardHeader>
       {chats.length === 0 ? (
         <p className="p-3 text-muted">No chats yet. Ask the assistant above.</p>
@@ -28,7 +30,7 @@ export function RecentChats({ projectId, chats }: { projectId: string; chats: Ch
                 {chat.title}
               </Link>
               {chat.last_run !== null && activeStatuses.includes(chat.last_run.status) ? (
-                <Chip tone="info">{chat.last_run.status}</Chip>
+                <Badge variant="info">{chat.last_run.status}</Badge>
               ) : null}
             </li>
           ))}

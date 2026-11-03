@@ -1,11 +1,18 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { toFieldMessage } from "@/shared/api/errors";
 import type { User } from "@/shared/api/types";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/shared/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Field } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { showToast } from "@/shared/ui/toast";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { useCreateUser } from "./api";
 import { RoleSelect } from "./role-select";
 
@@ -13,7 +20,7 @@ function AddUserForm({ onCreated }: { onCreated: () => void }) {
   const [role, setRole] = useState<User["role"]>("member");
   const create = useCreateUser();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const name = form.get("name");
@@ -26,7 +33,7 @@ function AddUserForm({ onCreated }: { onCreated: () => void }) {
       { name, email, password, role },
       {
         onSuccess: () => {
-          showToast("User created");
+          toast("User created");
           onCreated();
         },
       },
@@ -62,7 +69,7 @@ function AddUserForm({ onCreated }: { onCreated: () => void }) {
         <DialogClose asChild>
           <Button>Cancel</Button>
         </DialogClose>
-        <Button type="submit" variant="primary" disabled={create.isPending}>
+        <Button type="submit" variant="default" disabled={create.isPending}>
           Create
         </Button>
       </div>
@@ -76,9 +83,12 @@ export function AddUserDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="primary">Add user</Button>
+        <Button variant="default">Add user</Button>
       </DialogTrigger>
-      <DialogContent title="Add user">
+      <DialogContent aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Add user</DialogTitle>
+        </DialogHeader>
         <AddUserForm
           onCreated={() => {
             setOpen(false);

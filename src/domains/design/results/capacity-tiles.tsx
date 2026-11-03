@@ -1,5 +1,5 @@
 import { formatFigure, humanise } from "@/shared/quantity/figure";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Capacity } from "@/shared/api/types";
 import { toModuleName } from "./names";
 
@@ -20,7 +20,7 @@ export function CapacityTiles({ items, label }: Props) {
         {items.map((item) => (
           <li key={item.name} className="min-w-0">
             <Card>
-              <CardBody>
+              <CardContent>
                 <div className="font-medium break-words">{toModuleName(item.title)}</div>
                 {item.kind === humanise(item.title) ? null : (
                   <div className="text-[12px] text-muted">{item.kind}</div>
@@ -30,7 +30,7 @@ export function CapacityTiles({ items, label }: Props) {
                   <span className="text-[12px] font-normal text-muted">{item.unit}</span>
                 </div>
                 <div className="text-[12px] text-muted">{toUse(item)}</div>
-              </CardBody>
+              </CardContent>
             </Card>
           </li>
         ))}

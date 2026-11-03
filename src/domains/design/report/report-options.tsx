@@ -1,6 +1,6 @@
 import { toShortId } from "@/lib/shortid";
-import { Button } from "@/shared/ui/button";
-import { Card, CardBody } from "@/shared/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Field } from "@/shared/ui/field";
 import type { ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
@@ -73,7 +73,7 @@ export function ReportOptions({
 }: Props) {
   return (
     <Card>
-      <CardBody className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-3">
         <Field label="Design" htmlFor="report-result">
           <select
             id="report-result"
@@ -109,7 +109,7 @@ export function ReportOptions({
           </select>
         </Field>
         <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} onCompact={onCompact} />
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

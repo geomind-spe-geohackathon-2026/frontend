@@ -1,7 +1,7 @@
 import { Plus, Trash2, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { toChildPath, toFullPath, useFieldContext } from "./field-context";
 import { FieldFrame, isReported } from "./field-frame";
 import {

@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { projectQuery } from "@/shared/api/projects";
 import { isOutOfDate } from "@/shared/api/results";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { Notice } from "@/shared/ui/notice";
-import { showToast } from "@/shared/ui/toast";
+import { toast } from "sonner";
 import type { Kpi } from "@/shared/api/types";
 import { resultQuery, useAdoptDesign } from "./api";
 import { ConstraintsCard } from "./constraints-card";
@@ -39,7 +39,7 @@ function AdoptButton({ projectId, resultId }: Props) {
       onClick={() => {
         adopt.mutate(undefined, {
           onSuccess: (saved) => {
-            showToast(`Plant v${String(saved.plant_version)} saved from this design`);
+            toast(`Plant v${String(saved.plant_version)} saved from this design`);
           },
         });
       }}
@@ -66,7 +66,7 @@ export function ResultPane({ projectId, resultId }: Props) {
       ) : null}
       <div className="mb-3.5 flex justify-end gap-2">
         <AdoptButton projectId={projectId} resultId={data.id} />
-        <Button asChild variant="primary">
+        <Button asChild variant="default">
           <Link to={`/projects/${projectId}/design/report?result=${data.id}`}>
             Make report from this result
           </Link>
