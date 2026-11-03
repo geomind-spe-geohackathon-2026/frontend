@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.5 (2026-11-03)
+
+- The Plant module palette is shadcn Command: type to filter, arrow keys and Enter to add, or drag onto the canvas as before. Sub-plants are their own group at the end.
+
 ## 1.1.4 (2026-11-03)
 
 - Chat uses AI Elements (Conversation, Message): the conversation scrolls in its own box and follows new messages, with a button back to the newest one; the sent message sits on the right.
