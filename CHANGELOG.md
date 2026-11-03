@@ -2,12 +2,12 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
-## Unreleased (on dev; ships right after backend 1.1.4)
+## 1.1.17 (2026-11-03)
 
 - API paths follow backend 1.1.4: documents are `/workspace/rag`, MCP servers `/workspace/mcp`, the project field `mcp`. The pages keep their names (Knowledge, Library, Connectors).
 - Config editor: fields come in the order of the JSON below them (for example Air first on Site), the empty ones after.
 - Case tabs in a clearer order: Demand, Site, Utilities, Economics, Requirements, Time.
-- Knowledge and Library: a View button next to Delete opens the file in a large window (PDF and images as the browser shows them, text files as text). Needs the file route of the backend.
+- Knowledge and Library: a View button next to Delete opens the file in a large window (PDF and images as the browser shows them, text files as text). Uses `GET /workspace/rag/{id}/file` through a blob URL.
 
 ## 1.1.16 (2026-11-03)
 
