@@ -20,7 +20,7 @@ beforeAll(() => {
   window.ResizeObserver = ResizeObserverStub;
   Object.defineProperty(window, "matchMedia", {
     writable: true,
-    value: () => ({ matches: true }),
+    value: () => ({ matches: true, addEventListener: noop, removeEventListener: noop }),
   });
   window.HTMLElement.prototype.scrollIntoView = () => undefined;
   window.HTMLElement.prototype.hasPointerCapture = () => false;

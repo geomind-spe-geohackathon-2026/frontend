@@ -1,10 +1,25 @@
-import { useState, type ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Link, NavLink, useMatch } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { projectFooterNav, projectNav, type NavItem, type ProgressKey } from "@/app/nav";
 import { toStaleSteps } from "@/domains/workspace/overview/stale";
 import { resultsQuery } from "@/shared/api/results";
 import type { Project, ProgressStep } from "@/shared/api/types";
+import { Badge } from "@/components/ui/badge";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Logo } from "@/shared/ui/logo";
 import { cn } from "@/lib/cn";
 
 type Props = { project: Project };
@@ -17,16 +32,13 @@ const dotTone: Record<ProgressStep["state"], string> = {
   done: "bg-ok",
 };
 
-const linkClass =
-  "flex w-full items-center gap-2 rounded-control px-2 py-1.5 text-left text-text no-underline hover:bg-surface";
-
 function toMissing(step: ProgressStep | undefined): ReactNode {
   const count = /(\d+) missing/.exec(step?.label ?? "")?.[1];
   if (count === undefined) return null;
   return (
-    <span className="rounded-pill bg-warn-soft px-1.5 text-[10.5px] font-medium text-warn">
+    <Badge variant="warn" className="px-1.5 py-0 text-[10.5px]">
       {count}
-    </span>
+    </Badge>
   );
 }
 
@@ -55,92 +67,95 @@ function Item({
   project: Project;
   stale: ReadonlySet<string>;
 }) {
+  const to = `/projects/${project.id}/${item.to}`;
+  const active = useMatch({ path: to, end: false }) !== null;
+  const { setOpenMobile } = useSidebar();
   const progress = item.progress === undefined ? undefined : toShown(project, item.progress, stale);
   return (
-    <NavLink
-      to={`/projects/${project.id}/${item.to}`}
-      className={({ isActive }) =>
-        cn(linkClass, isActive && "bg-accent-soft font-medium text-accent")
-      }
-    >
-      <item.icon aria-hidden="true" className="size-4 flex-none" />
-      <span className="min-w-0 flex-1">{item.label}</span>
-      {toMissing(progress)}
-      {progress === undefined ? null : <StatusDot step={progress} />}
-    </NavLink>
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
+        <NavLink
+          to={to}
+          className="text-sidebar-foreground no-underline data-[active=true]:text-sidebar-accent-foreground"
+          onClick={() => {
+            setOpenMobile(false);
+          }}
+        >
+          <item.icon aria-hidden="true" />
+          <span className="min-w-0 flex-1">{item.label}</span>
+          {toMissing(progress)}
+          {progress === undefined ? null : <StatusDot step={progress} />}
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
 function DisabledItem({ item }: { item: NavItem }) {
   return (
-    <button
-      type="button"
-      disabled
-      className={cn(linkClass, "cursor-not-allowed text-muted opacity-70 hover:bg-transparent")}
-    >
-      <item.icon aria-hidden="true" className="size-4 flex-none" />
-      <span className="min-w-0 flex-1">{item.label}</span>
-      <span className="rounded-pill border border-border bg-surface px-1.5 py-px text-[10px]">
-        later
-      </span>
-    </button>
+    <SidebarMenuItem>
+      <SidebarMenuButton disabled tooltip={item.label}>
+        <item.icon aria-hidden="true" />
+        <span className="min-w-0 flex-1">{item.label}</span>
+        <Badge variant="off">later</Badge>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+function ProjectHeader({ project }: Props) {
+  return (
+    <SidebarHeader className="h-[50px] justify-center border-b border-sidebar-border py-0">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild size="lg" tooltip="Switch project" className="h-10">
+            <Link to="/projects" className="text-foreground no-underline">
+              <Logo />
+              <span className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
+                <b className="truncate text-sm">{project.name}</b>
+                <span className="text-xs text-muted-foreground">Switch project</span>
+              </span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
   );
 }
 
 /** The project sidebar: switch project, the Assistant, Design and Operation groups, documents and settings. */
-export function Sidebar({ project }: Props) {
-  const [open, setOpen] = useState(false);
+export function ProjectSidebar({ project }: Props) {
   const results = useQuery(resultsQuery(project.id));
   const stale = toStaleSteps(project, results.data?.[0]);
   return (
-    <>
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls="project-navigation"
-        className="hidden w-full border-b border-border bg-sunken px-[18px] py-2 text-left font-medium max-[720px]:block"
-        onClick={() => {
-          setOpen(!open);
-        }}
-      >
-        Menu
-      </button>
-      <nav
-        id="project-navigation"
-        aria-label="Project"
-        className={cn(
-          "flex w-[210px] flex-none flex-col gap-3 border-r border-border bg-sunken px-2.5 py-3 max-[720px]:w-full max-[720px]:border-r-0 max-[720px]:border-b",
-          !open && "max-[720px]:hidden",
-        )}
-      >
-        <div className="flex flex-col gap-0.5 border-b border-border px-2 pb-2.5">
-          <b className="text-sm">{project.name}</b>
-          <NavLink to="/projects" className="text-xs">
-            Switch project
-          </NavLink>
-        </div>
-        {projectNav.map((group) => (
-          <div key={group.label ?? "top"} className="flex flex-col gap-px">
-            {group.label === null ? null : (
-              <span className="px-2 pb-1 text-[11px] font-medium tracking-[0.06em] text-muted uppercase">
-                {group.label}
-              </span>
-            )}
-            {group.items.map((item) =>
-              group.disabled === true ? (
-                <DisabledItem key={item.to} item={item} />
-              ) : (
-                <Item key={item.to} item={item} project={project} stale={stale} />
-              ),
-            )}
-          </div>
-        ))}
-        <div className="mt-auto flex flex-col gap-px border-t border-border pt-2.5 max-[720px]:mt-0">
-          {projectFooterNav.map((item) => (
-            <Item key={item.to} item={item} project={project} stale={stale} />
+    <Sidebar collapsible="icon">
+      <ProjectHeader project={project} />
+      <nav aria-label="Project" className="contents">
+        <SidebarContent>
+          {projectNav.map((group) => (
+            <SidebarGroup key={group.label ?? "top"} className="py-1">
+              {group.label === null ? null : <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+              <SidebarMenu>
+                {group.items.map((item) =>
+                  group.disabled === true ? (
+                    <DisabledItem key={item.to} item={item} />
+                  ) : (
+                    <Item key={item.to} item={item} project={project} stale={stale} />
+                  ),
+                )}
+              </SidebarMenu>
+            </SidebarGroup>
           ))}
-        </div>
+        </SidebarContent>
+        <SidebarFooter className="border-t border-sidebar-border">
+          <SidebarMenu>
+            {projectFooterNav.map((item) => (
+              <Item key={item.to} item={item} project={project} stale={stale} />
+            ))}
+          </SidebarMenu>
+        </SidebarFooter>
       </nav>
-    </>
+      <SidebarRail />
+    </Sidebar>
   );
 }

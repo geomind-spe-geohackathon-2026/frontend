@@ -5,10 +5,12 @@ import { hasCode } from "@/shared/api/errors";
 import { projectQuery } from "@/shared/api/projects";
 import { useRequiredParam } from "@/shared/layout/params";
 import { RunPill } from "./run-pill";
-import { Sidebar } from "./sidebar";
+import { ProjectSidebar } from "./sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import { TopBar } from "./top-bar";
 
-/** Level 3 of the shell: top bar with breadcrumb and run pill, project sidebar, and the page. */
+/** Level 3 of the shell: collapsible project sidebar, top bar with breadcrumb and run pill, and the page. */
 export function ProjectLayout() {
   const projectId = useRequiredParam("projectId");
   const location = useLocation();
@@ -41,16 +43,24 @@ export function ProjectLayout() {
   }
 
   return (
-    <>
-      <TopBar crumbs={toProjectCrumbs(location.pathname, project.data)}>
-        <RunPill projectId={projectId} />
-      </TopBar>
-      <div className="flex min-h-0 flex-1 max-[720px]:flex-col">
-        <Sidebar key={location.pathname} project={project.data} />
-        <main className="min-w-0 flex-1 p-[18px]">
+    <SidebarProvider className="min-h-0 flex-1">
+      <ProjectSidebar project={project.data} />
+      <SidebarInset className="min-w-0">
+        <TopBar
+          crumbs={toProjectCrumbs(location.pathname, project.data)}
+          start={
+            <>
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="h-4!" />
+            </>
+          }
+        >
+          <RunPill projectId={projectId} />
+        </TopBar>
+        <div className="min-w-0 flex-1 p-[18px]">
           <Outlet />
-        </main>
-      </div>
-    </>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

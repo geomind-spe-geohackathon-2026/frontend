@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.2.0 (2026-11-03)
+
+- Project sidebar is shadcn Sidebar: it collapses to icons (button left of the breadcrumb, or Ctrl/Cmd+B) with tooltips, and opens as a side sheet on phones. The project name and Switch project sit at its top.
+- Breadcrumb is shadcn Breadcrumb.
+
 ## 1.1.0 (2026-11-03)
 
 - shadcn/ui (Radix underneath) is the component base, in `src/components/ui`. Buttons, cards, dialogs, badges, tabs, inputs, menus and toasts on every page now use it; the hand-written versions in `shared/ui` are gone.
