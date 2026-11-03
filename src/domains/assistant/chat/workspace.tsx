@@ -140,7 +140,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
         status={
           <>
             <AutoApproveButton on={auto} onChange={setAuto} />
-            <ChatStatus {...{ projectId, chatId, runId, view }} run={run.data} />
+            <ChatStatus {...{ projectId, chatId, runId, view }} />
           </>
         }
       />

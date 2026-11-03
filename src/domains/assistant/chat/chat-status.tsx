@@ -78,41 +78,47 @@ function RunsTable({ projectId, runs }: { projectId: string; runs: Run[] }) {
   );
 }
 
-/** Under the message box: a ring like Claude's that opens what this chat used, and a log button that opens this chat's runs in a large window. */
-export function ChatStatus({ projectId, chatId, runId, view, run }: Props) {
+/** Under the message box: a ring like Claude's that opens what this chat used. The chat log button is off for now; ChatLog keeps its window for later. */
+export function ChatStatus({ projectId, chatId, runId, view }: Omit<Props, "run">) {
   const runs = useQuery({ ...chatRunsQuery(projectId, chatId ?? ""), enabled: chatId !== null });
   if (chatId === null) return null;
   return (
-    <>
-      <UsageRing
-        context={view.context}
-        window={view.window}
-        usage={view.usage}
-        cost={toTotalCost(runs.data, view, runId)}
-      />
-      <Dialog>
-        <DialogTrigger asChild>
-          <InputGroupButton size="icon-sm" aria-label="Log of this chat" title="Log of this chat">
-            <ScrollText aria-hidden="true" />
-          </InputGroupButton>
-        </DialogTrigger>
-        <DialogContent className="flex h-[calc(100svh-4rem)] max-w-[calc(100vw-4rem)] flex-col sm:max-w-[calc(100vw-4rem)]">
-          <DialogHeader>
-            <DialogTitle>Log of this chat</DialogTitle>
-            <DialogDescription>
-              The last run, what the assistant knows, and every run with its tokens and cost.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-            {runId === null ? (
-              <p className="text-muted">No run yet.</p>
-            ) : (
-              <RunPanel projectId={projectId} runId={runId} view={view} run={run} />
-            )}
-            <RunsTable projectId={projectId} runs={runs.data ?? []} />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+    <UsageRing
+      context={view.context}
+      window={view.window}
+      usage={view.usage}
+      cost={toTotalCost(runs.data, view, runId)}
+    />
+  );
+}
+
+/** A log button that opens this chat's last run, what the assistant knows, and every run with its tokens and cost, in a large window. */
+export function ChatLog({ projectId, chatId, runId, view, run }: Props) {
+  const runs = useQuery({ ...chatRunsQuery(projectId, chatId ?? ""), enabled: chatId !== null });
+  if (chatId === null) return null;
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <InputGroupButton size="icon-sm" aria-label="Log of this chat" title="Log of this chat">
+          <ScrollText aria-hidden="true" />
+        </InputGroupButton>
+      </DialogTrigger>
+      <DialogContent className="flex h-[calc(100svh-4rem)] max-w-[calc(100vw-4rem)] flex-col sm:max-w-[calc(100vw-4rem)]">
+        <DialogHeader>
+          <DialogTitle>Log of this chat</DialogTitle>
+          <DialogDescription>
+            The last run, what the assistant knows, and every run with its tokens and cost.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          {runId === null ? (
+            <p className="text-muted">No run yet.</p>
+          ) : (
+            <RunPanel projectId={projectId} runId={runId} view={view} run={run} />
+          )}
+          <RunsTable projectId={projectId} runs={runs.data ?? []} />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

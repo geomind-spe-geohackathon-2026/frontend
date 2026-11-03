@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.23 (2026-11-04)
+
+- Chat box: the log button is off for now; the usage ring stays. Each answer still links to its run's log.
+
 ## 1.1.22 (2026-11-04)
 
 - Chat box: an Auto-approve switch next to the usage ring. On, the assistant's tool approvals are answered Yes as soon as they show (questions still wait for you); remembered per project in this browser, off until turned on.

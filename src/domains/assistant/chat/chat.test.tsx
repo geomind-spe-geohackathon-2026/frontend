@@ -27,12 +27,7 @@ describe("chat page", () => {
       "aria-current",
       "page",
     );
-    await userEvent.setup().click(await screen.findByRole("button", { name: "Log of this chat" }));
-    expect((await screen.findAllByText("done")).length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: "Open full log" })).toHaveAttribute(
-      "href",
-      "/projects/example-project-1/assistant/runs/example-run-1",
-    );
+    expect(screen.queryByRole("button", { name: "Log of this chat" })).not.toBeInTheDocument();
   });
 
   it("opens the latest chat when the project has chats", async () => {
@@ -55,17 +50,6 @@ describe("chat page", () => {
       .click(await screen.findByRole("button", { name: "Usage of this chat" }));
     expect(await screen.findByText("Cost so far")).toBeVisible();
     expect(screen.getByText("Context")).toBeVisible();
-  });
-
-  it("shows the problem state the run built", async () => {
-    renderApp({ path: `${base}/example-chat-1` });
-    await userEvent.setup().click(await screen.findByRole("button", { name: "Log of this chat" }));
-    const panel = await screen.findByRole("heading", { name: "What it knows" });
-    const card = panel.closest("div")?.parentElement;
-    expect(card).not.toBeNull();
-    await waitFor(() => {
-      expect(within(card ?? document.body).getByText("Plant sized")).toBeInTheDocument();
-    });
   });
 
   it("asks for approval, continues after Approve and ends done", async () => {
