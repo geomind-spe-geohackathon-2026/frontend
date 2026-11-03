@@ -11,6 +11,24 @@ type EditorState = { spec: PlantSpec | null; layout: Layout | null };
 
 const validationDelayMs = 400;
 
+function isProblem(item: unknown): item is Problem {
+  return (
+    typeof item === "object" &&
+    item !== null &&
+    "path" in item &&
+    "code" in item &&
+    "message" in item &&
+    typeof item.path === "string" &&
+    typeof item.code === "string" &&
+    typeof item.message === "string"
+  );
+}
+
+function toWarnings(data: object | undefined): Problem[] {
+  if (data === undefined || !("warnings" in data) || !Array.isArray(data.warnings)) return [];
+  return data.warnings.filter(isProblem);
+}
+
 /** Holds the draft of a plant: spec and layout, dirty state and the debounced server check. */
 export function usePlantEditor(projectId: string, saved: Flowsheet) {
   const [state, setState] = useState<EditorState>({ spec: null, layout: null });
@@ -20,6 +38,7 @@ export function usePlantEditor(projectId: string, saved: Flowsheet) {
   const settled = useDebouncedValue(spec, validationDelayMs);
   const checked = useQuery(plantValidationQuery(projectId, settled));
   const problems: Problem[] = checked.data?.problems ?? [];
+  const warnings = toWarnings(checked.data);
   const isChecking = checked.isFetching || settled !== spec;
 
   const editSpec = (next: PlantSpec, nextLayout?: Layout) => {
@@ -46,5 +65,17 @@ export function usePlantEditor(projectId: string, saved: Flowsheet) {
   const restore = (from: Flowsheet) => {
     setState({ spec: from.structure, layout: fromLayout(from.layout) });
   };
-  return { spec, layout, dirty, problems, isChecking, editSpec, setLayout, place, reset, restore };
+  return {
+    spec,
+    layout,
+    dirty,
+    problems,
+    warnings,
+    isChecking,
+    editSpec,
+    setLayout,
+    place,
+    reset,
+    restore,
+  };
 }

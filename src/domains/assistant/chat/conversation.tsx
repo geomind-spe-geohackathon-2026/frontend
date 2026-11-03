@@ -8,11 +8,13 @@ import { Message, MessageContent } from "@/components/ai-elements/message";
 import type { ApiError } from "@/shared/api/errors";
 import type { Message as ChatMessage } from "@/shared/api/types";
 import { Blocks, finishTool } from "./blocks";
+import { MessageButtons } from "./message-actions";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { PacedMarkdown } from "./paced-markdown";
 import type { View } from "./view";
 
 type Props = {
+  projectId: string;
   messages: ChatMessage[];
   liveRunId: string | null;
   view: View;
@@ -27,18 +29,19 @@ function isActive(view: View): boolean {
   return view.status === "queued" || view.status === "running" || view.status === "waiting";
 }
 
-function UserBubble({ content }: { content: string }) {
+function UserBubble({ projectId, message }: { projectId: string; message: ChatMessage }) {
   return (
-    <Message from="user">
+    <Message from="user" className="gap-1">
       <MessageContent className="text-[length:inherit] whitespace-pre-wrap">
-        {content}
+        {message.content}
       </MessageContent>
+      <MessageButtons projectId={projectId} message={message} />
     </Message>
   );
 }
 
 /** The messages of a chat; the run being shown live draws its blocks under its user message. */
-export function Conversation({ messages, liveRunId, view, failure }: Props) {
+export function Conversation({ projectId, messages, liveRunId, view, failure }: Props) {
   const [known] = useState(() => new Set(messages.map((message) => message.id)));
 
   if (messages.length === 0) {
@@ -57,7 +60,7 @@ export function Conversation({ messages, liveRunId, view, failure }: Props) {
             const shown = !isLive || view.blocks.some(isFinish);
             if (!shown) return null;
             return (
-              <Message key={message.id} from="assistant">
+              <Message key={message.id} from="assistant" className="gap-1">
                 <MessageContent className="w-full text-[length:inherit]">
                   {known.has(message.id) ? (
                     <MarkdownText text={message.content} />
@@ -65,12 +68,13 @@ export function Conversation({ messages, liveRunId, view, failure }: Props) {
                     <PacedMarkdown text={message.content} settled={0} open={false} />
                   )}
                 </MessageContent>
+                <MessageButtons projectId={projectId} message={message} />
               </Message>
             );
           }
           return (
             <div key={message.id} className="space-y-3">
-              <UserBubble content={message.content} />
+              <UserBubble projectId={projectId} message={message} />
               {isLive ? <Blocks blocks={view.blocks} running={isActive(view)} /> : null}
             </div>
           );

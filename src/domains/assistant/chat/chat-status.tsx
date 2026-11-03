@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollText } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toShortId } from "@/lib/shortid";
 import { toDateLabel } from "@/lib/datelabel";
 import type { Run } from "@/shared/api/types";
-import { Quantity } from "@/shared/quantity/quantity";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
 import {
@@ -13,9 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { InputGroupButton } from "@/components/ui/input-group";
 import {
   Table,
   TableBody,
@@ -27,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { chatRunsQuery } from "./api";
 import { RunPanel } from "./run-panel";
+import { UsageRing } from "./usage-ring";
 import type { View } from "./view";
 
 type Props = {
@@ -78,21 +76,23 @@ function RunsTable({ projectId, runs }: { projectId: string; runs: Run[] }) {
   );
 }
 
-/** Under the message box: what this chat has cost so far and a log button that opens this chat's run, what it knows and its runs in a large window. */
+/** Under the message box: a ring like Claude's that opens what this chat used, and from there this chat's log in a large window. */
 export function ChatStatus({ projectId, chatId, runId, view, run }: Props) {
   const runs = useQuery({ ...chatRunsQuery(projectId, chatId ?? ""), enabled: chatId !== null });
+  const [logOpen, setLogOpen] = useState(false);
   if (chatId === null) return null;
   return (
     <>
-      <span className="text-[12px] text-muted-foreground" title="Cost of this chat so far">
-        <Quantity value={toTotalCost(runs.data, view, runId)} unit="USD" fractionDigits={3} />
-      </span>
-      <Dialog>
-        <DialogTrigger asChild>
-          <InputGroupButton size="icon-sm" aria-label="Log of this chat" title="Log of this chat">
-            <ScrollText aria-hidden="true" />
-          </InputGroupButton>
-        </DialogTrigger>
+      <UsageRing
+        context={view.context}
+        window={null}
+        usage={view.usage}
+        cost={toTotalCost(runs.data, view, runId)}
+        onOpenLog={() => {
+          setLogOpen(true);
+        }}
+      />
+      <Dialog open={logOpen} onOpenChange={setLogOpen}>
         <DialogContent className="flex h-[calc(100svh-4rem)] max-w-[calc(100vw-4rem)] flex-col sm:max-w-[calc(100vw-4rem)]">
           <DialogHeader>
             <DialogTitle>Log of this chat</DialogTitle>

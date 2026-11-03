@@ -1,5 +1,12 @@
 import { PlantRanges } from "./plant-ranges";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Canvas, type Issues } from "./canvas";
 import { ModuleInspector } from "./module-inspector";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
@@ -19,6 +26,9 @@ export type FlowsheetProps = {
   actions: ReturnType<typeof usePlantActions>;
   selected: string | null;
   onSelect: (id: string | null) => void;
+  onOpen: (id: string | null) => void;
+  editing: boolean;
+  onEditing: (open: boolean) => void;
   draft: ParameterDraft | null;
   onDraft: (draft: ParameterDraft | null) => void;
   onConflict: () => void;
@@ -69,54 +79,70 @@ function Inspector(props: FlowsheetProps & { moduleId: string; type: string }) {
   );
 }
 
-/** The flowsheet: canvas with problems below it, and the inspector of the selected module. */
+function ModuleDialog(props: FlowsheetProps) {
+  const { graph, selected, editing, onEditing, palette } = props;
+  const current = graph.modules.find((module) => module.id === selected);
+  const title = palette.find((item) => item.type === current?.type)?.title ?? current?.type;
+  return (
+    <Dialog modal={false} open={editing && current !== undefined} onOpenChange={onEditing}>
+      <DialogContent
+        className="flex max-h-[calc(100svh-4rem)] flex-col sm:max-w-2xl"
+        onInteractOutside={(event) => {
+          event.preventDefault();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>{current === undefined ? "Module" : current.id}</DialogTitle>
+          <DialogDescription>{title}: its name, connections and parameters.</DialogDescription>
+        </DialogHeader>
+        <div className="-mx-1 flex min-h-0 flex-col gap-4 overflow-y-auto px-1">
+          {current === undefined ? null : (
+            <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** The flowsheet: canvas, a Problems panel under it like VS Code's, the plant's ranges, and the selected module's editor in a window. */
 export function FlowsheetTab(props: FlowsheetProps) {
   const { palette, editor, actions, selected, graph } = props;
   const { modules, connections } = graph;
-  const current = modules.find((module) => module.id === selected);
   return (
-    <div className="@container">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 @5xl:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0">
-          <Canvas
-            graph={graph}
-            layout={editor.layout}
-            palette={palette}
-            issues={toIssues(props)}
-            selected={selected}
-            onSelect={props.onSelect}
-            onMove={actions.move}
-            onMoved={actions.moved}
-            onArrange={actions.arrange}
-            onConnect={actions.connect}
-            onRemoveModule={actions.remove}
-            onRemoveConnection={actions.removeConnection}
-            onDropModule={actions.add}
+    <div className="flex min-w-0 flex-col gap-3.5">
+      <Canvas
+        graph={graph}
+        layout={editor.layout}
+        palette={palette}
+        issues={toIssues(props)}
+        selected={selected}
+        onSelect={props.onOpen}
+        onMove={actions.move}
+        onMoved={actions.moved}
+        onArrange={actions.arrange}
+        onConnect={actions.connect}
+        onRemoveModule={actions.remove}
+        onRemoveConnection={actions.removeConnection}
+        onDropModule={actions.add}
+      />
+      <ProblemsPanel
+        problems={editor.problems}
+        warnings={editor.warnings}
+        connections={connections}
+        ids={modules.map((module) => module.id)}
+        onSelect={props.onOpen}
+      />
+      <Card>
+        <CardContent className="flex flex-col gap-4">
+          <PlantRanges
+            projectId={props.projectId}
+            version={props.saved.version}
+            structureDirty={props.editor.dirty}
           />
-          <ProblemsPanel
-            problems={editor.problems}
-            connections={connections}
-            ids={modules.map((module) => module.id)}
-            onSelect={props.onSelect}
-          />
-        </div>
-        <Card>
-          <CardContent className="flex flex-col gap-4">
-            {current === undefined ? (
-              <>
-                <p className="text-muted">Select a module to edit it.</p>
-                <PlantRanges
-                  projectId={props.projectId}
-                  version={props.saved.version}
-                  structureDirty={props.editor.dirty}
-                />
-              </>
-            ) : (
-              <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
-            )}
-          </CardContent>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
+      <ModuleDialog {...props} />
     </div>
   );
 }

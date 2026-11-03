@@ -2,6 +2,14 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.18 (2026-11-03)
+
+- Chat box: a small ring like Claude's replaces the cost text and log icon. It opens what the chat used (context of the last model call, tokens of the last run, cost so far) and a button to the chat's log. The ring fills once the server sends the model's context window size.
+- Chat messages: quiet buttons under each message on hover, like Claude's: Copy on every message, the time under yours, and the run's log under answers.
+- Plant: the flowsheet is about two thirds of its old height.
+- Plant: the module editor opens in a window when a module is clicked (or a problem row, or Edit module next to Add module); the "Select a module" box is gone and the plant's ranges sit under the flowsheet.
+- Plant: a Problems panel under the flowsheet like VS Code's: error and warning counts, one row per problem, and a click opens its module. Ready for the server's `warnings` list (out_of_range) and gemini 0.6.1's connection problems with no change.
+
 ## 1.1.17 (2026-11-03)
 
 - Run view ready for geomind 0.4.22: rag_search, rag_read and search_knowledge get readable names, an MCP tool (`server__tool`) shows its tool and server, and `tool.started` keeps its `mcp` server (or the older `connector`).

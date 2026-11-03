@@ -77,7 +77,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(await screen.findByRole("option", { name: "Add Doublet" })).toBeVisible();
     await userEvent.setup().keyboard("{Escape}");
     expect(await screen.findByText("1 value missing", {}, slow)).toBeVisible();
-    const missing = await screen.findByRole("region", { name: "Missing values" });
+    const missing = await screen.findByRole("region", { name: "Problems" });
     expect(missing).toHaveTextContent("params.hx.approach_temperature");
     expect(screen.getByRole("button", { name: "Save version" })).toBeDisabled();
   });
@@ -161,10 +161,23 @@ describe("Plant page", { timeout: 20000 }, () => {
     await findSave();
     await addModule(user, "HeatPump");
     expect(await screen.findByText("1 problem", {}, slow)).toBeVisible();
-    expect(screen.getByRole("region", { name: "Problems to fix before saving" })).toHaveTextContent(
+    expect(screen.getByRole("region", { name: "Problems" })).toHaveTextContent(
       "ports do not match",
     );
     expect(screen.getByRole("button", { name: "Save version" })).toBeDisabled();
+  });
+
+  it("edits a module in a window that Edit module opens again after closing", async () => {
+    renderApp({ path: `${withPlant}?module=hx` });
+    const user = userEvent.setup();
+    expect(await screen.findByLabelText("Module id", {}, slow)).toHaveValue("hx");
+    const moduleWindow = screen.getByRole("dialog", { name: "hx" });
+    await user.click(within(moduleWindow).getByRole("button", { name: "Close" }));
+    await waitFor(() => {
+      expect(screen.queryByLabelText("Module id")).not.toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: /Edit module/ }));
+    expect(await screen.findByLabelText("Module id")).toHaveValue("hx");
   });
 
   it("shows the parameter form with units and a missing mark for the selected module", async () => {

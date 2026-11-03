@@ -285,7 +285,7 @@ function FlowCanvas(props: Props) {
     <div className="flex min-w-0 flex-col gap-2">
       <div
         ref={view}
-        className="h-[max(560px,76vh)] min-w-0 overflow-hidden rounded-card border border-border bg-sunken"
+        className="h-[max(380px,50vh)] min-w-0 overflow-hidden rounded-card border border-border bg-sunken"
         onDragOver={(event) => {
           event.preventDefault();
         }}

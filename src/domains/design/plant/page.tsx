@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Pencil } from "lucide-react";
 import {
   flowsheetQuery,
   paletteQuery,
@@ -292,6 +293,64 @@ function PlantHistory({
   );
 }
 
+function useModuleWindow(
+  selected: string | null,
+  setParam: (key: string, value: string | null) => void,
+) {
+  const [closed, setClosed] = useState<string | null>(null);
+  const select = (id: string | null) => {
+    setParam("module", id);
+  };
+  const open = (id: string | null) => {
+    setClosed(null);
+    select(id);
+  };
+  const setEditing = (value: boolean) => {
+    setClosed(value ? null : selected);
+  };
+  const edit = () => {
+    setClosed(null);
+  };
+  return { editing: selected !== null && closed !== selected, setEditing, select, open, edit };
+}
+
+function EditModuleButton({ selected, onEdit }: { selected: string | null; onEdit: () => void }) {
+  return (
+    <Button
+      disabled={selected === null}
+      title={selected === null ? "Click a module on the flowsheet first" : `Edit ${selected}`}
+      onClick={onEdit}
+    >
+      <Pencil aria-hidden="true" />
+      Edit module
+    </Button>
+  );
+}
+
+function ModuleButtons({
+  palette,
+  selected,
+  onAdd,
+  onEdit,
+}: {
+  palette: Palette[];
+  selected: string | null;
+  onAdd: ReturnType<typeof usePlantActions>["add"];
+  onEdit: () => void;
+}) {
+  return (
+    <>
+      <AddModuleButton items={palette} onAdd={onAdd} />
+      <EditModuleButton selected={selected} onEdit={onEdit} />
+    </>
+  );
+}
+
+function toCanSave(editor: Editor, draft: ParameterDraft | null, flow: PlantSaveFlow): boolean {
+  const hasBlocking = editor.problems.some((problem) => problem.code !== "missing_value");
+  return editor.dirty && !hasBlocking && !editor.isChecking && draft === null && !flow.pending;
+}
+
 function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   const editor = usePlantEditor(projectId, saved);
   const params = usePlantParams();
@@ -299,18 +358,14 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   const [draft, setDraft] = useState<ParameterDraft | null>(null);
   const [isPickingTemplate, setIsPickingTemplate] = useState(false);
   const flow = useSaveFlow(projectId);
-  const select = (id: string | null) => {
-    setParam("module", id);
-  };
+  const { editing, setEditing, select, open, edit } = useModuleWindow(selected, setParam);
   const actions = usePlantActions(projectId, saved, editor, select);
   const graph = usePlantGraph(editor.spec, catalog, palette);
   useAutoLayout(graph, editor.layout, editor.place);
   useFollowMissing(params, editor, graph);
   const dirty = editor.dirty || draft !== null;
   const blocker = useUnsavedGuard(dirty);
-  const hasBlocking = editor.problems.some((problem) => problem.code !== "missing_value");
-  const canSave =
-    editor.dirty && !hasBlocking && !editor.isChecking && draft === null && !flow.pending;
+  const canSave = toCanSave(editor, draft, flow);
   const discard = () => {
     editor.reset();
     setDraft(null);
@@ -322,9 +377,11 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
         {...{ editor, graph, selected, dirty, canSave }}
         version={saved.version}
         error={flow.error}
-        add={<AddModuleButton items={palette} onAdd={actions.add} />}
+        add={
+          <ModuleButtons palette={palette} selected={selected} onAdd={actions.add} onEdit={edit} />
+        }
         history={<PlantHistory projectId={projectId} current={saved.version} onRestore={restore} />}
-        onSelect={select}
+        onSelect={open}
         onTemplate={() => {
           setIsPickingTemplate(true);
         }}
@@ -334,8 +391,10 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
         }}
       />
       <FlowsheetTab
-        {...{ projectId, saved, palette, graph, editor, actions, selected, draft }}
+        {...{ projectId, saved, palette, graph, editor, actions, selected, draft, editing }}
         onSelect={select}
+        onOpen={open}
+        onEditing={setEditing}
         onDraft={setDraft}
         onConflict={() => {
           flow.setHasConflict(true);

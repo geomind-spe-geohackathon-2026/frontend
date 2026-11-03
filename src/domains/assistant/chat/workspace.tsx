@@ -49,6 +49,24 @@ function toFailure(error: Error | null): string | null {
   return error === null ? null : error.message;
 }
 
+function RunRequest({ projectId, runId, view }: { projectId: string; runId: string; view: View }) {
+  const answer = useAnswerRun(projectId, runId);
+  if (view.request === null) return null;
+  const { request } = view;
+  return (
+    <div className="sticky bottom-0">
+      <RequestCard
+        request={request}
+        pending={answer.isPending}
+        failure={toFailure(answer.error)}
+        onAnswer={(value) => {
+          answer.mutate({ request: request.request, answer: value });
+        }}
+      />
+    </div>
+  );
+}
+
 /** The conversation of one chat and its message box, whose log window shares the live view of the last run. */
 export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   const navigate = useNavigate();
@@ -56,7 +74,6 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   const run = useQuery({ ...runQuery(projectId, runId ?? ""), enabled: runId !== null });
   const create = useCreateChat(projectId);
   const send = useSendMessage(projectId);
-  const answer = useAnswerRun(projectId, runId ?? "");
   const cancel = useCancelRun(projectId, runId ?? "");
   const status = view.blocks.length === 0 && run.data !== undefined ? run.data.status : view.status;
   const active =
@@ -73,21 +90,16 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
       <DemoNotice />
       <CaseNotice projectId={projectId} />
       <div className="flex min-h-0 flex-1 flex-col">
-        <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
+        <Conversation
+          projectId={projectId}
+          messages={messages}
+          liveRunId={runId}
+          view={view}
+          failure={failure}
+        />
       </div>
       <SavedProfile projectId={projectId} chatId={chatId} view={view} />
-      {view.request === null || runId === null ? null : (
-        <div className="sticky bottom-0">
-          <RequestCard
-            request={view.request}
-            pending={answer.isPending}
-            failure={toFailure(answer.error)}
-            onAnswer={(value) => {
-              answer.mutate({ request: view.request?.request ?? "", answer: value });
-            }}
-          />
-        </div>
-      )}
+      {runId === null ? null : <RunRequest projectId={projectId} runId={runId} view={view} />}
       {send.isError ? <SendFailure error={send.error} /> : null}
       <Composer
         projectId={projectId}

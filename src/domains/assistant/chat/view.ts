@@ -47,6 +47,7 @@ export type View = {
   agents: Record<string, AgentNode>;
   openSteps: Record<string, string>;
   usage: Usage;
+  context: number;
   request: RunRequest | null;
   problem: ProblemState;
   problemStale: boolean;
@@ -61,6 +62,7 @@ export const emptyView: View = {
   agents: {},
   openSteps: {},
   usage: { input_tokens: 0, output_tokens: 0, cost: 0 },
+  context: 0,
   request: null,
   problem: { version: 0, document: null },
   problemStale: false,
@@ -128,7 +130,7 @@ function startStep(view: View, event: RunEvent & { type: "step.started" }): View
 function finishStep(view: View, event: RunEvent & { type: "step.finished" }): View {
   const key = toStepKey(event.agent, event.index);
   const id = view.openSteps[key];
-  if (id === undefined) return view;
+  if (id === undefined) return { ...view, context: event.usage.input_tokens };
   const rest = Object.fromEntries(Object.entries(view.openSteps).filter(([name]) => name !== key));
   const next = changeBlock(view, id, (block) =>
     block.kind === "text"
@@ -140,7 +142,7 @@ function finishStep(view: View, event: RunEvent & { type: "step.finished" }): Vi
         }
       : block,
   );
-  return { ...next, openSteps: rest };
+  return { ...next, openSteps: rest, context: event.usage.input_tokens };
 }
 
 const bestFormat = new Intl.NumberFormat("en", { maximumSignificantDigits: 4 });
