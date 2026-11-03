@@ -1,4 +1,5 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { plantVersionsQuery } from "@/domains/design/plant/api";
 import { useEffect, useRef, useState } from "react";
 import { hasActiveStudy, studiesQuery, useCancelStudy } from "@/domains/design/study/api";
 import { NewStudyDialog } from "@/domains/design/study/new-study-dialog";
@@ -26,6 +27,9 @@ function StudyStatus({ projectId, study }: { projectId: string; study: Study }) 
     <div className="flex min-w-0 flex-wrap items-center gap-2">
       <span className="truncate font-medium">{study.name}</span>
       <span className="text-muted">{progress.kind === "none" ? study.status : progress.text}</span>
+      {study.plant_pinned && study.plant_version !== null ? (
+        <span className="text-muted">on plant version {study.plant_version}</span>
+      ) : null}
       {isActive ? (
         <div className="w-32">
           <ProgressBar
@@ -62,11 +66,13 @@ export function RunBar(props: Props) {
   const { projectId } = props;
   const studies = useInfiniteQuery(studiesQuery(projectId));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const versions = useQuery({ ...plantVersionsQuery(projectId), enabled: isDialogOpen });
   const items = toItems(studies.data?.pages);
   const isActive = hasActiveStudy(items);
   useRefreshOnFinish(projectId, isActive);
   useStudyEnd(isActive, props.onStudyEnded);
   const latest = items[0];
+  const canPin = items.some((study) => Object.hasOwn(study, "plant_pinned"));
   return (
     <div
       role="toolbar"
@@ -94,7 +100,12 @@ export function RunBar(props: Props) {
           Run study
         </Button>
       </div>
-      <NewStudyDialog projectId={projectId} open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+      <NewStudyDialog
+        projectId={projectId}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        plants={canPin ? versions.data : undefined}
+      />
     </div>
   );
 }

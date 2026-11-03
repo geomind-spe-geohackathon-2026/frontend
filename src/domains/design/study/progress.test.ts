@@ -14,6 +14,7 @@ function study(change: Partial<Study>): Study {
     started_by: { kind: "user", name: "Example", run: null },
     case_version: 1,
     plant_version: 1,
+    plant_pinned: false,
     result: null,
     error: null,
     missing: [],

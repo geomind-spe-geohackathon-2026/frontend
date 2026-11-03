@@ -22,6 +22,7 @@ function toStudy(status: Study["status"]): Study {
     started_by: { kind: "user", name: "Example Admin", run: null },
     case_version: 2,
     plant_version: 3,
+    plant_pinned: false,
     result: status === "done" ? "example-result-1" : null,
     error: null,
     missing: [],
@@ -168,5 +169,29 @@ describe("Editor page", () => {
     expect(within(plant).queryByRole("heading", { name: "2 · Plant" })).toBeNull();
     await userEvent.click(within(side).getByRole("tab", { name: "Chat" }));
     expect(await within(side).findByRole("button", { name: "New chat" }, slow)).toBeVisible();
+  });
+
+  it("lets a study run on a chosen plant version when the backend supports it", async () => {
+    renderApp({ path: editor });
+    const toolbar = await screen.findByRole("toolbar", { name: "Editor" }, slow);
+    await userEvent.click(within(toolbar).getByRole("button", { name: "Run study" }));
+    const dialog = await screen.findByRole("dialog", { name: "New study" }, slow);
+    const picker = await within(dialog).findByRole("combobox", { name: "Plant version" }, slow);
+    expect(within(picker).getByRole("option", { name: "Latest saved version" })).toBeVisible();
+    expect(within(picker).getAllByRole("option").length).toBeGreaterThan(1);
+  });
+
+  it("hides the plant version choice when studies do not report plant_pinned", async () => {
+    const old: Partial<Study> = toStudy("done");
+    delete old.plant_pinned;
+    server.use(
+      http.get("*/api/v1/design/study", () => HttpResponse.json({ items: [old], next: null })),
+    );
+    renderApp({ path: editor });
+    const toolbar = await screen.findByRole("toolbar", { name: "Editor" }, slow);
+    await userEvent.click(within(toolbar).getByRole("button", { name: "Run study" }));
+    const dialog = await screen.findByRole("dialog", { name: "New study" }, slow);
+    await within(dialog).findByRole("combobox", { name: "Kind" }, slow);
+    expect(within(dialog).queryByRole("combobox", { name: "Plant version" })).toBeNull();
   });
 });

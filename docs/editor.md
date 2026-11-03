@@ -31,5 +31,6 @@ Status: done, next, or blocked (with what it waits for).
 | E12 | Report diagram: lines between Treatment and Heating crossed. Already worked on in dev (ffd7673, `shared/plant/flowsheet-layout.ts`); left to the visual check on production below, so the two changes do not collide. | handed to the visual check |
 | E13 | Phones (below 640 px): the plant is read-only with a notice, and the chat sits below it; editing stays on larger screens. | done |
 | E14 | Alternatives (geomind 0.4.6): the run panel, in the chat page and in the editor's side panel, shows `design.alternatives` from the chat state, ranked by `design.comparison`, with each verdict and the recommended design marked. The stop reasons `no_alternatives` and `no_verified` read as plain sentences. | done |
+| E15 | Plant version for a study (backend contract v51): Run study in the editor offers the saved plant versions, default the latest; the toolbar says "on plant version n" for a pinned study. The choice is hidden when studies do not report `plant_pinned` (backend v50, production until the migration). | done |
 
 Visual checks still to do on production (handed over from the backend thread): the report diagram, Plant zoom in the competition project, wide report tables on a phone, Compare labels with several designs, Days covered in the dark theme, and Plant section unit conversion.

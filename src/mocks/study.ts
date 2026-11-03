@@ -51,6 +51,7 @@ function toStudy(project: string, id: string, input: Partial<Study>): Study {
     started_by: { kind: "user", name: "Example Admin", run: null },
     case_version: 2,
     plant_version: 3,
+    plant_pinned: false,
     result: null,
     error: null,
     missing: [],
@@ -129,6 +130,9 @@ export function studyHandlers(): RequestHandler[] {
         name: body.name,
         settings: body.settings,
         status: "running",
+        ...(typeof body.plant_version === "number"
+          ? { plant_version: body.plant_version, plant_pinned: true }
+          : {}),
       });
       studies.push(study);
       return HttpResponse.json<Study>(study, { status: 201 });
