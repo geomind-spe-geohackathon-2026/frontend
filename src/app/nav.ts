@@ -8,7 +8,6 @@ import {
   Gauge,
   LayoutDashboard,
   MessageSquare,
-  PencilRuler,
   ScrollText,
   Settings,
   ShieldCheck,
@@ -35,7 +34,6 @@ const designNav: NavGroup[] = [
   {
     label: "Design",
     items: [
-      { to: "design/editor", label: "Editor", icon: PencilRuler },
       { to: "design/case", label: "1 Case", progress: "case", icon: ClipboardList },
       { to: "design/plant", label: "2 Plant", progress: "plant", icon: Workflow },
       { to: "design/study", label: "3 Study", progress: "study", icon: FlaskConical },

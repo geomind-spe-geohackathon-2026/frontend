@@ -50,7 +50,6 @@ type Props = {
   layout: Layout;
   palette: Palette[];
   issues: Issues;
-  changed?: Set<string> | undefined;
   selected: string | null;
   onSelect: (id: string | null) => void;
   onMove: (id: string, x: number, y: number) => void;
@@ -77,7 +76,6 @@ function toModuleNodes(props: Props): ModuleFlowNode[] {
       category: props.palette.find((item) => item.type === module.type)?.category ?? "",
       ports: ports.get(module.id) ?? empty,
       issue: props.issues.get(module.id) ?? "none",
-      changed: props.changed?.has(module.id) ?? false,
     },
   }));
 }

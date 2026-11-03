@@ -2,17 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { Notice } from "@/shared/ui/notice";
 import { kindsQuery, useCreateStudy } from "./api";
-import { NewStudyForm, type PlantChoice } from "./new-study-form";
+import { NewStudyForm } from "./new-study-form";
 
-type Props = {
-  projectId: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  plants?: PlantChoice[] | undefined;
-};
+type Props = { projectId: string; open: boolean; onOpenChange: (open: boolean) => void };
 
-/** The New study dialog: loads the study kinds and creates the study; given plant versions, it lets the user pick one. */
-export function NewStudyDialog({ projectId, open, onOpenChange, plants }: Props) {
+/** The New study dialog: loads the study kinds and creates the study. */
+export function NewStudyDialog({ projectId, open, onOpenChange }: Props) {
   const kinds = useQuery(kindsQuery());
   const create = useCreateStudy(projectId);
   return (
@@ -27,7 +22,6 @@ export function NewStudyDialog({ projectId, open, onOpenChange, plants }: Props)
           <NewStudyForm
             projectId={projectId}
             kinds={kinds.data}
-            plants={plants}
             error={create.error}
             pending={create.isPending}
             onSubmit={(input) => {
