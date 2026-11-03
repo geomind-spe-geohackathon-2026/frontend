@@ -15,11 +15,11 @@ describe("breadcrumbs", () => {
     ]);
   });
 
-  it("shows section and page inside a project", () => {
+  it("shows the chat in the main panel while a design step is open", () => {
     const labels = toProjectCrumbs("/projects/p1/design/plant", project).map(
       (crumb) => crumb.label,
     );
-    expect(labels).toEqual(["Projects", "Plant A", "Design", "2 Plant"]);
+    expect(labels).toEqual(["Projects", "Plant A", "Chat"]);
   });
 
   it("matches nested routes such as a run log", () => {

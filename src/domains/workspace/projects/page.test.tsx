@@ -12,13 +12,16 @@ describe("projects home", () => {
 
   it("shows a card per project with owner and progress", async () => {
     renderApp({ path: "/projects" });
-    const card = await screen.findByRole("link", { name: /Example district plant/ });
-    expect(card).toHaveAttribute("href", "/projects/example-project-1");
+    const link = await screen.findByRole("link", { name: /Example district plant/ });
+    expect(link).toHaveAttribute("href", "/projects/example-project-1");
+    const card = link.closest("[data-slot=project-card]");
     expect(card).toHaveTextContent("Owner Example Admin");
     expect(card).toHaveTextContent("Case: complete");
-    expect(screen.getByRole("link", { name: /Example campus plant/ })).toHaveTextContent(
-      "Case: 2 missing",
-    );
+    expect(
+      screen
+        .getByRole("link", { name: /Example campus plant/ })
+        .closest("[data-slot=project-card]"),
+    ).toHaveTextContent("Case: 2 missing");
   });
 
   it("shows the chat and run counts of a project", async () => {
@@ -30,7 +33,8 @@ describe("projects home", () => {
   it("filters by name from the search box and keeps the search in the URL", async () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
-    await user.type(await screen.findByRole("searchbox", { name: "Search projects" }), "campus");
+    await user.click(await screen.findByRole("button", { name: "Search projects" }));
+    await user.type(screen.getByRole("searchbox", { name: "Search projects" }), "campus");
     await screen.findByRole("link", { name: /Example campus plant/ });
     expect(screen.queryByRole("link", { name: /Example district plant/ })).not.toBeInTheDocument();
     expect(router.state.location.search).toBe("?q=campus");

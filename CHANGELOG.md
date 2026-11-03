@@ -2,6 +2,15 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.10 (2026-11-03)
+
+- One sidebar everywhere: Geomind and the sidebar toggle at the top; New (opens New project), Search (projects and the chats of the open project), Projects and Scheduled (soon); then Pinned; then the open project with Overview, Runs and logs, Documents, Project settings and its chats; the user menu at the bottom.
+- Pin projects (from the card menu) and chats (from the chat menu); pins are kept in this browser.
+- Overview, Runs and logs, Documents and Project settings open in the main panel. Case, Plant, Study, Results and Report open in the Design panel next to the chat, switched with toggle buttons in its title bar, each with its progress dot.
+- One top bar. The border between chat and Design panel can be dragged and turns blue while dragging.
+- Projects page: a search icon opens the search box; a sort icon offers Last updated, Date created and Alphabetical.
+- The chat code loads on demand again, so the first page load is smaller.
+
 ## 1.1.9 (2026-11-03)
 
 - Laid out like a chat app: the chat is always the main panel and a project opens on it. Case, Plant, Study, Results, Report, Overview, Runs and logs, Documents and Project settings open in a side panel next to the chat, with Expand and Close.

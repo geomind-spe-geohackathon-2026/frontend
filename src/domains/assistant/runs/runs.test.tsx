@@ -24,7 +24,8 @@ describe("runs page", () => {
   it("opens the log when a row is clicked", async () => {
     const user = userEvent.setup();
     renderApp({ path: base });
-    await user.click(await screen.findByText("Design the example plant"));
+    const table = await screen.findByRole("table", { name: /Runs of this project/ });
+    await user.click(within(table).getByText("Design the example plant"));
     expect(await screen.findByRole("heading", { name: /Run/ })).toBeVisible();
   });
 

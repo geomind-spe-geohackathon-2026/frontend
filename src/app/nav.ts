@@ -21,19 +21,18 @@ export type NavItem = { to: string; label: string; icon: LucideIcon; progress?: 
 
 export type NavGroup = { label: string | null; items: NavItem[]; disabled?: boolean };
 
-const designNav: NavGroup[] = [
+/** The design steps; they open in the Design panel next to the chat. */
+export const designItems: NavItem[] = [
+  { to: "design/case", label: "Case", progress: "case", icon: ClipboardList },
+  { to: "design/plant", label: "Plant", progress: "plant", icon: Workflow },
+  { to: "design/study", label: "Study", progress: "study", icon: FlaskConical },
+  { to: "design/results", label: "Results", progress: "results", icon: ChartColumn },
+  { to: "design/report", label: "Report", progress: "report", icon: FileText },
+];
+
+const pageNav: NavGroup[] = [
   {
-    label: "Design",
-    items: [
-      { to: "design/case", label: "1 Case", progress: "case", icon: ClipboardList },
-      { to: "design/plant", label: "2 Plant", progress: "plant", icon: Workflow },
-      { to: "design/study", label: "3 Study", progress: "study", icon: FlaskConical },
-      { to: "design/results", label: "4 Results", progress: "results", icon: ChartColumn },
-      { to: "design/report", label: "5 Report", progress: "report", icon: FileText },
-    ],
-  },
-  {
-    label: "Project",
+    label: null,
     items: [
       { to: "overview", label: "Overview", icon: LayoutDashboard },
       { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
@@ -55,9 +54,9 @@ const operationNav: NavGroup[] = [
   },
 ];
 
-/** The sidebar groups; Operation shows only with VITE_FEATURE_OPERATION. */
+/** The project pages in the sidebar, which open in the main panel; Operation shows only with VITE_FEATURE_OPERATION. */
 export const projectNav: NavGroup[] =
-  import.meta.env.VITE_FEATURE_OPERATION === "true" ? [...designNav, ...operationNav] : designNav;
+  import.meta.env.VITE_FEATURE_OPERATION === "true" ? [...pageNav, ...operationNav] : pageNav;
 
 export type Crumb = { label: string; to?: string };
 
@@ -70,16 +69,12 @@ export function toHomeCrumbs(pathname: string): Crumb[] {
   return [{ label: "Projects", to: "/projects" }, { label: page }];
 }
 
-/** The nav item of a page path inside a project (`design/case`, `assistant/runs/run-1`), if any. */
-export function toNavItem(rest: string): NavItem | undefined {
-  for (const group of projectNav) {
-    const item = group.items.find((candidate) => rest.startsWith(candidate.to));
-    if (item !== undefined) return item;
-  }
-  return undefined;
+/** The design step of a page path inside a project (`design/case`), if it is one. */
+export function toDesignItem(rest: string): NavItem | undefined {
+  return designItems.find((item) => rest.startsWith(item.to));
 }
 
-/** Breadcrumb of a page inside a project: Projects, project, section, page. */
+/** Breadcrumb of the main panel inside a project: Projects, project, page (the chat while a design step is open). */
 export function toProjectCrumbs(pathname: string, project: { id: string; name: string }): Crumb[] {
   const base = `/projects/${project.id}`;
   const rest = pathname.slice(base.length + 1);
@@ -87,13 +82,12 @@ export function toProjectCrumbs(pathname: string, project: { id: string; name: s
     { label: "Projects", to: "/projects" },
     { label: project.name, to: `${base}/assistant/chat` },
   ];
-  if (rest.startsWith("assistant/chat")) return [...head, { label: "Chat" }];
+  if (rest.startsWith("assistant/chat") || toDesignItem(rest) !== undefined) {
+    return [...head, { label: "Chat" }];
+  }
   for (const group of projectNav) {
     const item = group.items.find((candidate) => rest.startsWith(candidate.to));
-    if (item === undefined) continue;
-    return group.label === "Design"
-      ? [...head, { label: group.label }, { label: item.label }]
-      : [...head, { label: item.label }];
+    if (item !== undefined) return [...head, { label: item.label }];
   }
   return head;
 }

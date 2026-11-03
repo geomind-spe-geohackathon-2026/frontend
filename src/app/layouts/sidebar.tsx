@@ -1,15 +1,17 @@
-import type { ReactNode } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
-import { FolderOpen, SquarePen } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { projectNav, type NavItem, type ProgressKey } from "@/app/nav";
+import { CalendarClock, Ellipsis, FolderOpen, MessageSquare, Plus, Search } from "lucide-react";
+import { projectNav, toDesignItem, type NavItem } from "@/app/nav";
 import { ChatList } from "@/domains/assistant/chat/chat-list";
-import { useShownChat } from "./shown-chat";
-import { UserMenu } from "./user-menu";
-import { toStaleSteps } from "@/domains/workspace/overview/stale";
-import { resultsQuery } from "@/shared/api/results";
-import type { Project, ProgressStep } from "@/shared/api/types";
+import { togglePin, usePins, type Pin } from "@/shared/layout/pins";
+import type { Project } from "@/shared/api/types";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -18,79 +20,47 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/shared/ui/logo";
-import { cn } from "@/lib/cn";
+import { useShownChat } from "./shown-chat";
+import { UserMenu } from "./user-menu";
+
+const NewProjectDialog = lazy(() =>
+  import("@/domains/workspace/projects/new-project-dialog").then((module) => ({
+    default: module.NewProjectDialog,
+  })),
+);
+const SearchDialog = lazy(() =>
+  import("./search-dialog").then((module) => ({ default: module.SearchDialog })),
+);
 
 type Props = { project: Project };
 
-const dotTone: Record<ProgressStep["state"], string> = {
-  empty: "bg-border",
-  incomplete: "bg-warn",
-  ready: "bg-ok",
-  running: "bg-accent",
-  done: "bg-ok",
-};
+const linkClass =
+  "text-sidebar-foreground no-underline data-[active=true]:text-sidebar-accent-foreground";
 
-function toMissing(step: ProgressStep | undefined): ReactNode {
-  const count = /(\d+) missing/.exec(step?.label ?? "")?.[1];
-  if (count === undefined) return null;
-  return (
-    <Badge variant="warn" className="px-1.5 py-0 text-[10.5px]">
-      {count}
-    </Badge>
-  );
-}
-
-function toShown(project: Project, key: ProgressKey, stale: ReadonlySet<string>): ProgressStep {
-  return stale.has(key) ? { state: "incomplete", label: "Out of date" } : project.progress[key];
-}
-
-function StatusDot({ step }: { step: ProgressStep }) {
-  return (
-    <>
-      <span
-        aria-hidden="true"
-        className={cn("size-2 flex-none rounded-full", dotTone[step.state])}
-      />
-      <span className="sr-only">{step.label}</span>
-    </>
-  );
-}
-
-function Item({
-  item,
-  project,
-  stale,
-}: {
-  item: NavItem;
-  project: Project;
-  stale: ReadonlySet<string>;
-}) {
+function PageItem({ item, project }: { item: NavItem; project: Project }) {
   const to = `/projects/${project.id}/${item.to}`;
   const active = useMatch({ path: to, end: false }) !== null;
-  const { chatId } = useShownChat();
-  const href = chatId === null ? to : `${to}?chat=${chatId}`;
   const { setOpenMobile } = useSidebar();
-  const progress = item.progress === undefined ? undefined : toShown(project, item.progress, stale);
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
         <NavLink
-          to={href}
-          className="text-sidebar-foreground no-underline data-[active=true]:text-sidebar-accent-foreground"
+          to={to}
+          className={linkClass}
           onClick={() => {
             setOpenMobile(false);
           }}
         >
           <item.icon aria-hidden="true" />
           <span className="min-w-0 flex-1">{item.label}</span>
-          {toMissing(progress)}
-          {progress === undefined ? null : <StatusDot step={progress} />}
         </NavLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -109,102 +79,215 @@ function DisabledItem({ item }: { item: NavItem }) {
   );
 }
 
-function ProjectHeader({ project }: Props) {
+function Brand() {
   return (
-    <SidebarHeader className="h-14 justify-center py-0">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild size="lg" tooltip="Switch project" className="h-10">
-            <Link to="/projects" className="text-foreground no-underline">
-              <Logo />
-              <span className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
-                <b className="truncate text-sm">{project.name}</b>
-                <span className="text-xs text-muted-foreground">Switch project</span>
-              </span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+    <SidebarHeader className="h-12 flex-row items-center justify-between px-3 py-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
+      <Link
+        to="/projects"
+        className="flex items-center gap-2 text-[15px] font-semibold text-foreground no-underline group-data-[collapsible=icon]:hidden"
+      >
+        <Logo />
+        Geomind
+      </Link>
+      <SidebarTrigger />
     </SidebarHeader>
   );
 }
 
-function TopItems({ project }: Props) {
-  const { setOpenMobile } = useSidebar();
-  const close = () => {
-    setOpenMobile(false);
-  };
+function MainDialogs({ open, onClose }: { open: "new" | "search" | null; onClose: () => void }) {
   return (
-    <SidebarGroup className="py-1">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild tooltip="New chat">
-            <Link
-              to={`/projects/${project.id}/assistant/chat?new`}
-              className="text-sidebar-foreground no-underline"
-              onClick={close}
+    <Suspense fallback={null}>
+      {open === "new" ? (
+        <NewProjectDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) onClose();
+          }}
+        />
+      ) : null}
+      {open === "search" ? <SearchDialog onClose={onClose} /> : null}
+    </Suspense>
+  );
+}
+
+function ScheduledItem() {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton disabled tooltip="Scheduled (soon)">
+        <CalendarClock aria-hidden="true" />
+        <span className="min-w-0 flex-1">Scheduled</span>
+        <Badge variant="off">soon</Badge>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+function MainItems() {
+  const { setOpenMobile } = useSidebar();
+  const [open, setOpen] = useState<"new" | "search" | null>(null);
+  const onProjects = useMatch({ path: "/projects", end: true }) !== null;
+  return (
+    <nav aria-label="Main">
+      <SidebarGroup className="py-1">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="New project"
+              onClick={() => {
+                setOpen("new");
+              }}
             >
-              <SquarePen aria-hidden="true" />
-              <span>New chat</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild tooltip="Projects">
-            <Link to="/projects" className="text-sidebar-foreground no-underline" onClick={close}>
-              <FolderOpen aria-hidden="true" />
-              <span>Projects</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+              <Plus aria-hidden="true" />
+              <span>New</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Search"
+              onClick={() => {
+                setOpen("search");
+              }}
+            >
+              <Search aria-hidden="true" />
+              <span>Search</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={onProjects} tooltip="Projects">
+              <Link
+                to="/projects"
+                className={linkClass}
+                onClick={() => {
+                  setOpenMobile(false);
+                }}
+              >
+                <FolderOpen aria-hidden="true" />
+                <span>Projects</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <ScheduledItem />
+        </SidebarMenu>
+      </SidebarGroup>
+      <MainDialogs
+        open={open}
+        onClose={() => {
+          setOpen(null);
+        }}
+      />
+    </nav>
+  );
+}
+
+function toPinHref(pin: Pin): string {
+  return pin.kind === "project"
+    ? `/projects/${pin.id}`
+    : `/projects/${pin.projectId}/assistant/chat/${pin.id}`;
+}
+
+function PinnedItem({ pin, active }: { pin: Pin; active: boolean }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active}>
+        <Link to={toPinHref(pin)} className={linkClass}>
+          {pin.kind === "project" ? (
+            <FolderOpen aria-hidden="true" />
+          ) : (
+            <MessageSquare aria-hidden="true" />
+          )}
+          <span className="min-w-0 flex-1 truncate">{pin.title}</span>
+        </Link>
+      </SidebarMenuButton>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuAction showOnHover aria-label={`Actions of ${pin.title}`}>
+            <Ellipsis aria-hidden="true" />
+          </SidebarMenuAction>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start">
+          <DropdownMenuItem
+            onClick={() => {
+              togglePin(pin);
+            }}
+          >
+            Unpin
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+}
+
+function PinnedItems() {
+  const pins = usePins();
+  const { pathname } = useLocation();
+  if (pins.length === 0) return null;
+  return (
+    <SidebarGroup className="py-1 group-data-[collapsible=icon]:hidden">
+      <SidebarGroupLabel>Pinned</SidebarGroupLabel>
+      <nav aria-label="Pinned">
+        <SidebarMenu>
+          {pins.map((pin) => (
+            <PinnedItem
+              key={`${pin.kind}-${pin.id}`}
+              pin={pin}
+              active={
+                pin.kind === "project" ? pathname === toPinHref(pin) : pathname.endsWith(pin.id)
+              }
+            />
+          ))}
+        </SidebarMenu>
+      </nav>
     </SidebarGroup>
   );
 }
 
-function Chats({ project }: Props) {
-  const { chatId, sidePage } = useShownChat();
+function ProjectItems({ project }: Props) {
+  const { chatId } = useShownChat();
   const location = useLocation();
+  const rest = location.pathname.slice(`/projects/${project.id}/`.length);
+  const designOpen = toDesignItem(rest) !== undefined;
   return (
-    <ChatList
-      projectId={project.id}
-      activeChatId={chatId}
-      toHref={(id) =>
-        sidePage
-          ? `${location.pathname}?chat=${id}`
-          : `/projects/${project.id}/assistant/chat/${id}`
-      }
-    />
+    <SidebarGroup className="py-1">
+      <SidebarGroupLabel className="truncate">{project.name}</SidebarGroupLabel>
+      <nav aria-label="Project">
+        {projectNav.map((group) => (
+          <SidebarMenu key={group.label ?? "pages"}>
+            {group.items.map((item) =>
+              group.disabled === true ? (
+                <DisabledItem key={item.to} item={item} />
+              ) : (
+                <PageItem key={item.to} item={item} project={project} />
+              ),
+            )}
+          </SidebarMenu>
+        ))}
+      </nav>
+      <div className="mt-2 group-data-[collapsible=icon]:hidden">
+        <ChatList
+          projectId={project.id}
+          activeChatId={chatId}
+          toHref={(id) =>
+            designOpen
+              ? `${location.pathname}?chat=${id}`
+              : `/projects/${project.id}/assistant/chat/${id}`
+          }
+        />
+      </div>
+    </SidebarGroup>
   );
 }
 
-/** The project sidebar: new chat and projects, the pages that open next to the chat, the chats, and the user menu. */
-export function ProjectSidebar({ project }: Props) {
-  const results = useQuery(resultsQuery(project.id));
-  const stale = toStaleSteps(project, results.data?.[0]);
+/** The one sidebar of the app: brand and toggle; New, Search, Projects and Scheduled; pins; the open project with its pages and chats; the user menu at the bottom. */
+export function AppSidebar({ project }: { project?: Project | undefined }) {
   return (
     <Sidebar collapsible="icon">
-      <ProjectHeader project={project} />
-      <nav aria-label="Project" className="contents">
-        <SidebarContent>
-          <TopItems project={project} />
-          {projectNav.map((group) => (
-            <SidebarGroup key={group.label ?? "top"} className="py-1">
-              {group.label === null ? null : <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
-              <SidebarMenu>
-                {group.items.map((item) =>
-                  group.disabled === true ? (
-                    <DisabledItem key={item.to} item={item} />
-                  ) : (
-                    <Item key={item.to} item={item} project={project} stale={stale} />
-                  ),
-                )}
-              </SidebarMenu>
-            </SidebarGroup>
-          ))}
-          <Chats project={project} />
-        </SidebarContent>
-      </nav>
+      <Brand />
+      <SidebarContent>
+        <MainItems />
+        <PinnedItems />
+        {project === undefined ? null : <ProjectItems project={project} />}
+      </SidebarContent>
       <SidebarFooter>
         <UserMenu />
       </SidebarFooter>

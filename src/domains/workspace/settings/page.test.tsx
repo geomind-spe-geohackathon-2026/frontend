@@ -14,7 +14,9 @@ describe("project settings", () => {
     await user.type(input, "Example renamed plant");
     await user.click(screen.getByRole("button", { name: "Save name" }));
     expect(await screen.findByText("Project renamed")).toBeVisible();
-    expect(await screen.findByText("Example renamed plant", { selector: "b" })).toBeVisible();
+    expect(
+      await screen.findByText("Example renamed plant", { selector: "[data-sidebar=group-label]" }),
+    ).toBeVisible();
   });
 
   it("saves a budget cap and shows it after the save", async () => {

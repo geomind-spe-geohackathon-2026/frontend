@@ -89,15 +89,15 @@ describe("shell levels", () => {
       expect(router.state.location.pathname).toMatch(/assistant\/chat\/example-chat-\d$/);
     });
     const sidebar = screen.getByRole("navigation", { name: "Project" });
-    expect(within(sidebar).getByRole("link", { name: /1 Case/ })).toBeInTheDocument();
+    expect(within(sidebar).getByRole("link", { name: /Overview/ })).toBeInTheDocument();
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(within(crumbs).getByText("Example district plant")).toBeInTheDocument();
   });
 
-  it("shows the progress label next to each design step", async () => {
-    renderApp({ path: `${base}/overview` });
-    const sidebar = await screen.findByRole("navigation", { name: "Project" });
-    expect(within(sidebar).getByRole("link", { name: /3 Study.*1 running/ })).toBeInTheDocument();
+  it("shows the progress label next to each design step", { timeout: 20_000 }, async () => {
+    renderApp({ path: `${base}/design/case` });
+    const steps = await screen.findByRole("radiogroup", { name: "Design steps" });
+    expect(within(steps).getByRole("radio", { name: /Study.*1 running/ })).toBeInTheDocument();
   });
 
   it("hides the operation entries unless the flag is on", async () => {

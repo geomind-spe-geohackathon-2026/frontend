@@ -25,6 +25,11 @@ beforeAll(() => {
   window.HTMLElement.prototype.scrollIntoView = () => undefined;
   window.HTMLElement.prototype.hasPointerCapture = () => false;
   window.HTMLElement.prototype.releasePointerCapture = () => undefined;
+  window.Element.prototype.getBoundingClientRect = function (this: Element) {
+    return (this.getAttribute("data-slot") ?? "").startsWith("resizable-")
+      ? new DOMRect(-10_000, -10_000, 1, 1)
+      : new DOMRect(0, 0, 0, 0);
+  };
 });
 
 beforeEach(() => {

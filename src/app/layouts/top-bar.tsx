@@ -9,37 +9,25 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Logo } from "@/shared/ui/logo";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
-type Props = { crumbs: Crumb[]; start?: ReactNode; children?: ReactNode };
-
-function Brand() {
-  return (
-    <Link
-      to="/projects"
-      className="flex items-center gap-1.5 text-[15px] font-semibold text-text no-underline"
-    >
-      <Logo />
-      Geomind
-    </Link>
-  );
-}
+type Props = { crumbs: Crumb[]; children?: ReactNode };
 
 function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
   return (
-    <Breadcrumb aria-label="Breadcrumb" className="min-w-0 max-[720px]:hidden">
-      <BreadcrumbList>
+    <Breadcrumb aria-label="Breadcrumb" className="min-w-0">
+      <BreadcrumbList className="flex-nowrap">
         {crumbs.map((crumb, index) => (
           <Fragment key={crumb.label}>
-            {index === 0 ? null : <BreadcrumbSeparator />}
-            <BreadcrumbItem>
+            {index === 0 ? null : <BreadcrumbSeparator className="max-sm:hidden" />}
+            <BreadcrumbItem className={index === crumbs.length - 1 ? "min-w-0" : "max-sm:hidden"}>
               {crumb.to === undefined && index === crumbs.length - 1 ? (
-                <BreadcrumbPage className="font-medium">{crumb.label}</BreadcrumbPage>
+                <BreadcrumbPage className="truncate font-medium">{crumb.label}</BreadcrumbPage>
               ) : crumb.to === undefined ? (
                 crumb.label
               ) : (
                 <BreadcrumbLink asChild>
-                  <Link to={crumb.to} className="text-muted no-underline">
+                  <Link to={crumb.to} className="truncate text-muted no-underline">
                     {crumb.label}
                   </Link>
                 </BreadcrumbLink>
@@ -52,11 +40,11 @@ function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
   );
 }
 
-/** The top bar of every signed-in page: brand (or a sidebar trigger), breadcrumb and optional pills. */
-export function TopBar({ crumbs, start, children }: Props) {
+/** The one top bar of the main panel: the sidebar toggle on phones, the breadcrumb and optional actions. */
+export function TopBar({ crumbs, children }: Props) {
   return (
-    <header className="flex h-12 flex-none items-center gap-2.5 bg-background px-4">
-      {start ?? <Brand />}
+    <header className="flex h-12 flex-none items-center gap-2.5 border-b bg-background px-4">
+      <SidebarTrigger className="-ml-1 md:hidden" />
       <Crumbs crumbs={crumbs} />
       <div className="flex-1" />
       {children}
