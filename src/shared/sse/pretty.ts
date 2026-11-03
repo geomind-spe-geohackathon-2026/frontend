@@ -108,14 +108,23 @@ const problemTexts: Record<string, string> = {
 const toolLabels: Record<string, string> = {
   list_files: "Listed the project documents",
   read_document: "Read a document",
+  rag_search: "Searched the files and Knowledge",
+  rag_read: "Read a document",
+  search_knowledge: "Searched the Knowledge",
 };
 
-/** A tool's name for reading: a friendly label for known tools, else the name in plain words. */
+function toWords(name: string): string {
+  const words = name.replaceAll("_", " ").replaceAll("-", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** A tool's name for reading: a friendly label for known tools, an MCP tool (`server__tool`) with its connector, else the name in plain words. */
 export function toToolName(tool: string): string {
   const label = toolLabels[tool];
   if (label !== undefined) return label;
-  const words = tool.replaceAll("_", " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
+  const split = tool.indexOf("__");
+  if (split > 0) return `${toWords(tool.slice(split + 2))} (${tool.slice(0, split)})`;
+  return toWords(tool);
 }
 
 function toProblemText(problem: ToolProblem): string {

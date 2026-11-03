@@ -4,6 +4,7 @@ The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0
 
 ## 1.1.17 (2026-11-03)
 
+- Run view ready for geomind 0.4.22: rag_search, rag_read and search_knowledge get readable names, an MCP tool (`server__tool`) shows its tool and server, and `tool.started` keeps its `mcp` server (or the older `connector`).
 - API paths follow backend 1.1.4: documents are `/workspace/rag`, MCP servers `/workspace/mcp`, the project field `mcp`. The pages keep their names (Knowledge, Library, Connectors).
 - Config editor: fields come in the order of the JSON below them (for example Air first on Site), the empty ones after.
 - Case tabs in a clearer order: Demand, Site, Utilities, Economics, Requirements, Time.

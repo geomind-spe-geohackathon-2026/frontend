@@ -30,7 +30,14 @@ export type RunEventBody =
   | { type: "run.started"; run: string; loop: string | null }
   | { type: "step.started"; index: number; model: string }
   | { type: "text.delta"; index: number; text: string; buffered?: true }
-  | { type: "tool.started"; index: number; call_id: string; tool: string; input: unknown }
+  | {
+      type: "tool.started";
+      index: number;
+      call_id: string;
+      tool: string;
+      input: unknown;
+      mcp?: string;
+    }
   | {
       type: "tool.finished";
       index: number;

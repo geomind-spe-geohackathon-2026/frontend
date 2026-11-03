@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toFailureText, toPretty, toBudgetStop, toSummary } from "./pretty";
+import { toFailureText, toPretty, toBudgetStop, toSummary, toToolName } from "./pretty";
 
 describe("toPretty", () => {
   it("lays out a Python dict as JSON", () => {
@@ -56,5 +56,16 @@ describe("toFailureText on a chat without a case", () => {
   it("says what to do instead of naming the assistant's tools", () => {
     const error = "{'error': {'message': \"case: the problem state has no case; expected one.\"}}";
     expect(toFailureText(error)).toMatch(/case is not complete yet/);
+  });
+});
+
+describe("toToolName", () => {
+  it("names the search tools and an MCP tool with its server", () => {
+    expect(toToolName("rag_search")).toBe("Searched the files and Knowledge");
+    expect(toToolName("search_knowledge")).toBe("Searched the Knowledge");
+    expect(toToolName("example-weather__hourly_temperature")).toBe(
+      "Hourly temperature (example-weather)",
+    );
+    expect(toToolName("build_plant")).toBe("Build plant");
   });
 });

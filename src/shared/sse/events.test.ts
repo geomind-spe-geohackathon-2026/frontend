@@ -5,6 +5,19 @@ import { fromEvent, fromRunId } from "./events";
 const origin = { agent: "coordinator", parent: null };
 
 describe("fromEvent", () => {
+  it("keeps the MCP server of a tool call, from mcp or the older connector field", () => {
+    const call = { ...origin, index: 0, call_id: "c1", tool: "example__forecast", input: {} };
+    expect(
+      fromEvent("tool.started", JSON.stringify({ ...call, mcp: "example" }), "3"),
+    ).toMatchObject({ mcp: "example" });
+    expect(
+      fromEvent("tool.started", JSON.stringify({ ...call, connector: "example" }), "4"),
+    ).toMatchObject({ mcp: "example" });
+    expect(
+      fromEvent("tool.started", JSON.stringify({ ...call, mcp: null }), "5"),
+    ).not.toHaveProperty("mcp");
+  });
+
   it("skips an event of a type it does not know", () => {
     expect(fromEvent("study.recorded", '{"study": "study/first"}', "9")).toBeNull();
   });

@@ -131,6 +131,19 @@ function toProblem(value: unknown): ToolProblem | null {
   };
 }
 
+function toToolStarted(fields: Fields): RunEventBody {
+  const type = "tool.started";
+  const body: RunEventBody = {
+    type,
+    index: requireNumber(fields, "index", type),
+    call_id: requireString(fields, "call_id", type),
+    tool: requireString(fields, "tool", type),
+    input: fields.input,
+  };
+  const server = fields.mcp ?? fields.connector;
+  return typeof server === "string" ? { ...body, mcp: server } : body;
+}
+
 function toDelta(fields: Fields): RunEventBody {
   const type = "text.delta";
   const body = {
@@ -158,13 +171,7 @@ function toStepBody(type: string, fields: Fields): RunEventBody | null {
     case "text.delta":
       return toDelta(fields);
     case "tool.started":
-      return {
-        type,
-        index: requireNumber(fields, "index", type),
-        call_id: requireString(fields, "call_id", type),
-        tool: requireString(fields, "tool", type),
-        input: fields.input,
-      };
+      return toToolStarted(fields);
     case "tool.finished":
       return toToolFinished(fields);
     default:
