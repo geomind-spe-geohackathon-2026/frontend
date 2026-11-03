@@ -297,12 +297,13 @@ function FlowCanvas(props: Props) {
           nodeTypes={nodeTypes}
           fitViewOptions={{ padding: fitPadding, minZoom: fitFloor }}
           className="plant-flow"
+          proOptions={{ hideAttribution: true }}
           minZoom={overviewZoom}
           isValidConnection={(connection) => isAllowed(props, connection)}
           {...toFlowHandlers(props)}
         >
           <Background />
-          <Controls showInteractive={false} />
+          <Controls position="top-left" showInteractive={false} />
           <CanvasMap />
           <Panel position="top-right">
             <ArrangeButton graph={props.graph} onArrange={props.onArrange} view={view} />

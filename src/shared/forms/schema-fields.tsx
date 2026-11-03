@@ -21,6 +21,7 @@ import { ScalarControl } from "./scalar-control";
 import { FractionGroup, isFractionGroup } from "./fraction-group";
 import { FilePicker, SeriesPicker } from "./series-picker";
 import { ValueExtras } from "./value-extras";
+import { toUnitChoices } from "./units";
 
 export type NodeProps = {
   name: string;
@@ -99,7 +100,7 @@ function UnitControl({
       }}
     >
       {typeof unit === "string" && units.includes(unit) ? null : <option value="">unit</option>}
-      {units.map((option) => (
+      {toUnitChoices(units, unit).map((option) => (
         <option key={option} value={option}>
           {option}
         </option>

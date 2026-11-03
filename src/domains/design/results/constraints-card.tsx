@@ -1,7 +1,10 @@
+import { useState } from "react";
+import { Button } from "@/shared/ui/button";
 import { TableScroll } from "@/shared/ui/table-scroll";
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
 import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/types";
+import { toCheckTitle, toModuleName } from "./names";
 
 type Tone = "ok" | "bad" | "off";
 
@@ -40,10 +43,10 @@ function Row({ constraint }: { constraint: Constraint }) {
   return (
     <tr>
       <th scope="row" className="text-left font-medium">
-        {constraint.title}
+        {toCheckTitle(constraint.title)}
         {constraint.module === null ? null : (
-          <Chip tone="off" className="ml-1.5 font-mono">
-            {constraint.module}
+          <Chip tone="off" className="ml-1.5">
+            {toModuleName(constraint.module)}
           </Chip>
         )}
       </th>
@@ -60,8 +63,31 @@ function Row({ constraint }: { constraint: Constraint }) {
   );
 }
 
-/** The constraint checks of a result: a summary chip and one row per check with its status and message. */
+function toImportant(constraints: Constraint[]): Constraint[] {
+  return constraints.filter((constraint) => constraint.status !== "pass" || constraint.near);
+}
+
+function MoreChecks({
+  shown,
+  total,
+  onToggle,
+}: {
+  shown: number;
+  total: number;
+  onToggle: () => void;
+}) {
+  if (shown === total) return null;
+  return (
+    <Button className="mt-2" onClick={onToggle}>
+      Show all {total} checks
+    </Button>
+  );
+}
+
+/** The constraint checks of a result: a summary chip, the checks that failed or sit at their limit, and the rest on request. */
 export function ConstraintsCard({ result }: { result: ResultDetail }) {
+  const [all, setAll] = useState(false);
+  const rows = all ? result.constraints : toImportant(result.constraints);
   return (
     <Card>
       <CardHeader>
@@ -71,7 +97,8 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
       <CardBody>
         {result.constraints.length === 0 ? (
           <p className="text-muted">No constraint checks in this result.</p>
-        ) : (
+        ) : null}
+        {rows.length === 0 ? null : (
           <TableScroll label="Constraint checks">
             <table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
               <caption className="sr-only">Constraint checks of {result.name}</caption>
@@ -91,13 +118,20 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
                 </tr>
               </thead>
               <tbody>
-                {result.constraints.map((constraint) => (
+                {rows.map((constraint) => (
                   <Row key={constraint.name} constraint={constraint} />
                 ))}
               </tbody>
             </table>
           </TableScroll>
         )}
+        <MoreChecks
+          shown={rows.length}
+          total={result.constraints.length}
+          onToggle={() => {
+            setAll(true);
+          }}
+        />
       </CardBody>
     </Card>
   );

@@ -64,10 +64,10 @@ async function findSave() {
 }
 
 describe("Plant page", { timeout: 20000 }, () => {
-  it("shows the modules by gemini class name, the palette and the missing values", async () => {
+  it("shows the modules by name, the palette and the missing values", async () => {
     renderApp({ path: withPlant });
     await findSave();
-    expect((await screen.findAllByText("HeatExchanger", {}, slow)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText("Heat Exchanger", {}, slow)).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Add Doublet" })).toBeVisible();
     expect(await screen.findByText("1 value missing", {}, slow)).toBeVisible();
     const missing = await screen.findByRole("region", { name: "Missing values" });
@@ -89,11 +89,11 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    expect((await screen.findAllByText("HeatExchanger", {}, slow)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText("Heat Exchanger", {}, slow)).length).toBeGreaterThan(0);
     await user.click(screen.getByRole("button", { name: "Add HeatPump" }));
     await screen.findByLabelText("Module id", {}, slow);
-    expect(screen.getAllByText("HeatExchanger").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("HeatingGrid").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Heat Exchanger").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Heating Grid").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText("hx"));
     expect(await screen.findByLabelText("Module id")).toHaveValue("hx");
     expect(screen.queryByRole("dialog", { name: "Unsaved changes" })).not.toBeInTheDocument();

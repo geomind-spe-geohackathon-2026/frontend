@@ -53,9 +53,9 @@ describe("CapacityTiles", () => {
     reason: null,
   };
 
-  it("keeps the module id and says the peak and the share used", () => {
+  it("names the module and says the peak and the share used", () => {
     render(<CapacityTiles items={[item]} label="Capacities" />);
-    expect(screen.getByText("d0")).toBeVisible();
+    expect(screen.getByText("Doublet 1")).toBeVisible();
     expect(screen.getByText("Production pump")).toBeVisible();
     expect(screen.getByText("peak 150 m3/h, 50% of the rating")).toBeVisible();
   });

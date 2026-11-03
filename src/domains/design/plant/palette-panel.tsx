@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { labelOf } from "@/shared/forms/json-schema";
 import { moduleDragType } from "./canvas";
@@ -8,15 +8,6 @@ import type { Palette } from "@/shared/api/types";
 type Props = { items: Palette[]; onAdd: (type: string) => void };
 
 const plantCategory = "plants";
-
-function BreakableName({ name }: { name: string }) {
-  return toWords(name).map((word, index) => (
-    <Fragment key={`${word}-${String(index)}`}>
-      {index === 0 ? null : <wbr />}
-      {word}
-    </Fragment>
-  ));
-}
 
 function ModuleList({ items, onAdd }: Props) {
   return (
@@ -36,7 +27,7 @@ function ModuleList({ items, onAdd }: Props) {
               onAdd(item.type);
             }}
           >
-            <BreakableName name={item.title} />
+            {toWords(item.title).join(" ")}
           </button>
         </li>
       ))}

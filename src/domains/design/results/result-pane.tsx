@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { projectQuery } from "@/shared/api/projects";
+import { isOutOfDate } from "@/shared/api/results";
 import { Button } from "@/shared/ui/button";
 import { Notice } from "@/shared/ui/notice";
 import { showToast } from "@/shared/ui/toast";
@@ -50,11 +52,18 @@ function AdoptButton({ projectId, resultId }: Props) {
 /** One result: key figures, capacities, days covered and constraint checks, with a link to make a report. */
 export function ResultPane({ projectId, resultId }: Props) {
   const result = useQuery(resultQuery(projectId, resultId));
+  const project = useQuery(projectQuery(projectId));
   if (result.isPending) return <Notice status="loading" what="the result" />;
   if (result.isError) return <Notice status="failed" error={result.error} />;
   const data = result.data;
   return (
     <>
+      {project.data !== undefined && isOutOfDate(project.data, data) ? (
+        <p role="status" className="mb-3.5 rounded-control border border-warn bg-sunken px-3 py-2">
+          The Case or the Plant changed after this result.{" "}
+          <Link to={`/projects/${projectId}/design/study`}>Run a new study</Link> to update it.
+        </p>
+      ) : null}
       <div className="mb-3.5 flex justify-end gap-2">
         <AdoptButton projectId={projectId} resultId={data.id} />
         <Button asChild variant="primary">
@@ -74,9 +83,16 @@ export function ResultPane({ projectId, resultId }: Props) {
       {data.capacities.length > 0 ? (
         <CapacityTiles items={data.capacities} label="Capacities" />
       ) : null}
-      {data.sizes.length > 0 ? <CapacityTiles items={data.sizes} label="Sizes" /> : null}
       <CoverageCard coverage={data.coverage} />
       <ConstraintsCard result={data} />
+      {data.sizes.length > 0 ? (
+        <details className="mt-3.5">
+          <summary className="cursor-pointer text-muted">Pipes and other sizes</summary>
+          <div className="mt-2">
+            <CapacityTiles items={data.sizes} label="Sizes" />
+          </div>
+        </details>
+      ) : null}
     </>
   );
 }

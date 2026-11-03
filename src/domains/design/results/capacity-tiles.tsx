@@ -1,6 +1,7 @@
-import { formatFigure } from "@/shared/quantity/figure";
+import { formatFigure, humanise } from "@/shared/quantity/figure";
 import { Card, CardBody } from "@/shared/ui/card";
 import type { Capacity } from "@/shared/api/types";
+import { toModuleName } from "./names";
 
 type Props = { items: Capacity[]; label: string };
 
@@ -10,7 +11,7 @@ function toUse(item: Capacity): string {
   return `peak ${formatFigure(item.peak)} ${item.peak_unit}, ${share}`;
 }
 
-/** One tile per rated module: its id and kind, the rating, and how much of it the run used. */
+/** One tile per rated module: its name and kind, the rating, and how much of it the run used. */
 export function CapacityTiles({ items, label }: Props) {
   return (
     <section aria-label={label} className="mb-3.5">
@@ -20,8 +21,10 @@ export function CapacityTiles({ items, label }: Props) {
           <li key={item.name} className="min-w-0">
             <Card>
               <CardBody>
-                <div className="font-mono text-[12.5px] break-words">{item.title}</div>
-                <div className="text-[12px] text-muted">{item.kind}</div>
+                <div className="font-medium break-words">{toModuleName(item.title)}</div>
+                {item.kind === humanise(item.title) ? null : (
+                  <div className="text-[12px] text-muted">{item.kind}</div>
+                )}
                 <div className="mt-1 text-[20px] font-semibold tabular-nums">
                   {item.value === null ? "No value" : formatFigure(item.value)}{" "}
                   <span className="text-[12px] font-normal text-muted">{item.unit}</span>

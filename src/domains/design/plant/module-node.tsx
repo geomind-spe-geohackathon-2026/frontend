@@ -2,7 +2,7 @@ import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { cn } from "@/lib/cn";
 import { headerHeight, portRowHeight } from "@/shared/plant/auto-layout";
 import { toStreamColor } from "@/shared/plant/stream-colors";
-import type { PortKinds } from "@/shared/plant/spec";
+import { toWords, type PortKinds } from "@/shared/plant/spec";
 
 export type ModuleNodeData = {
   title: string;
@@ -52,7 +52,7 @@ function PortRow({
   );
 }
 
-/** A flowsheet node: gemini class name as title, the module id, and a coloured handle for every known port. */
+/** A flowsheet node: the class name in words as title, the module id, and a coloured handle for every known port. */
 export function ModuleNode({ data, selected }: NodeProps<ModuleFlowNode>) {
   return (
     <div
@@ -64,7 +64,7 @@ export function ModuleNode({ data, selected }: NodeProps<ModuleFlowNode>) {
     >
       <div className="px-3 pt-2" style={{ height: headerHeight }}>
         <p className="truncate text-[15px] leading-5 font-medium" title={data.title}>
-          {data.title}
+          {toWords(data.title).join(" ")}
         </p>
         <p className="truncate font-mono text-[13px] leading-5 text-muted" title={data.moduleId}>
           {data.moduleId}
