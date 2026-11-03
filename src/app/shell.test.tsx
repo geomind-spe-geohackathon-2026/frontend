@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
@@ -69,10 +69,10 @@ describe("auth guard", () => {
 });
 
 describe("shell levels", () => {
-  it("has the top bar and no project sidebar on the projects home", async () => {
+  it("has the main sidebar and no project sidebar on the projects home", async () => {
     renderApp({ path: "/projects" });
     expect(await screen.findByRole("heading", { name: "Your projects" })).toBeInTheDocument();
-    expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Project" })).not.toBeInTheDocument();
   });
 
@@ -82,10 +82,12 @@ describe("shell levels", () => {
     expect(router.state.location.pathname).toBe("/projects");
   });
 
-  it("opens the overview from a project path and shows the sidebar and breadcrumb", async () => {
+  it("opens the chat from a project path and shows the sidebar and breadcrumb", async () => {
     const { router } = renderApp({ path: base });
-    expect(await screen.findByRole("heading", { name: "Overview" })).toBeInTheDocument();
-    expect(router.state.location.pathname).toBe(`${base}/overview`);
+    expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(router.state.location.pathname).toMatch(/assistant\/chat\/example-chat-\d$/);
+    });
     const sidebar = screen.getByRole("navigation", { name: "Project" });
     expect(within(sidebar).getByRole("link", { name: /1 Case/ })).toBeInTheDocument();
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });

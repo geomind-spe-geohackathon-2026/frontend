@@ -117,7 +117,7 @@ function NewProjectForm() {
 
   function handleCreated(project: { id: string }) {
     toast("Project created");
-    void navigate(`/projects/${project.id}/overview`);
+    void navigate(`/projects/${project.id}`);
   }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {

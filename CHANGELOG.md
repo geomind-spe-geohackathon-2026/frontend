@@ -2,6 +2,12 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.9 (2026-11-03)
+
+- Laid out like a chat app: the chat is always the main panel and a project opens on it. Case, Plant, Study, Results, Report, Overview, Runs and logs, Documents and Project settings open in a side panel next to the chat, with Expand and Close.
+- The sidebar holds New chat, Projects, the pages, the chats of the project (rename and delete from each chat's menu) and the user menu at the bottom. The projects list, account and users open in the main panel with the same sidebar.
+- The Plant flowsheet fits a narrow panel: the inspector moves under the canvas when there is no room beside it.
+
 ## 1.1.8 (2026-11-03)
 
 - The look is the official shadcn/ui theme: white pages, neutral greys, blue primary, Inter font, shadcn radius and card spacing. Light is the default theme; dark and system stay in the user menu.

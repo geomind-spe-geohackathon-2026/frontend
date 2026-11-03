@@ -8,7 +8,7 @@ describe("account page", () => {
   it("shows the profile of the signed-in user", async () => {
     renderApp({ path: "/account" });
     expect(await screen.findByText(exampleAdmin.user.email)).toBeVisible();
-    expect(screen.getByText(exampleAdmin.user.name)).toBeVisible();
+    expect(screen.getAllByText(exampleAdmin.user.name).length).toBeGreaterThan(1);
   });
 
   it("shows the server error for a wrong current password and stays signed in", async () => {

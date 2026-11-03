@@ -7,7 +7,6 @@ import {
   FlaskConical,
   Gauge,
   LayoutDashboard,
-  MessageSquare,
   ScrollText,
   Settings,
   ShieldCheck,
@@ -23,14 +22,6 @@ export type NavItem = { to: string; label: string; icon: LucideIcon; progress?: 
 export type NavGroup = { label: string | null; items: NavItem[]; disabled?: boolean };
 
 const designNav: NavGroup[] = [
-  { label: null, items: [{ to: "overview", label: "Overview", icon: LayoutDashboard }] },
-  {
-    label: "Assistant",
-    items: [
-      { to: "assistant/chat", label: "Chat", icon: MessageSquare },
-      { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
-    ],
-  },
   {
     label: "Design",
     items: [
@@ -39,6 +30,15 @@ const designNav: NavGroup[] = [
       { to: "design/study", label: "3 Study", progress: "study", icon: FlaskConical },
       { to: "design/results", label: "4 Results", progress: "results", icon: ChartColumn },
       { to: "design/report", label: "5 Report", progress: "report", icon: FileText },
+    ],
+  },
+  {
+    label: "Project",
+    items: [
+      { to: "overview", label: "Overview", icon: LayoutDashboard },
+      { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
+      { to: "documents", label: "Documents", icon: Files },
+      { to: "settings", label: "Project settings", icon: Settings },
     ],
   },
 ];
@@ -59,11 +59,6 @@ const operationNav: NavGroup[] = [
 export const projectNav: NavGroup[] =
   import.meta.env.VITE_FEATURE_OPERATION === "true" ? [...designNav, ...operationNav] : designNav;
 
-export const projectFooterNav: NavItem[] = [
-  { to: "documents", label: "Documents", icon: Files },
-  { to: "settings", label: "Project settings", icon: Settings },
-];
-
 export type Crumb = { label: string; to?: string };
 
 const homeLabels: Record<string, string> = { "/account": "Account", "/users": "Users" };
@@ -75,21 +70,30 @@ export function toHomeCrumbs(pathname: string): Crumb[] {
   return [{ label: "Projects", to: "/projects" }, { label: page }];
 }
 
+/** The nav item of a page path inside a project (`design/case`, `assistant/runs/run-1`), if any. */
+export function toNavItem(rest: string): NavItem | undefined {
+  for (const group of projectNav) {
+    const item = group.items.find((candidate) => rest.startsWith(candidate.to));
+    if (item !== undefined) return item;
+  }
+  return undefined;
+}
+
 /** Breadcrumb of a page inside a project: Projects, project, section, page. */
 export function toProjectCrumbs(pathname: string, project: { id: string; name: string }): Crumb[] {
   const base = `/projects/${project.id}`;
   const rest = pathname.slice(base.length + 1);
   const head: Crumb[] = [
     { label: "Projects", to: "/projects" },
-    { label: project.name, to: `${base}/overview` },
+    { label: project.name, to: `${base}/assistant/chat` },
   ];
-  const groups = [...projectNav, { label: null, items: projectFooterNav }];
-  for (const group of groups) {
+  if (rest.startsWith("assistant/chat")) return [...head, { label: "Chat" }];
+  for (const group of projectNav) {
     const item = group.items.find((candidate) => rest.startsWith(candidate.to));
     if (item === undefined) continue;
-    return group.label === null || group.label === "Operation"
-      ? [...head, { label: item.label }]
-      : [...head, { label: group.label }, { label: item.label }];
+    return group.label === "Design"
+      ? [...head, { label: group.label }, { label: item.label }]
+      : [...head, { label: item.label }];
   }
   return head;
 }

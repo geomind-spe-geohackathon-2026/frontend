@@ -196,7 +196,7 @@ createBrowserRouter([
 ]);
 ```
 
-- Three layout levels: sign-in (no chrome), home (top bar), project (top bar + sidebar). Layouts own chrome and `<Outlet />`; pages own content.
+- Three layout levels: sign-in (no chrome), home (sidebar + main panel), project (sidebar + chat in the main panel + page in the side panel). Layouts own chrome and `<Outlet />`; pages own content.
 - Route-level code splitting with `lazy`.
 - Loaders only where they help: guards that must redirect before render, and warming the cache with `queryClient.ensureQueryData(sameQueryOptions)`. Loaders never hold data that components fetch separately, and component data is read with `useQuery`, not `useLoaderData`, so there is one cache.
 - Protected routes: one `AuthGuard` layout route. Without a session it redirects to `/signin` and remembers the target in the URL, to return after sign-in. Role checks (admin-only `/users`) use the same pattern in a second layout route. The backend still enforces permissions.

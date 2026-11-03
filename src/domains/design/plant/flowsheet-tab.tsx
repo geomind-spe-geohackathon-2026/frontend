@@ -76,56 +76,58 @@ export function FlowsheetTab(props: FlowsheetProps) {
   const { modules, connections } = graph;
   const current = modules.find((module) => module.id === selected);
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 lg:grid-cols-[180px_minmax(0,1fr)_300px]">
-      <Card>
-        <CardContent>
-          <PalettePanel
-            items={palette}
-            onAdd={(type) => {
-              actions.add(type);
-            }}
+    <div className="@container">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 @2xl:grid-cols-[170px_minmax(0,1fr)] @5xl:grid-cols-[180px_minmax(0,1fr)_300px]">
+        <Card>
+          <CardContent>
+            <PalettePanel
+              items={palette}
+              onAdd={(type) => {
+                actions.add(type);
+              }}
+            />
+          </CardContent>
+        </Card>
+        <div className="min-w-0">
+          <Canvas
+            graph={graph}
+            layout={editor.layout}
+            palette={palette}
+            issues={toIssues(props)}
+            selected={selected}
+            onSelect={props.onSelect}
+            onMove={actions.move}
+            onMoved={actions.moved}
+            onArrange={actions.arrange}
+            onConnect={actions.connect}
+            onRemoveModule={actions.remove}
+            onRemoveConnection={actions.removeConnection}
+            onDropModule={actions.add}
           />
-        </CardContent>
-      </Card>
-      <div className="min-w-0">
-        <Canvas
-          graph={graph}
-          layout={editor.layout}
-          palette={palette}
-          issues={toIssues(props)}
-          selected={selected}
-          onSelect={props.onSelect}
-          onMove={actions.move}
-          onMoved={actions.moved}
-          onArrange={actions.arrange}
-          onConnect={actions.connect}
-          onRemoveModule={actions.remove}
-          onRemoveConnection={actions.removeConnection}
-          onDropModule={actions.add}
-        />
-        <ProblemsPanel
-          problems={editor.problems}
-          connections={connections}
-          ids={modules.map((module) => module.id)}
-          onSelect={props.onSelect}
-        />
+          <ProblemsPanel
+            problems={editor.problems}
+            connections={connections}
+            ids={modules.map((module) => module.id)}
+            onSelect={props.onSelect}
+          />
+        </div>
+        <Card className="@2xl:col-span-2 @5xl:col-span-1">
+          <CardContent className="flex flex-col gap-4">
+            {current === undefined ? (
+              <>
+                <p className="text-muted">Select a module to edit it.</p>
+                <PlantRanges
+                  projectId={props.projectId}
+                  version={props.saved.version}
+                  structureDirty={props.editor.dirty}
+                />
+              </>
+            ) : (
+              <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
+            )}
+          </CardContent>
+        </Card>
       </div>
-      <Card>
-        <CardContent className="flex flex-col gap-4">
-          {current === undefined ? (
-            <>
-              <p className="text-muted">Select a module to edit it.</p>
-              <PlantRanges
-                projectId={props.projectId}
-                version={props.saved.version}
-                structureDirty={props.editor.dirty}
-              />
-            </>
-          ) : (
-            <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

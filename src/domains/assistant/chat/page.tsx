@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { useRequiredParam } from "@/shared/layout/params";
-import { PageHeader } from "@/shared/layout/page-header";
 import { ErrorNotice } from "@/shared/sse/notice";
 import { chatsQuery } from "@/shared/sse/chats";
 import { messagesQuery } from "./api";
-import { ChatList } from "./chat-list";
 import { ChatWorkspace } from "./workspace";
 import { Notice } from "@/shared/ui/notice";
 
@@ -25,7 +23,26 @@ function ChatBody({ projectId, chatId }: { projectId: string; chatId: string }) 
   );
 }
 
-/** The chat screen: the chats of the project, the conversation with its live run, and the run panel. */
+type MainProps = { projectId: string; chatId: string | null; level: 1 | 2 };
+
+/** The chat in the main panel: the conversation with its live run, and the run panel beside or under it. */
+export function ChatMain({ projectId, chatId, level }: MainProps) {
+  const Heading = level === 1 ? "h1" : "h2";
+  return (
+    <div className="@container h-full min-h-0 overflow-y-auto px-4 pt-4 pb-3 md:px-6">
+      <Heading className="sr-only">Chat</Heading>
+      <div className="mx-auto grid h-full max-w-6xl grid-cols-1 grid-rows-[100%_auto] gap-4 @4xl:grid-cols-[minmax(0,1fr)_260px] @4xl:grid-rows-1">
+        {chatId === null ? (
+          <ChatWorkspace key="new" projectId={projectId} chatId={null} runId={null} messages={[]} />
+        ) : (
+          <ChatBody projectId={projectId} chatId={chatId} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The chat route: opens the latest chat unless a new one was asked for, and shows it in the main panel. */
 export function ChatPage() {
   const projectId = useRequiredParam("projectId");
   const chatId = useParams().chatId ?? null;
@@ -35,17 +52,5 @@ export function ChatPage() {
   if (chatId === null && !params.has("new") && latest !== undefined) {
     return <Navigate replace to={`/projects/${projectId}/assistant/chat/${latest.id}`} />;
   }
-  return (
-    <>
-      <PageHeader title="Chat" />
-      <div className="grid grid-cols-[240px_minmax(0,1fr)_260px] gap-3.5 max-[1000px]:grid-cols-1">
-        <ChatList projectId={projectId} activeChatId={chatId} />
-        {chatId === null ? (
-          <ChatWorkspace key="new" projectId={projectId} chatId={null} runId={null} messages={[]} />
-        ) : (
-          <ChatBody projectId={projectId} chatId={chatId} />
-        )}
-      </div>
-    </>
-  );
+  return <ChatMain projectId={projectId} chatId={chatId} level={1} />;
 }

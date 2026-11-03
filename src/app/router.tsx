@@ -36,7 +36,7 @@ export const routes: RouteObject[] = [
             path: "/projects/:projectId",
             Component: ProjectLayout,
             children: [
-              { index: true, element: <Navigate to="overview" replace /> },
+              { index: true, element: <Navigate to="assistant/chat" replace /> },
               ...collect((domain) => domain.project),
             ],
           },

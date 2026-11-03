@@ -26,7 +26,7 @@ describe("breadcrumbs", () => {
     const labels = toProjectCrumbs("/projects/p1/assistant/runs/r9", project).map(
       (crumb) => crumb.label,
     );
-    expect(labels).toEqual(["Projects", "Plant A", "Assistant", "Runs and logs"]);
+    expect(labels).toEqual(["Projects", "Plant A", "Runs and logs"]);
   });
 
   it("has no section for a top level page", () => {

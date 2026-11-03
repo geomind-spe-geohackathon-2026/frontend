@@ -13,7 +13,7 @@ describe("projects home", () => {
   it("shows a card per project with owner and progress", async () => {
     renderApp({ path: "/projects" });
     const card = await screen.findByRole("link", { name: /Example district plant/ });
-    expect(card).toHaveAttribute("href", "/projects/example-project-1/overview");
+    expect(card).toHaveAttribute("href", "/projects/example-project-1");
     expect(card).toHaveTextContent("Owner Example Admin");
     expect(card).toHaveTextContent("Case: complete");
     expect(screen.getByRole("link", { name: /Example campus plant/ })).toHaveTextContent(
@@ -63,14 +63,14 @@ describe("projects home", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Database is down");
   });
 
-  it("creates a project from the dialog and opens its overview", async () => {
+  it("creates a project from the dialog and opens its chat", async () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
     await user.type(screen.getByLabelText("Name"), "Example new plant");
     await user.click(screen.getByRole("button", { name: "Create" }));
-    expect(await screen.findByRole("heading", { name: "Overview" })).toBeVisible();
-    expect(router.state.location.pathname).toMatch(/^\/projects\/example-project-3\/overview$/);
+    expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeVisible();
+    expect(router.state.location.pathname).toBe("/projects/example-project-3/assistant/chat");
     expect(screen.getByText("Project created")).toBeVisible();
   });
 
@@ -83,13 +83,13 @@ describe("projects home", () => {
     expect(await screen.findByText("Enter a name for the project.")).toBeVisible();
   });
 
-  it("imports a project zip and opens its overview", async () => {
+  it("imports a project zip and opens its chat", async () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
     const file = new File(["zip"], "example-import.zip", { type: "application/zip" });
     await user.upload(await screen.findByLabelText("Project zip file"), file);
-    expect(await screen.findByRole("heading", { name: "Overview" })).toBeVisible();
-    expect(router.state.location.pathname).toBe("/projects/example-project-3/overview");
+    expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeVisible();
+    expect(router.state.location.pathname).toBe("/projects/example-project-3/assistant/chat");
   });
 
   it("offers a project zip in the dialog instead of a name", async () => {
@@ -121,9 +121,9 @@ describe("projects home", () => {
       await screen.findByRole("option", { name: "Example district plant" }),
     );
     await user.click(screen.getByRole("button", { name: "Create" }));
-    expect(await screen.findByRole("heading", { name: "Overview" })).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeVisible();
     expect(received).toEqual([{ name: "Example copy", case_from: "example-project-1" }]);
-    expect(router.state.location.pathname).toBe("/projects/example-project-3/overview");
+    expect(router.state.location.pathname).toBe("/projects/example-project-3/assistant/chat");
   });
 
   it("shows the server error when the project to copy has no case", async () => {

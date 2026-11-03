@@ -23,7 +23,7 @@ function ImportButton() {
     importZip.mutate(file, {
       onSuccess: (project) => {
         toast("Project imported");
-        void navigate(`/projects/${project.id}/overview`);
+        void navigate(`/projects/${project.id}`);
       },
     });
   }

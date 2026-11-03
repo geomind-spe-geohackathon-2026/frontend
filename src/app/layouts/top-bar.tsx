@@ -10,7 +10,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Logo } from "@/shared/ui/logo";
-import { UserMenu } from "./user-menu";
 
 type Props = { crumbs: Crumb[]; start?: ReactNode; children?: ReactNode };
 
@@ -53,15 +52,14 @@ function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
   );
 }
 
-/** The top bar of every signed-in page: brand (or a sidebar trigger), breadcrumb, optional pills, user menu. */
+/** The top bar of every signed-in page: brand (or a sidebar trigger), breadcrumb and optional pills. */
 export function TopBar({ crumbs, start, children }: Props) {
   return (
-    <header className="flex min-h-14 flex-wrap items-center gap-2.5 border-b border-border bg-background px-4 py-2 lg:px-6">
+    <header className="flex h-12 flex-none items-center gap-2.5 bg-background px-4">
       {start ?? <Brand />}
       <Crumbs crumbs={crumbs} />
       <div className="flex-1" />
       {children}
-      <UserMenu />
     </header>
   );
 }

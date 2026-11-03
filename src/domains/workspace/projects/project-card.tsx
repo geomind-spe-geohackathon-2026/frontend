@@ -18,7 +18,7 @@ function toCount(count: number, name: string): string {
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
-      to={`/projects/${project.id}/overview`}
+      to={`/projects/${project.id}`}
       className="flex min-h-[118px] flex-col gap-2 rounded-card border border-border bg-surface p-4 text-text no-underline hover:border-accent"
     >
       <h2 className="text-[15px]">{project.name}</h2>

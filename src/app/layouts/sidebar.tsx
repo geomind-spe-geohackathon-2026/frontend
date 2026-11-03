@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
-import { Link, NavLink, useMatch } from "react-router-dom";
+import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
+import { FolderOpen, SquarePen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { projectFooterNav, projectNav, type NavItem, type ProgressKey } from "@/app/nav";
+import { projectNav, type NavItem, type ProgressKey } from "@/app/nav";
+import { ChatList } from "@/domains/assistant/chat/chat-list";
+import { useShownChat } from "./shown-chat";
+import { UserMenu } from "./user-menu";
 import { toStaleSteps } from "@/domains/workspace/overview/stale";
 import { resultsQuery } from "@/shared/api/results";
 import type { Project, ProgressStep } from "@/shared/api/types";
@@ -69,13 +73,15 @@ function Item({
 }) {
   const to = `/projects/${project.id}/${item.to}`;
   const active = useMatch({ path: to, end: false }) !== null;
+  const { chatId } = useShownChat();
+  const href = chatId === null ? to : `${to}?chat=${chatId}`;
   const { setOpenMobile } = useSidebar();
   const progress = item.progress === undefined ? undefined : toShown(project, item.progress, stale);
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
         <NavLink
-          to={to}
+          to={href}
           className="text-sidebar-foreground no-underline data-[active=true]:text-sidebar-accent-foreground"
           onClick={() => {
             setOpenMobile(false);
@@ -105,7 +111,7 @@ function DisabledItem({ item }: { item: NavItem }) {
 
 function ProjectHeader({ project }: Props) {
   return (
-    <SidebarHeader className="h-14 justify-center border-b border-sidebar-border py-0">
+    <SidebarHeader className="h-14 justify-center py-0">
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild size="lg" tooltip="Switch project" className="h-10">
@@ -123,7 +129,56 @@ function ProjectHeader({ project }: Props) {
   );
 }
 
-/** The project sidebar: switch project, the Assistant, Design and Operation groups, documents and settings. */
+function TopItems({ project }: Props) {
+  const { setOpenMobile } = useSidebar();
+  const close = () => {
+    setOpenMobile(false);
+  };
+  return (
+    <SidebarGroup className="py-1">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild tooltip="New chat">
+            <Link
+              to={`/projects/${project.id}/assistant/chat?new`}
+              className="text-sidebar-foreground no-underline"
+              onClick={close}
+            >
+              <SquarePen aria-hidden="true" />
+              <span>New chat</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild tooltip="Projects">
+            <Link to="/projects" className="text-sidebar-foreground no-underline" onClick={close}>
+              <FolderOpen aria-hidden="true" />
+              <span>Projects</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroup>
+  );
+}
+
+function Chats({ project }: Props) {
+  const { chatId, sidePage } = useShownChat();
+  const location = useLocation();
+  return (
+    <ChatList
+      projectId={project.id}
+      activeChatId={chatId}
+      toHref={(id) =>
+        sidePage
+          ? `${location.pathname}?chat=${id}`
+          : `/projects/${project.id}/assistant/chat/${id}`
+      }
+    />
+  );
+}
+
+/** The project sidebar: new chat and projects, the pages that open next to the chat, the chats, and the user menu. */
 export function ProjectSidebar({ project }: Props) {
   const results = useQuery(resultsQuery(project.id));
   const stale = toStaleSteps(project, results.data?.[0]);
@@ -132,6 +187,7 @@ export function ProjectSidebar({ project }: Props) {
       <ProjectHeader project={project} />
       <nav aria-label="Project" className="contents">
         <SidebarContent>
+          <TopItems project={project} />
           {projectNav.map((group) => (
             <SidebarGroup key={group.label ?? "top"} className="py-1">
               {group.label === null ? null : <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
@@ -146,15 +202,12 @@ export function ProjectSidebar({ project }: Props) {
               </SidebarMenu>
             </SidebarGroup>
           ))}
+          <Chats project={project} />
         </SidebarContent>
-        <SidebarFooter className="border-t border-sidebar-border">
-          <SidebarMenu>
-            {projectFooterNav.map((item) => (
-              <Item key={item.to} item={item} project={project} stale={stale} />
-            ))}
-          </SidebarMenu>
-        </SidebarFooter>
       </nav>
+      <SidebarFooter>
+        <UserMenu />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

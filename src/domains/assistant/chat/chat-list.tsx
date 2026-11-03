@@ -1,12 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
 import type { Chat } from "@/shared/api/types";
 import { Ellipsis } from "lucide-react";
 import { toDateLabel } from "@/lib/datelabel";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +27,11 @@ const ChatDialog = lazy(() =>
   import("./chat-actions").then((module) => ({ default: module.ChatDialog })),
 );
 
-type Props = { projectId: string; activeChatId: string | null };
+type Props = {
+  projectId: string;
+  activeChatId: string | null;
+  toHref: (chatId: string) => string;
+};
 
 const dots: Record<string, string> = {
   running: "bg-accent",
@@ -41,13 +53,12 @@ function ChatMenu({
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={`Actions of ${title}`}
-        className="mt-1.5 rounded-control p-1 text-muted hover:bg-surface"
-      >
-        <Ellipsis aria-hidden="true" className="size-4" />
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuAction showOnHover aria-label={`Actions of ${title}`}>
+          <Ellipsis aria-hidden="true" />
+        </SidebarMenuAction>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent side="right" align="start">
         <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
         <DropdownMenuItem onClick={onDelete}>Delete</DropdownMenuItem>
       </DropdownMenuContent>
@@ -55,31 +66,72 @@ function ChatMenu({
   );
 }
 
-function ChatItem({ projectId, chat, active }: { projectId: string; chat: Chat; active: boolean }) {
-  const [mode, setMode] = useState<"rename" | "delete" | null>(null);
+function ChatItemDialog({
+  projectId,
+  chat,
+  active,
+  mode,
+  onClose,
+}: {
+  projectId: string;
+  chat: Chat;
+  active: boolean;
+  mode: "rename" | "delete" | null;
+  onClose: () => void;
+}) {
   const navigate = useNavigate();
-  const base = `/projects/${projectId}/assistant/chat`;
+  if (mode === null) return null;
   return (
-    <li
-      className={`group relative flex items-start gap-1 rounded-control ${active ? "bg-sunken" : ""}`}
-    >
-      <Link
-        to={`${base}/${chat.id}`}
-        aria-current={active ? "page" : undefined}
-        className="min-w-0 flex-1 px-2.5 py-2 text-text no-underline"
-      >
-        <span className="line-clamp-2 font-medium" title={chat.title}>
-          {chat.title}
-        </span>
-        <span className="flex items-center gap-1.5 text-[12px] text-muted">
+    <Suspense fallback={null}>
+      <ChatDialog
+        mode={mode}
+        projectId={projectId}
+        chat={chat}
+        onClose={onClose}
+        onDeleted={() => {
+          if (active) void navigate(`/projects/${projectId}/assistant/chat`);
+        }}
+      />
+    </Suspense>
+  );
+}
+
+function ChatItem({
+  projectId,
+  chat,
+  active,
+  href,
+}: {
+  projectId: string;
+  chat: Chat;
+  active: boolean;
+  href: string;
+}) {
+  const [mode, setMode] = useState<"rename" | "delete" | null>(null);
+  const { setOpenMobile } = useSidebar();
+  const status = chat.last_run === null ? "no run yet" : chat.last_run.status;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active} className="h-auto py-1.5">
+        <Link
+          to={href}
+          aria-current={active ? "page" : undefined}
+          title={`${chat.title} · ${status} · ${toDateLabel(chat.created)}`}
+          className="text-sidebar-foreground no-underline"
+          onClick={() => {
+            setOpenMobile(false);
+          }}
+        >
           <span
             aria-hidden="true"
-            className={`size-2 rounded-full ${dots[chat.last_run?.status ?? "none"] ?? "bg-border"}`}
+            className={`size-2 flex-none rounded-full ${dots[chat.last_run?.status ?? "none"] ?? "bg-border"}`}
           />
-          {chat.last_run === null ? "no run yet" : chat.last_run.status} ·{" "}
-          {toDateLabel(chat.created)}
-        </span>
-      </Link>
+          <span className="min-w-0 flex-1 truncate">{chat.title}</span>
+          <span className="sr-only">
+            {status} · {toDateLabel(chat.created)}
+          </span>
+        </Link>
+      </SidebarMenuButton>
       <ChatMenu
         title={chat.title}
         onRename={() => {
@@ -89,46 +141,41 @@ function ChatItem({ projectId, chat, active }: { projectId: string; chat: Chat; 
           setMode("delete");
         }}
       />
-      {mode === null ? null : (
-        <Suspense fallback={null}>
-          <ChatDialog
-            mode={mode}
-            projectId={projectId}
-            chat={chat}
-            onClose={() => {
-              setMode(null);
-            }}
-            onDeleted={() => {
-              if (active) void navigate(base);
-            }}
-          />
-        </Suspense>
-      )}
-    </li>
+      <ChatItemDialog
+        projectId={projectId}
+        chat={chat}
+        active={active}
+        mode={mode}
+        onClose={() => {
+          setMode(null);
+        }}
+      />
+    </SidebarMenuItem>
   );
 }
 
-/** The left column of the chat page: new chat and the chats of the project, newest first. */
-export function ChatList({ projectId, activeChatId }: Props) {
+/** The chats of the project in the sidebar, newest first, like recent conversations. */
+export function ChatList({ projectId, activeChatId, toHref }: Props) {
   const chats = useQuery(chatsQuery(projectId));
   return (
-    <nav aria-label="Chats" className="space-y-2">
-      <Button variant="default" asChild className="w-full justify-center">
-        <Link to={`/projects/${projectId}/assistant/chat?new`}>+ New chat</Link>
-      </Button>
-      {chats.isPending ? <Notice status="loading" what="chats" /> : null}
-      {chats.isError ? <ErrorNotice error={chats.error} what="The chats" /> : null}
-      {chats.data?.length === 0 ? <p className="text-muted">No chats yet.</p> : null}
-      <ul className="space-y-1">
-        {(chats.data ?? []).map((chat) => (
-          <ChatItem
-            key={chat.id}
-            projectId={projectId}
-            chat={chat}
-            active={chat.id === activeChatId}
-          />
-        ))}
-      </ul>
-    </nav>
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+      <SidebarGroupLabel>Chats</SidebarGroupLabel>
+      <nav aria-label="Chats">
+        {chats.isPending ? <Notice status="loading" what="chats" /> : null}
+        {chats.isError ? <ErrorNotice error={chats.error} what="The chats" /> : null}
+        {chats.data?.length === 0 ? <p className="px-2 text-muted">No chats yet.</p> : null}
+        <SidebarMenu>
+          {(chats.data ?? []).map((chat) => (
+            <ChatItem
+              key={chat.id}
+              projectId={projectId}
+              chat={chat}
+              active={chat.id === activeChatId}
+              href={toHref(chat.id)}
+            />
+          ))}
+        </SidebarMenu>
+      </nav>
+    </SidebarGroup>
   );
 }

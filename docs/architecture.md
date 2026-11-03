@@ -23,8 +23,8 @@ Domains and features: `identity/{authn,me,users}`, `workspace/{projects,overview
 Three levels, as in the mockup:
 
 1. `/signin`: no chrome.
-2. `/projects`, `/account`, `/users`: `HomeLayout`, top bar only. `/users` sits behind `AdminGuard`.
-3. `/projects/:projectId/...`: `ProjectLayout`, top bar (breadcrumb, active-run pill, user menu) and the project sidebar. An unknown project redirects to `/projects` with a notice.
+2. `/projects`, `/account`, `/users`: `HomeLayout`, a sidebar (brand, Projects, user menu at the bottom) and the page in the main panel. `/users` sits behind `AdminGuard`.
+3. `/projects/:projectId/...`: `ProjectLayout`, laid out like a chat app. The sidebar holds New chat, Projects, the Design and Project pages, the chats of the project and the user menu at the bottom. The chat is always the main panel (`ChatMain`); the project opens on its chat. Any other page opens in the side panel next to the chat (`SidePanel`, with only Expand and Close); `?chat=<id>` picks the chat beside it, otherwise the last opened or the newest. On a phone the side page takes the whole screen. A slim top bar holds the sidebar trigger, breadcrumb and active-run pill. An unknown project redirects to `/projects` with a notice.
 
 `AuthGuard` wraps levels 2 and 3 and redirects to `/signin?next=<path>`.
 
