@@ -1499,6 +1499,8 @@ export interface components {
             assistant: "model" | "scripted";
             /** Status */
             status: string;
+            /** Version */
+            version: string;
         };
         /** Kpi */
         Kpi: {

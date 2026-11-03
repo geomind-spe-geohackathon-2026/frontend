@@ -123,6 +123,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
           layout={editor.layout}
           palette={palette}
           issues={toIssues(props)}
+          changed={embed?.changed}
           selected={selected}
           onSelect={props.onSelect}
           onMove={actions.move}

@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { PlantPage } from "@/domains/design/plant/page";
 import { useRequiredParam } from "@/shared/layout/params";
 import { ModuleResults } from "./module-results";
-import { PlantChangeNotice } from "./plant-change-notice";
+import { PlantChangeNotice, usePlantChange } from "./plant-change-notice";
 import { PlantLock, useInert } from "./plant-lock";
 import { ResultsDrawer } from "./results-drawer";
 import { RunBar } from "./run-bar";
@@ -80,6 +80,17 @@ function useInspector(selected: string | null, isLocked: boolean) {
   return { element, setElement, tab, setTab };
 }
 
+function DrawerSection({ projectId }: { projectId: string }) {
+  return (
+    <section
+      aria-label="Results drawer"
+      className="max-h-[40%] shrink-0 overflow-auto rounded-card border border-border bg-surface p-3 max-[1000px]:max-h-none"
+    >
+      <ResultsDrawer projectId={projectId} />
+    </section>
+  );
+}
+
 /** The Editor: plant, chat dock and results drawer on one screen, with the study toolbar on top. */
 export function EditorPage() {
   const projectId = useRequiredParam("projectId");
@@ -89,6 +100,7 @@ export function EditorPage() {
   const isWide = useWideScreen();
   const isLocked = isRunning || !isWide;
   const inspector = useInspector(selected, isLocked);
+  const change = usePlantChange(projectId);
   return (
     <div className="flex min-h-[560px] flex-col gap-3 min-[1000px]:h-[calc(100dvh-86px)]">
       <RunBar
@@ -105,12 +117,17 @@ export function EditorPage() {
           setPanels({ ...panels, results: true });
         }}
       />
-      <PlantChangeNotice projectId={projectId} onHistory={showHistory} />
+      <PlantChangeNotice change={change} onHistory={showHistory} />
       {isRunning ? null : <ModuleResults projectId={projectId} onModule={selectModule} />}
       <div className="flex min-h-0 flex-1 gap-3 max-[1000px]:flex-col">
         <section aria-label="Plant" className="@container min-w-0 flex-1 overflow-auto">
           <PlantLock isLocked={isLocked} message={toLockMessage(isRunning)}>
-            <PlantPage embed={{ inspector: panels.chat ? inspector.element : null }} />
+            <PlantPage
+              embed={{
+                inspector: panels.chat ? inspector.element : null,
+                changed: change?.changed,
+              }}
+            />
           </PlantLock>
         </section>
         {panels.chat ? (
@@ -129,14 +146,7 @@ export function EditorPage() {
           </aside>
         ) : null}
       </div>
-      {panels.results ? (
-        <section
-          aria-label="Results drawer"
-          className="max-h-[40%] shrink-0 overflow-auto rounded-card border border-border bg-surface p-3 max-[1000px]:max-h-none"
-        >
-          <ResultsDrawer projectId={projectId} />
-        </section>
-      ) : null}
+      {panels.results ? <DrawerSection projectId={projectId} /> : null}
     </div>
   );
 }
