@@ -7,7 +7,7 @@ import { Composer } from "./composer";
 import { CaseNotice, DemoNotice } from "./demo-notice";
 import { Conversation } from "./conversation";
 import { RequestCard } from "./request-card";
-import { RunPanel } from "./run-panel";
+import { ChatStatus } from "./chat-status";
 import { useRunView } from "./use-run-view";
 import type { View } from "./view";
 
@@ -37,11 +37,19 @@ function SavedProfile({
   return <AddToCase projectId={projectId} chatId={chatId} />;
 }
 
+function SendFailure({ error }: { error: Error }) {
+  return (
+    <p role="alert" className="text-bad">
+      {error.message}
+    </p>
+  );
+}
+
 function toFailure(error: Error | null): string | null {
   return error === null ? null : error.message;
 }
 
-/** The conversation and the run panel of one chat, sharing the live view of its last run. */
+/** The conversation of one chat and its message box, whose log window shares the live view of the last run. */
 export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   const navigate = useNavigate();
   const { view, failure } = useRunView(projectId, chatId, runId);
@@ -61,45 +69,45 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   }
 
   return (
-    <>
-      <div className="flex h-full min-h-[420px] min-w-0 flex-col gap-3">
-        <DemoNotice />
-        <CaseNotice projectId={projectId} />
-        <div className="flex min-h-0 flex-1 flex-col">
-          <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
-        </div>
-        <SavedProfile projectId={projectId} chatId={chatId} view={view} />
-        {view.request === null || runId === null ? null : (
-          <div className="sticky bottom-0">
-            <RequestCard
-              request={view.request}
-              pending={answer.isPending}
-              failure={toFailure(answer.error)}
-              onAnswer={(value) => {
-                answer.mutate({ request: view.request?.request ?? "", answer: value });
-              }}
-            />
-          </div>
-        )}
-        {send.isError ? (
-          <p role="alert" className="text-bad">
-            {send.error.message}
-          </p>
-        ) : null}
-        <Composer
-          projectId={projectId}
-          sending={send.isPending || create.isPending}
-          active={active}
-          cancelling={cancel.isPending}
-          onSend={(content) => {
-            void handleSend(content);
-          }}
-          onCancel={cancel.mutate}
-        />
+    <div className="flex h-full min-h-[420px] min-w-0 flex-col gap-3">
+      <DemoNotice />
+      <CaseNotice projectId={projectId} />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
       </div>
-      {runId === null ? null : (
-        <RunPanel projectId={projectId} runId={runId} view={view} run={run.data} />
+      <SavedProfile projectId={projectId} chatId={chatId} view={view} />
+      {view.request === null || runId === null ? null : (
+        <div className="sticky bottom-0">
+          <RequestCard
+            request={view.request}
+            pending={answer.isPending}
+            failure={toFailure(answer.error)}
+            onAnswer={(value) => {
+              answer.mutate({ request: view.request?.request ?? "", answer: value });
+            }}
+          />
+        </div>
       )}
-    </>
+      {send.isError ? <SendFailure error={send.error} /> : null}
+      <Composer
+        projectId={projectId}
+        sending={send.isPending || create.isPending}
+        active={active}
+        cancelling={cancel.isPending}
+        onSend={(content) => {
+          void handleSend(content);
+        }}
+        onCancel={cancel.mutate}
+        status={
+          <ChatStatus
+            projectId={projectId}
+            chatId={chatId}
+            runId={runId}
+            view={view}
+            run={run.data}
+          />
+        }
+      />
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   Ellipsis,
   FolderOpen,
   MessageSquare,
+  Plug,
   Plus,
   Search,
   type LucideIcon,
@@ -179,6 +180,7 @@ function MainItems() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SoonItem label="Connectors" icon={Plug} />
           <SoonItem label="Knowledge" icon={BookOpen} />
           <SoonItem label="Scheduled" icon={CalendarClock} />
         </SidebarMenu>
@@ -290,7 +292,7 @@ function ProjectItems({ project }: Props) {
   );
 }
 
-/** The one sidebar of the app: brand and toggle; New, Search, Projects, Knowledge and Scheduled; pins; the open project with its pages, then its chats; the user menu at the bottom. */
+/** The one sidebar of the app: brand and toggle; New, Search, Projects, Connectors, Knowledge and Scheduled; pins; the open project with its pages, then its chats; the user menu at the bottom. */
 export function AppSidebar({ project }: { project?: Project | undefined }) {
   return (
     <>

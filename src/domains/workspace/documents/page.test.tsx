@@ -32,9 +32,7 @@ describe("documents page", () => {
       await screen.findByRole("button", { name: "Delete example-requirements.pdf" }),
     );
     await user.click(await screen.findByRole("button", { name: "Yes, delete" }));
-    expect(
-      await screen.findByText("No documents yet. Upload a file for the assistant to search."),
-    ).toBeVisible();
+    expect(await screen.findByText("No files yet")).toBeVisible();
   });
 
   it("keeps the document when the deletion is cancelled", async () => {
@@ -49,7 +47,8 @@ describe("documents page", () => {
 
   it("shows the empty state for a project without documents", async () => {
     renderApp({ path: "/projects/example-project-2/library" });
-    expect(await screen.findByText(/No documents yet/)).toBeVisible();
+    expect(await screen.findByText("No files yet")).toBeVisible();
+    expect(screen.getByLabelText("Files to add")).toBeInTheDocument();
   });
 
   it("shows the server error", async () => {

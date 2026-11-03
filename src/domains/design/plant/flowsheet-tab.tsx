@@ -2,7 +2,6 @@ import { PlantRanges } from "./plant-ranges";
 import { Card, CardContent } from "@/components/ui/card";
 import { Canvas, type Issues } from "./canvas";
 import { ModuleInspector } from "./module-inspector";
-import { PalettePanel } from "./palette-panel";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
 import { ProblemsPanel } from "./problems-panel";
 import { modulesOfProblem } from "@/shared/plant/spec";
@@ -70,24 +69,14 @@ function Inspector(props: FlowsheetProps & { moduleId: string; type: string }) {
   );
 }
 
-/** The flowsheet tab: palette, canvas with problems below it, and the inspector of the selected module. */
+/** The flowsheet: canvas with problems below it, and the inspector of the selected module. */
 export function FlowsheetTab(props: FlowsheetProps) {
   const { palette, editor, actions, selected, graph } = props;
   const { modules, connections } = graph;
   const current = modules.find((module) => module.id === selected);
   return (
     <div className="@container">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 @2xl:grid-cols-[170px_minmax(0,1fr)] @5xl:grid-cols-[180px_minmax(0,1fr)_300px]">
-        <Card>
-          <CardContent>
-            <PalettePanel
-              items={palette}
-              onAdd={(type) => {
-                actions.add(type);
-              }}
-            />
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 @5xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
           <Canvas
             graph={graph}
@@ -111,7 +100,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
             onSelect={props.onSelect}
           />
         </div>
-        <Card className="@2xl:col-span-2 @5xl:col-span-1">
+        <Card>
           <CardContent className="flex flex-col gap-4">
             {current === undefined ? (
               <>

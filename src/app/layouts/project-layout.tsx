@@ -118,7 +118,7 @@ function DesignView({ project, current, chatId }: DesignProps) {
   if (expanded || mobile) return panel;
   return (
     <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-      <ResizablePanel id="chat" defaultSize="38" minSize="22">
+      <ResizablePanel id="chat" defaultSize="50" minSize="22">
         <div className="flex h-full min-w-0 flex-col">
           <Header project={project} chatId={chatId} design />
           <div className="min-h-0 flex-1">
@@ -127,7 +127,7 @@ function DesignView({ project, current, chatId }: DesignProps) {
         </div>
       </ResizablePanel>
       <ResizableHandle className="w-px transition-colors data-[separator=active]:w-0.5 data-[separator=active]:bg-accent data-[separator=hover]:bg-accent" />
-      <ResizablePanel id="design" defaultSize="62" minSize="30">
+      <ResizablePanel id="design" defaultSize="50" minSize="30">
         {panel}
       </ResizablePanel>
     </ResizablePanelGroup>

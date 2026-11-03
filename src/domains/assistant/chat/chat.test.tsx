@@ -27,6 +27,7 @@ describe("chat page", () => {
       "aria-current",
       "page",
     );
+    await userEvent.setup().click(screen.getByRole("button", { name: "Log of this chat" }));
     expect((await screen.findAllByText("done")).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Open full log" })).toHaveAttribute(
       "href",
@@ -41,8 +42,14 @@ describe("chat page", () => {
     });
   });
 
+  it("shows the cost of the chat under the message box", async () => {
+    renderApp({ path: `${base}/example-chat-1` });
+    expect(await screen.findByTitle("Cost of this chat so far")).toHaveTextContent("USD");
+  });
+
   it("shows the problem state the run built", async () => {
     renderApp({ path: `${base}/example-chat-1` });
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Log of this chat" }));
     const panel = await screen.findByRole("heading", { name: "What it knows" });
     const card = panel.closest("div")?.parentElement;
     expect(card).not.toBeNull();

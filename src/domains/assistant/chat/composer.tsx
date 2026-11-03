@@ -1,4 +1,5 @@
-import { useState, type KeyboardEvent, type SubmitEvent } from "react";
+import { useState, type KeyboardEvent, type ReactNode, type SubmitEvent } from "react";
+import { ArrowUp, Square } from "lucide-react";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { clearDraft, readDraft } from "@/shared/attach/chat-draft";
@@ -16,6 +17,49 @@ function submitOnEnter(event: KeyboardEvent<HTMLTextAreaElement>): void {
   event.currentTarget.form?.requestSubmit();
 }
 
+function SendButton({
+  active,
+  cancelling,
+  disabled,
+  onCancel,
+}: {
+  active: boolean;
+  cancelling: boolean;
+  disabled: boolean;
+  onCancel: () => void;
+}) {
+  if (active) {
+    return (
+      <InputGroupButton
+        size="icon-sm"
+        variant="default"
+        className="rounded-full"
+        aria-label="Cancel run"
+        title="Cancel run"
+        disabled={cancelling}
+        onClick={() => {
+          onCancel();
+        }}
+      >
+        <Square aria-hidden="true" className="fill-current" />
+      </InputGroupButton>
+    );
+  }
+  return (
+    <InputGroupButton
+      type="submit"
+      size="icon-sm"
+      variant="default"
+      className="rounded-full"
+      aria-label="Send"
+      title="Send"
+      disabled={disabled}
+    >
+      <ArrowUp aria-hidden="true" />
+    </InputGroupButton>
+  );
+}
+
 type Props = {
   projectId: string;
   sending: boolean;
@@ -23,10 +67,19 @@ type Props = {
   cancelling: boolean;
   onSend: (content: string) => void;
   onCancel: () => void;
+  status?: ReactNode;
 };
 
-/** The message input with attached files: Send while no run is active, Cancel run while one is. */
-export function Composer({ projectId, sending, active, cancelling, onSend, onCancel }: Props) {
+/** The message box, like a chat app: attach on the left; the chat's cost and log, then Send (or Cancel run while one is active) on the right. */
+export function Composer({
+  projectId,
+  sending,
+  active,
+  cancelling,
+  onSend,
+  onCancel,
+  status,
+}: Props) {
   const [text, setText] = useState(() => readDraft(projectId));
   const files = useAttachments(projectId);
 
@@ -43,40 +96,28 @@ export function Composer({ projectId, sending, active, cancelling, onSend, onCan
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2" {...toDropProps(files.add)}>
       <AttachmentList items={files.items} onRemove={files.remove} />
-      <InputGroup>
+      <InputGroup className="rounded-2xl shadow-sm">
         <InputGroupTextarea
           aria-label="Message"
           placeholder="Tell the assistant what you need"
-          rows={2}
-          className="max-h-48 min-h-14"
+          rows={1}
+          className="max-h-48 min-h-11"
           value={text}
           onKeyDown={submitOnEnter}
           onChange={(event) => {
             setText(event.target.value);
           }}
         />
-        <InputGroupAddon align="block-end">
+        <InputGroupAddon align="block-end" className="gap-2">
           <AttachButton onFiles={files.add} />
           <span className="flex-1" />
-          {active ? (
-            <InputGroupButton
-              size="sm"
-              disabled={cancelling}
-              onClick={() => {
-                onCancel();
-              }}
-            >
-              Cancel run
-            </InputGroupButton>
-          ) : null}
-          <InputGroupButton
-            type="submit"
-            size="sm"
-            variant="default"
-            disabled={sending || active || files.reading || text.trim() === ""}
-          >
-            Send
-          </InputGroupButton>
+          {status}
+          <SendButton
+            active={active}
+            cancelling={cancelling}
+            disabled={sending || files.reading || text.trim() === ""}
+            onCancel={onCancel}
+          />
         </InputGroupAddon>
       </InputGroup>
     </form>

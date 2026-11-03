@@ -25,13 +25,13 @@ function ChatBody({ projectId, chatId }: { projectId: string; chatId: string }) 
 
 type MainProps = { projectId: string; chatId: string | null; level: 1 | 2 };
 
-/** The chat in the main panel: the conversation with its live run, and the run panel beside or under it. */
+/** The chat in the main panel: the conversation with its live run and the message box, centred like a chat app. */
 export function ChatMain({ projectId, chatId, level }: MainProps) {
   const Heading = level === 1 ? "h1" : "h2";
   return (
     <div className="@container h-full min-h-0 overflow-y-auto px-4 pt-4 pb-3 md:px-6">
       <Heading className="sr-only">Chat</Heading>
-      <div className="mx-auto grid h-full max-w-6xl grid-cols-1 grid-rows-[100%_auto] gap-4 @4xl:grid-cols-[minmax(0,1fr)_260px] @4xl:grid-rows-1">
+      <div className="mx-auto h-full max-w-3xl">
         {chatId === null ? (
           <ChatWorkspace key="new" projectId={projectId} chatId={null} runId={null} messages={[]} />
         ) : (

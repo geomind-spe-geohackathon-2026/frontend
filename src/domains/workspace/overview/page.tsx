@@ -6,12 +6,11 @@ import { resultsQuery } from "@/shared/api/results";
 import { overviewQuery } from "./api";
 import { toStaleSteps } from "./stale";
 import { ActivityList } from "./activity-list";
-import { AskBox } from "./ask-box";
 import { RecentChats } from "./recent-chats";
 import { Stepper } from "./stepper";
 import { Notice } from "@/shared/ui/notice";
 
-/** The project overview: the assistant first, then the five design steps, recent chats and activity. */
+/** The project overview: a short description, the five design steps, recent chats and activity. */
 export function OverviewPage() {
   const projectId = useRequiredParam("projectId");
   const project = useQuery(projectQuery(projectId));
@@ -22,8 +21,10 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Overview" />
-      <AskBox projectId={projectId} />
+      <PageHeader
+        title="Overview"
+        description="Where the project stands: the five design steps and what each still needs, the latest chats and what changed recently. Pick a step to work on it, or ask the assistant in the chat."
+      />
       {overview.isPending ? <Notice status="loading" what="the overview" /> : null}
       {overview.isError ? <p role="alert">{overview.error.message}</p> : null}
       {overview.data === undefined ? null : (
@@ -33,7 +34,7 @@ export function OverviewPage() {
               id="progress-heading"
               className="text-[11px] tracking-[0.06em] text-muted uppercase"
             >
-              Or work step by step
+              Design steps
             </h2>
             <Stepper projectId={projectId} progress={overview.data.progress} stale={stale} />
           </section>

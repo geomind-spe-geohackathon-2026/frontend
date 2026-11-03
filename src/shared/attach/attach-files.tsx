@@ -1,4 +1,4 @@
-import { Paperclip, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useRef, type ChangeEvent, type DragEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ export function toDropProps(onFiles: (files: File[]) => void) {
   };
 }
 
-/** The paperclip button that opens the file picker. */
+/** The + button that opens the file picker. */
 export function AttachButton({ onFiles }: { onFiles: (files: File[]) => void }) {
   const input = useRef<HTMLInputElement>(null);
 
@@ -41,12 +41,16 @@ export function AttachButton({ onFiles }: { onFiles: (files: File[]) => void }) 
         onChange={handleChange}
       />
       <Button
+        variant="ghost"
+        size="icon-sm"
+        className="rounded-full"
         aria-label="Attach files"
+        title="Attach files"
         onClick={() => {
           input.current?.click();
         }}
       >
-        <Paperclip aria-hidden="true" className="size-4" />
+        <Plus aria-hidden="true" className="size-4" />
       </Button>
     </>
   );

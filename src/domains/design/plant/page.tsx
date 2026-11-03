@@ -26,6 +26,7 @@ import { HistoryPanel } from "./history-panel";
 import { ValidityStatus, toMissingModules } from "./validity-status";
 import type { ParameterDraft } from "./parameters-panel";
 import { TemplatesDialog } from "./templates-dialog";
+import { AddModuleButton } from "./palette-panel";
 import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
 import type { SaveFlowsheetInput } from "./types";
 import { usePlantActions } from "./use-plant-actions";
@@ -97,6 +98,7 @@ type ActionsProps = {
   dirty: boolean;
   canSave: boolean;
   history: ReactNode;
+  add: ReactNode;
   onTemplate: () => void;
   onDiscard: () => void;
   onSave: () => void;
@@ -106,11 +108,16 @@ function PlantActions({
   dirty,
   canSave,
   history,
+  add,
   ...handlers
-}: Pick<ActionsProps, "dirty" | "canSave" | "history" | "onTemplate" | "onDiscard" | "onSave">) {
+}: Pick<
+  ActionsProps,
+  "dirty" | "canSave" | "history" | "add" | "onTemplate" | "onDiscard" | "onSave"
+>) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {dirty ? <span className="text-[12.5px] text-muted">unsaved changes</span> : null}
+      {add}
       <Button onClick={handlers.onTemplate}>Start from template</Button>
       {history}
       <Button disabled={!dirty} onClick={handlers.onDiscard}>
@@ -315,6 +322,7 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
         {...{ editor, graph, selected, dirty, canSave }}
         version={saved.version}
         error={flow.error}
+        add={<AddModuleButton items={palette} onAdd={actions.add} />}
         history={<PlantHistory projectId={projectId} current={saved.version} onRestore={restore} />}
         onSelect={select}
         onTemplate={() => {

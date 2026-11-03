@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
 import { tableCardClass } from "@/shared/ui/table-card";
+import { DropZone } from "@/shared/attach/drop-zone";
 import { Card } from "@/components/ui/card";
 
 const searchableText: Record<Document["searchable"], string> = {
@@ -43,41 +44,65 @@ const searchableTone: Record<Document["searchable"], "ok" | "warn" | "bad"> = {
   failed: "bad",
 };
 
-function UploadButton({ projectId }: { projectId: string }) {
-  const input = useRef<HTMLInputElement>(null);
+function useUploadFiles(projectId: string) {
   const upload = useUploadDocument(projectId);
-
-  function handleFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (file === undefined) return;
-    upload.mutate(file, {
-      onSuccess: () => {
+  const [failure, setFailure] = useState<Error | null>(null);
+  const [pending, setPending] = useState(false);
+  const send = async (files: File[]) => {
+    setPending(true);
+    setFailure(null);
+    for (const file of files) {
+      try {
+        await upload.mutateAsync(file);
         toast(`${file.name} uploaded`);
-      },
-    });
-  }
+      } catch (error) {
+        setFailure(error instanceof Error ? error : new Error("The upload failed"));
+      }
+    }
+    setPending(false);
+  };
+  return { pending, failure, send: (files: File[]) => void send(files) };
+}
 
+function UploadFailure({ error }: { error: Error }) {
+  return (
+    <p role="alert" className="text-bad">
+      {toFieldMessage(error)}
+    </p>
+  );
+}
+
+function UploadButton({
+  onFiles,
+  pending,
+}: {
+  onFiles: (files: File[]) => void;
+  pending: boolean;
+}) {
+  const input = useRef<HTMLInputElement>(null);
   return (
     <>
       <input
         ref={input}
         type="file"
+        multiple
         aria-label="Document file"
         className="sr-only"
         tabIndex={-1}
-        onChange={handleFile}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onFiles([...(event.target.files ?? [])]);
+          event.target.value = "";
+        }}
       />
       <Button
         variant="default"
-        disabled={upload.isPending}
+        disabled={pending}
         onClick={() => {
           input.current?.click();
         }}
       >
         Upload
       </Button>
-      {upload.error === null ? null : <p role="alert">{toFieldMessage(upload.error)}</p>}
     </>
   );
 }
@@ -144,7 +169,7 @@ function DocumentsTable({
   return (
     <Card className={tableCardClass}>
       <Table className="w-full text-left">
-        <TableCaption className="sr-only">Documents</TableCaption>
+        <TableCaption className="sr-only">Files in the Library</TableCaption>
         <TableHeader className="text-muted">
           <TableRow>
             <TableHead scope="col" className="px-3 py-2 font-medium">
@@ -193,33 +218,50 @@ function DocumentsTable({
   );
 }
 
-/** The project Library: upload, the list with its searchable status, and delete with a confirmation. */
+/** The project Library: upload or drop files, the list with its searchable status, and delete with a confirmation. */
 export function DocumentsPage() {
   const projectId = useRequiredParam("projectId");
   const documents = useInfiniteQuery(documentsQuery(projectId));
   const formats = useQuery(documentFormatsQuery());
   const [deleting, setDeleting] = useState<Document | null>(null);
   const items = toItems(documents.data?.pages);
+  const upload = useUploadFiles(projectId);
+  const accept = formats.data?.join(",");
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-3">
       <PageHeader
         title="Library"
         description="Data files, reports and papers of the project; the assistant can search them."
-        actions={<UploadButton projectId={projectId} />}
+        actions={<UploadButton onFiles={upload.send} pending={upload.pending} />}
       />
-      {formats.data === undefined ? null : (
-        <p className="mb-3 text-[12.5px] text-muted">Supported: {formats.data.join(", ")}</p>
-      )}
+      {upload.failure === null ? null : <UploadFailure error={upload.failure} />}
       {documents.isPending ? <Notice status="loading" what="documents" /> : null}
       {documents.isError ? <p role="alert">{documents.error.message}</p> : null}
       {documents.isSuccess && items.length === 0 ? (
-        <p>No documents yet. Upload a file for the assistant to search.</p>
+        <DropZone
+          label="Files to add"
+          title="No files yet"
+          accept={accept}
+          disabled={upload.pending}
+          onFiles={upload.send}
+        />
       ) : null}
-      {items.length === 0 ? null : <DocumentsTable documents={items} onDelete={setDeleting} />}
+      {items.length === 0 ? null : (
+        <>
+          <DocumentsTable documents={items} onDelete={setDeleting} />
+          <DropZone
+            label="Files to add"
+            accept={accept}
+            slim
+            disabled={upload.pending}
+            onFiles={upload.send}
+          />
+        </>
+      )}
       {documents.hasNextPage ? (
         <Button
-          className="mt-3 self-start"
+          className="self-start"
           disabled={documents.isFetchingNextPage}
           onClick={() => void documents.fetchNextPage()}
         >

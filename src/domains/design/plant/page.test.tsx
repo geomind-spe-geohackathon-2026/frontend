@@ -59,6 +59,11 @@ const geminiParameters = {
   history: [],
 };
 
+async function addModule(user: ReturnType<typeof userEvent.setup>, type: string) {
+  await user.click(screen.getByRole("button", { name: "Add module" }));
+  await user.click(await screen.findByRole("option", { name: `Add ${type}` }));
+}
+
 async function findSave() {
   return screen.findByRole("button", { name: "Save version" }, slow);
 }
@@ -68,7 +73,9 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     await findSave();
     expect((await screen.findAllByText("Heat Exchanger", {}, slow)).length).toBeGreaterThan(0);
-    expect(screen.getByRole("option", { name: "Add Doublet" })).toBeVisible();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add module" }));
+    expect(await screen.findByRole("option", { name: "Add Doublet" })).toBeVisible();
+    await userEvent.setup().keyboard("{Escape}");
     expect(await screen.findByText("1 value missing", {}, slow)).toBeVisible();
     const missing = await screen.findByRole("region", { name: "Missing values" });
     expect(missing).toHaveTextContent("params.hx.approach_temperature");
@@ -79,7 +86,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     expect(await screen.findByLabelText("Inlet source_in (brine)", {}, slow)).toBeInTheDocument();
     expect(screen.getByLabelText("Inlet power_in (electricity)")).toBeInTheDocument();
     expect(screen.getByLabelText("Outlet heat_out (hot_water)")).toBeInTheDocument();
@@ -90,7 +97,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     const user = userEvent.setup();
     await findSave();
     expect((await screen.findAllByText("Heat Exchanger", {}, slow)).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     await screen.findByLabelText("Module id", {}, slow);
     expect(screen.getAllByText("Heat Exchanger").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Heating Grid").length).toBeGreaterThan(0);
@@ -126,7 +133,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     expect(await screen.findByLabelText("Module id")).toHaveValue("heat_pump");
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Save version" })).toBeEnabled();
@@ -152,7 +159,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     expect(await screen.findByText("1 problem", {}, slow)).toBeVisible();
     expect(screen.getByRole("region", { name: "Problems to fix before saving" })).toHaveTextContent(
       "ports do not match",
@@ -366,7 +373,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Save version" })).toBeEnabled();
     });
@@ -385,7 +392,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     renderApp({ path: withPlant });
     const user = userEvent.setup();
     await findSave();
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Save version" })).toBeEnabled();
     });
@@ -427,7 +434,7 @@ describe("Plant page", { timeout: 20000 }, () => {
     await user.click(await screen.findByRole("menuitem", { name: "hx.approach_temperature" }));
     expect(await screen.findByLabelText("Module id")).toHaveValue("hx");
     expect(screen.queryByText("unsaved changes")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("option", { name: "Add HeatPump" }));
+    await addModule(user, "HeatPump");
     expect(await screen.findByText("unsaved changes")).toBeVisible();
   });
 
@@ -442,6 +449,8 @@ describe("Plant page", { timeout: 20000 }, () => {
     );
     renderApp({ path: withPlant });
     await findSave();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add module" }));
+    await screen.findByRole("option", { name: "Add BigPlant" });
     const groups = document.querySelectorAll("[cmdk-root] [cmdk-group]");
     const last = groups[groups.length - 1];
     expect(last).toHaveTextContent("Sub-plants");

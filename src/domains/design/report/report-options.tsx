@@ -1,6 +1,5 @@
 import { toShortId } from "@/lib/shortid";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import type { ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
@@ -73,46 +72,44 @@ export function ReportOptions({
   onCompact,
 }: Props) {
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-3">
-        <Field className="gap-1.5">
-          <FieldLabel htmlFor="report-result">Design</FieldLabel>
-          <NativeSelect
-            id="report-result"
-            className={selectClass}
-            value={result}
-            onChange={(event) => {
-              onResult(event.target.value);
-            }}
-          >
-            {results.map((entry) => (
-              <NativeSelectOption key={entry.id} value={entry.id}>
-                {entry.name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </Field>
-        <Field className="gap-1.5">
-          <FieldLabel htmlFor="report-run">Agent log from</FieldLabel>
-          <NativeSelect
-            id="report-run"
-            className={selectClass}
-            value={run}
-            onChange={(event) => {
-              onRun(event.target.value);
-            }}
-          >
-            <NativeSelectOption value="">No run</NativeSelectOption>
-            {runs.map((entry) => (
-              <NativeSelectOption
-                key={entry.id}
-                value={entry.id}
-              >{`Run ${toShortId(entry.id)} (${entry.status})`}</NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </Field>
-        <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} onCompact={onCompact} />
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-3">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="report-result">Design</FieldLabel>
+        <NativeSelect
+          id="report-result"
+          className={selectClass}
+          value={result}
+          onChange={(event) => {
+            onResult(event.target.value);
+          }}
+        >
+          {results.map((entry) => (
+            <NativeSelectOption key={entry.id} value={entry.id}>
+              {entry.name}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+      </Field>
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="report-run">Agent log from</FieldLabel>
+        <NativeSelect
+          id="report-run"
+          className={selectClass}
+          value={run}
+          onChange={(event) => {
+            onRun(event.target.value);
+          }}
+        >
+          <NativeSelectOption value="">No run</NativeSelectOption>
+          {runs.map((entry) => (
+            <NativeSelectOption
+              key={entry.id}
+              value={entry.id}
+            >{`Run ${toShortId(entry.id)} (${entry.status})`}</NativeSelectOption>
+          ))}
+        </NativeSelect>
+      </Field>
+      <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} onCompact={onCompact} />
+    </div>
   );
 }

@@ -25,7 +25,8 @@ describe("ReportPage", () => {
     const user = userEvent.setup();
     renderApp({ path });
     await screen.findByRole("heading", { name: "Agent log and tokens" });
-    await user.click(screen.getByRole("checkbox", { name: "Agent log and tokens" }));
+    await user.click(screen.getByRole("button", { name: "Options" }));
+    await user.click(await screen.findByRole("checkbox", { name: "Agent log and tokens" }));
     expect(await screen.findByRole("heading", { name: "Capacities" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Agent log and tokens" })).not.toBeInTheDocument();
   });

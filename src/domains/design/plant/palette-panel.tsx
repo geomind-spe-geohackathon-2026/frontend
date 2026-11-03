@@ -1,3 +1,14 @@
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Command,
   CommandEmpty,
@@ -45,10 +56,10 @@ export function PalettePanel({ items, onAdd }: Props) {
   return (
     <Command
       label="Module palette"
-      className="max-h-[max(520px,68vh)] bg-transparent [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
+      className="h-full bg-transparent [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
     >
       <CommandInput placeholder="Filter modules" aria-label="Filter modules" />
-      <CommandList className="max-h-none">
+      <CommandList className="max-h-none flex-1">
         <CommandEmpty>No module matches.</CommandEmpty>
         {categories.map((category) => (
           <CommandGroup key={category} heading={labelOf(category, {})}>
@@ -68,5 +79,37 @@ export function PalettePanel({ items, onAdd }: Props) {
         )}
       </CommandList>
     </Command>
+  );
+}
+
+/** The Add module button: a large window with the module palette; picking a module puts it on the canvas and closes the window. */
+export function AddModuleButton({ items, onAdd }: Props) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus aria-hidden="true" />
+          Add module
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="flex h-[min(720px,calc(100svh-4rem))] flex-col gap-3 sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Add module</DialogTitle>
+          <DialogDescription>
+            Pick a module; it lands on the canvas, then connect its pipes and wires.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="min-h-0 flex-1 overflow-hidden rounded-md border border-border">
+          <PalettePanel
+            items={items}
+            onAdd={(type) => {
+              onAdd(type);
+              setOpen(false);
+            }}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

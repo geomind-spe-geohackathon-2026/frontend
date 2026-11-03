@@ -1,10 +1,10 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { toFieldMessage } from "@/shared/api/errors";
-import { useRef, useState, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toItems } from "@/shared/api/pagination";
-import { toDropProps } from "@/shared/attach/attach-files";
+import { DropZone } from "@/shared/attach/drop-zone";
 import { keepDraft } from "@/shared/attach/chat-draft";
 import { uploadDocument } from "@/shared/attach/upload";
 import { Button } from "@/components/ui/button";
@@ -111,44 +111,16 @@ function FileList({ files, onChange }: { files: File[]; onChange: (files: File[]
 }
 
 function ContextFiles({ files, onChange }: { files: File[]; onChange: (files: File[]) => void }) {
-  const input = useRef<HTMLInputElement>(null);
   const add = (added: File[]) => {
     const known = new Set(files.map((file) => file.name));
     onChange([...files, ...added.filter((file) => !known.has(file.name))]);
   };
   return (
     <Field className="gap-1.5">
-      <FieldLabel htmlFor="project-files">Context files (optional)</FieldLabel>
-      <div
-        className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-border px-4 py-5 text-center text-sm text-muted-foreground"
-        {...toDropProps(add)}
-      >
-        <Upload aria-hidden="true" className="size-5" />
-        <span>
-          Drop files here or{" "}
-          <button
-            type="button"
-            className="font-medium text-foreground underline underline-offset-4"
-            onClick={() => {
-              input.current?.click();
-            }}
-          >
-            browse
-          </button>
-        </span>
-        <input
-          ref={input}
-          id="project-files"
-          type="file"
-          multiple
-          className="sr-only"
-          tabIndex={-1}
-          onChange={(event) => {
-            add([...(event.target.files ?? [])]);
-            event.target.value = "";
-          }}
-        />
-      </div>
+      <FieldLabel asChild>
+        <p>Context files (optional)</p>
+      </FieldLabel>
+      <DropZone label="Context files to add" slim onFiles={add} />
       <FieldDescription>
         Data, reports and papers go to the project&apos;s Library.
       </FieldDescription>

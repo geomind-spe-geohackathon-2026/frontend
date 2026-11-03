@@ -1,5 +1,8 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
@@ -39,7 +42,23 @@ function PreviewBody({
   return <ReportDocument preview={preview.data} flowsheet={flowsheet} />;
 }
 
-/** The report workspace: options on the right, live preview on the left, export buttons in the header. */
+function OptionsButton({ children }: { children: ReactNode }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button>
+          <SlidersHorizontal aria-hidden="true" />
+          Options
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="max-h-[70svh] w-80 overflow-y-auto">
+        {children}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/** The report workspace: the live preview, with Options (design, agent log, sections) and export in the header. */
 export function ReportEditor({ projectId, results, runs, parts }: Props) {
   const order = parts.map((entry) => entry.key);
   const [params, setParams] = useSearchParams();
@@ -67,36 +86,36 @@ export function ReportEditor({ projectId, results, runs, parts }: Props) {
         title="Report"
         description={`Draft from ${name}.`}
         actions={
-          <ExportButtons
-            disabled={exporter.isPending || include.length === 0}
-            onExport={handleExport}
-          />
+          <>
+            <OptionsButton>
+              <ReportOptions
+                results={results}
+                runs={runs}
+                result={result}
+                run={run}
+                parts={parts}
+                chosen={chosen}
+                onResult={(id) => {
+                  handleParam("result", id);
+                }}
+                onRun={(id) => {
+                  handleParam("run", id);
+                }}
+                onPart={handlePart}
+                onCompact={() => {
+                  setChosen(order.filter((part) => compactParts.includes(part)));
+                }}
+              />
+            </OptionsButton>
+            <ExportButtons
+              disabled={exporter.isPending || include.length === 0}
+              onExport={handleExport}
+            />
+          </>
         }
       />
       {exporter.isError ? <Notice status="failed" error={exporter.error} /> : null}
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div>
-          <PreviewBody include={include} preview={preview} flowsheet={flowsheet} />
-        </div>
-        <ReportOptions
-          results={results}
-          runs={runs}
-          result={result}
-          run={run}
-          parts={parts}
-          chosen={chosen}
-          onResult={(id) => {
-            handleParam("result", id);
-          }}
-          onRun={(id) => {
-            handleParam("run", id);
-          }}
-          onPart={handlePart}
-          onCompact={() => {
-            setChosen(order.filter((part) => compactParts.includes(part)));
-          }}
-        />
-      </div>
+      <PreviewBody include={include} preview={preview} flowsheet={flowsheet} />
     </>
   );
 }

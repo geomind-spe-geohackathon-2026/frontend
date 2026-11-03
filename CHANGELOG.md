@@ -2,6 +2,16 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.12 (2026-11-03)
+
+- Chat: one centred column like a chat app. The message box has + (attach) on the left and, on the right, the cost of the chat so far, a log button and a round send button (a stop button while a run is active). The log button opens a large window with the last run (status, time, tokens, agents), what the assistant knows, and every run of the chat with its tokens and cost. The run column beside the chat is gone.
+- The Design panel opens half and half with the chat.
+- Plant: the module list is gone from the page; Add module opens a window with the palette, and the picked module lands on the canvas.
+- Report: the options column moved into an Options popover next to Export, so the preview takes the whole panel.
+- Library: no list of supported formats; an empty Library shows a drop box ("No files yet"), and a drop strip sits under the table. Upload takes several files.
+- Overview: the ask box is gone; a short description says what the page shows.
+- Sidebar: Connectors (soon) above Knowledge.
+
 ## 1.1.11 (2026-11-03)
 
 - Sidebar: the open project has two parts, its pages (Overview, Runs and logs, Library) and then its Chats. Pinned, the project and Chats open and close from their titles. The project's "…" menu holds Pin, Rename and Settings; Project settings left the list.

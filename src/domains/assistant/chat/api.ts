@@ -145,3 +145,18 @@ export function useCancelRun(projectId: string, runId: string) {
     },
   });
 }
+
+/** Query options for the runs of one chat (from the project's runs), newest first, with their tokens and cost. */
+export const chatRunsQuery = (projectId: string, chatId: string) =>
+  queryOptions({
+    queryKey: [...runsKey(projectId), "chat", chatId],
+    queryFn: async ({ signal }) => {
+      const page = toData(
+        await api.GET("/assistant/runs", {
+          params: { query: { project: projectId, limit: 100 } },
+          signal,
+        }),
+      );
+      return page.items.filter((run) => run.chat === chatId);
+    },
+  });
