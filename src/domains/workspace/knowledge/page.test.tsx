@@ -84,7 +84,8 @@ describe("knowledge page", () => {
     renderApp({ path });
     expect(await screen.findByText("Example drilling cost")).toBeVisible();
     expect(await screen.findByText(/memory is not on this server yet/)).toBeVisible();
-    expect(screen.queryByRole("button", { name: "Add value" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add value" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Import CSV" })).toBeDisabled();
     expect(
       screen.queryByRole("button", { name: "Delete Example drilling cost" }),
     ).not.toBeInTheDocument();

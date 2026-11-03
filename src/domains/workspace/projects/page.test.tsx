@@ -43,7 +43,7 @@ describe("projects home", { timeout: 20_000 }, () => {
     );
     renderApp({ path: "/projects" });
     expect(await screen.findByText("No projects yet. Create the first one.")).toBeVisible();
-    expect(screen.getByRole("button", { name: "+ New project" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "New project" })).toBeVisible();
   });
 
   it("shows the server error", async () => {
@@ -62,7 +62,7 @@ describe("projects home", { timeout: 20_000 }, () => {
   it("creates a project from the dialog and opens its chat", async () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "+ New project" }));
+    await user.click(await screen.findByRole("button", { name: "New project" }));
     await user.type(await screen.findByLabelText("Name"), "Example new plant");
     await user.selectOptions(screen.getByLabelText("Shared memory"), "off");
     await user.click(screen.getByRole("button", { name: "Create" }));
@@ -74,7 +74,7 @@ describe("projects home", { timeout: 20_000 }, () => {
   it("says a name is needed when the dialog is submitted without one", async () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "+ New project" }));
+    await user.click(await screen.findByRole("button", { name: "New project" }));
     await user.type(await screen.findByLabelText("Name"), "   ");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByText("Enter a name for the project.")).toBeVisible();
@@ -93,7 +93,7 @@ describe("projects home", { timeout: 20_000 }, () => {
   it("offers a project zip in the dialog instead of a name", async () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "+ New project" }));
+    await user.click(await screen.findByRole("button", { name: "New project" }));
     await user.click(await screen.findByRole("tab", { name: "Project zip" }));
     expect(screen.getByLabelText("Project zip")).toBeVisible();
     expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
@@ -111,7 +111,7 @@ describe("projects home", { timeout: 20_000 }, () => {
     });
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "+ New project" }));
+    await user.click(await screen.findByRole("button", { name: "New project" }));
     await user.click(await screen.findByRole("tab", { name: "Copy a case" }));
     await user.type(await screen.findByLabelText("Name"), "Example copy");
     await user.selectOptions(
@@ -140,7 +140,7 @@ describe("projects home", { timeout: 20_000 }, () => {
     );
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "+ New project" }));
+    await user.click(await screen.findByRole("button", { name: "New project" }));
     await user.click(await screen.findByRole("tab", { name: "Copy a case" }));
     await user.type(await screen.findByLabelText("Name"), "Example copy");
     await user.selectOptions(

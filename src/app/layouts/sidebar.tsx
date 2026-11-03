@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
 import {
   BookOpen,
-  CalendarClock,
   Ellipsis,
   FolderOpen,
   MessageSquare,
@@ -125,18 +124,6 @@ function MainDialogs() {
   );
 }
 
-function SoonItem({ label, icon: Icon }: { label: string; icon: LucideIcon }) {
-  return (
-    <SidebarMenuItem>
-      <SidebarMenuButton disabled tooltip={`${label} (soon)`}>
-        <Icon aria-hidden="true" />
-        <span className="min-w-0 flex-1">{label}</span>
-        <Badge variant="off">soon</Badge>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  );
-}
-
 function MainLink({ to, label, icon: Icon }: { to: string; label: string; icon: LucideIcon }) {
   const { setOpenMobile } = useSidebar();
   const active = useMatch({ path: to, end: true }) !== null;
@@ -188,7 +175,6 @@ function MainItems() {
           <MainLink to="/projects" label="Projects" icon={FolderOpen} />
           <MainLink to="/connectors" label="Connectors" icon={Plug} />
           <MainLink to="/knowledge" label="Knowledge" icon={BookOpen} />
-          <SoonItem label="Scheduled" icon={CalendarClock} />
         </SidebarMenu>
       </SidebarGroup>
     </nav>
@@ -298,7 +284,7 @@ function ProjectItems({ project }: Props) {
   );
 }
 
-/** The one sidebar of the app: brand and toggle; New, Search, Projects, Connectors, Knowledge and Scheduled; pins; the open project with its pages, then its chats; the user menu at the bottom. */
+/** The one sidebar of the app: brand and toggle; New, Search, Projects, Connectors and Knowledge; pins; the open project with its pages, then its chats; the user menu at the bottom. */
 export function AppSidebar({ project }: { project?: Project | undefined }) {
   return (
     <>

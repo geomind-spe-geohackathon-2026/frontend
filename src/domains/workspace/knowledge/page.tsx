@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toFieldMessage } from "@/shared/api/errors";
 import type { ExperienceEntry, KnowledgeEntry } from "@/shared/api/pending";
-import { DropZone } from "@/shared/attach/drop-zone";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
 import { PendingNotice } from "@/shared/ui/pending-notice";
@@ -101,17 +100,21 @@ function ExperienceDialog({
   );
 }
 
-function ImportBox() {
+function ImportButton({ disabled }: { disabled: boolean }) {
+  const input = useRef<HTMLInputElement>(null);
   const load = useImportKnowledge();
   return (
     <>
-      <DropZone
-        label="Catalogue to import (CSV)"
+      <input
+        ref={input}
+        type="file"
         accept=".csv"
-        slim
-        disabled={load.isPending}
-        onFiles={(files) => {
-          const file = files[0];
+        aria-label="Catalogue file (CSV)"
+        className="sr-only"
+        tabIndex={-1}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
           if (file === undefined) return;
           load.mutate(file, {
             onSuccess: (result) => {
@@ -119,14 +122,20 @@ function ImportBox() {
                 `${String(result.added)} added, ${String(result.replaced)} replaced, ${String(result.errors.length)} refused`,
               );
             },
+            onError: (error) => {
+              toast(toFieldMessage(error));
+            },
           });
         }}
       />
-      {load.error === null ? null : (
-        <p role="alert" className="text-bad">
-          {toFieldMessage(load.error)}
-        </p>
-      )}
+      <Button
+        disabled={disabled || load.isPending}
+        onClick={() => {
+          input.current?.click();
+        }}
+      >
+        Import CSV
+      </Button>
     </>
   );
 }
@@ -185,11 +194,16 @@ export function KnowledgePage() {
   const writable = useWritable();
   const values = section === "knowledge";
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mx-auto flex w-[min(1040px,100%)] flex-col gap-3">
       <PageHeader
         title="Knowledge"
-        description="What the agents know across projects: cited values (costs, properties) with their sources, and past designs that passed verification."
-        actions={values && writable ? <AddKnowledgeButton /> : undefined}
+        description="Cited values and past designs the agents use across projects."
+        actions={
+          <>
+            <ImportButton disabled={!writable || !values} />
+            <AddKnowledgeButton disabled={!writable || !values} />
+          </>
+        }
       />
       <div className="flex flex-wrap items-center gap-3">
         <Tabs
@@ -216,7 +230,6 @@ export function KnowledgePage() {
       </div>
       {writable ? null : <NotAvailable />}
       <SectionBody section={section} q={q} writable={writable} />
-      {values && writable ? <ImportBox /> : null}
     </div>
   );
 }

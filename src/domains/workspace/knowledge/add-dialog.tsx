@@ -100,7 +100,7 @@ function EntryFields() {
 }
 
 /** The Add value button: a window with the cited value and its source; a page or a link is required. */
-export function AddKnowledgeButton() {
+export function AddKnowledgeButton({ disabled = false }: { disabled?: boolean }) {
   const [open, setOpen] = useState(false);
   const add = useAddKnowledge();
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -115,7 +115,7 @@ export function AddKnowledgeButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" disabled={disabled}>
           <Plus aria-hidden="true" />
           Add value
         </Button>

@@ -47,7 +47,7 @@ describe("project settings", () => {
     await user.click(await screen.findByRole("button", { name: "Delete project" }));
     expect(screen.getByText("This cannot be undone.")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Yes, delete" }));
-    expect(await screen.findByRole("heading", { name: "Your projects" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeVisible();
     expect(router.state.location.pathname).toBe("/projects");
     expect(screen.queryByRole("link", { name: /Example district plant/ })).not.toBeInTheDocument();
   });

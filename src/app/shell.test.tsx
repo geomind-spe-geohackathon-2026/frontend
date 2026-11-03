@@ -45,7 +45,7 @@ describe("auth guard", () => {
       path: `/signin?next=${encodeURIComponent("//evil.example")}`,
       signedIn: true,
     });
-    expect(await screen.findByRole("heading", { name: "Your projects" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/projects");
   });
 
@@ -71,14 +71,14 @@ describe("auth guard", () => {
 describe("shell levels", () => {
   it("has the main sidebar and no project sidebar on the projects home", async () => {
     renderApp({ path: "/projects" });
-    expect(await screen.findByRole("heading", { name: "Your projects" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Project" })).not.toBeInTheDocument();
   });
 
   it("sends the root path to the projects home", async () => {
     const { router } = renderApp({ path: "/" });
-    expect(await screen.findByRole("heading", { name: "Your projects" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/projects");
   });
 
@@ -108,7 +108,7 @@ describe("shell levels", () => {
 
   it("goes back to the projects with a message for an unknown project", async () => {
     const { router } = renderApp({ path: "/projects/does-not-exist/overview" });
-    expect(await screen.findByRole("heading", { name: "Your projects" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/projects");
     expect(screen.getByText(/does not exist or you cannot see it/)).toBeVisible();
   });
@@ -181,7 +181,7 @@ describe("project routes", () => {
 
   it("falls back to the projects home for an unknown path", async () => {
     const { router } = renderApp({ path: "/nowhere" });
-    expect(await screen.findByRole("heading", { name: "Your projects" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/projects");
   });
 });

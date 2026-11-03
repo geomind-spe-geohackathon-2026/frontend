@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.15 (2026-11-03)
+
+- Projects, Knowledge and Connectors share one page layout: the same width, a short title (Projects, Knowledge, Connectors) with a one-line description, and the actions on the right (Knowledge: Import CSV and Add value, greyed out while the server has no memory).
+- Scheduled is gone from the sidebar.
+
 ## 1.1.14 (2026-11-03)
 
 - Knowledge page (sidebar, no longer "soon"): geomind's shared memory. Values with their source and status, search, Add value (id from the item when empty; source with a page or a link), CSV catalogue import (added, replaced, refused), delete; Past designs open in a window. While the server's geomind has no memory module (`available: false`) the page reads only.

@@ -141,10 +141,10 @@ function ConnectorItem({ connector }: { connector: Connector }) {
 export function ConnectorsPage() {
   const connectors = useQuery(connectorsQuery());
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mx-auto flex w-[min(1040px,100%)] flex-col gap-3">
       <PageHeader
         title="Connectors"
-        description="MCP servers that give the agents more tools, such as weather data or a company database. A project picks the ones it uses in its settings."
+        description="MCP servers that give the agents more tools; each project picks its own."
         actions={<AddConnectorButton />}
       />
       {connectors.isPending ? <Notice status="loading" what="the connectors" /> : null}

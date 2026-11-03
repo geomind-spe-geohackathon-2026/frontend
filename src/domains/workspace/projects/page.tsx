@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -129,7 +130,7 @@ export function ProjectsPage() {
   return (
     <div className="mx-auto flex w-[min(1040px,100%)] flex-col">
       <PageHeader
-        title="Your projects"
+        title="Projects"
         description="Open a project to chat with the assistant or work on its design."
         actions={
           <>
@@ -142,7 +143,8 @@ export function ProjectsPage() {
                 openMainDialog("new");
               }}
             >
-              + New project
+              <Plus aria-hidden="true" />
+              New project
             </Button>
           </>
         }
