@@ -3,7 +3,7 @@ import { Maximize2, Minimize2, X } from "lucide-react";
 import { designItems, type NavItem } from "@/app/nav";
 import type { Project } from "@/shared/api/types";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MissingBadge, StatusDot, useStepProgress } from "./progress";
 
 type Props = {
@@ -19,33 +19,31 @@ function Steps({ project, current, chatId }: Pick<Props, "project" | "current" |
   const navigate = useNavigate();
   const progress = useStepProgress(project);
   return (
-    <ToggleGroup
-      type="single"
-      size="sm"
-      aria-label="Design steps"
+    <Tabs
       value={current.to}
       onValueChange={(to) => {
-        if (to === "") return;
         const chat = chatId === null ? "" : `?chat=${chatId}`;
         void navigate(`/projects/${project.id}/${to}${chat}`);
       }}
       className="min-w-0 overflow-x-auto"
     >
-      {designItems.map((item) => {
-        const step = item.progress === undefined ? undefined : progress(item.progress);
-        return (
-          <ToggleGroupItem key={item.to} value={item.to} className="gap-1.5">
-            {item.label}
-            {step === undefined ? null : <MissingBadge step={step} />}
-            {step === undefined ? null : <StatusDot step={step} />}
-          </ToggleGroupItem>
-        );
-      })}
-    </ToggleGroup>
+      <TabsList aria-label="Design steps">
+        {designItems.map((item) => {
+          const step = item.progress === undefined ? undefined : progress(item.progress);
+          return (
+            <TabsTrigger key={item.to} value={item.to}>
+              {item.label}
+              {step === undefined ? null : <MissingBadge step={step} />}
+              {step === undefined ? null : <StatusDot step={step} />}
+            </TabsTrigger>
+          );
+        })}
+      </TabsList>
+    </Tabs>
   );
 }
 
-/** The Design panel next to the chat: its title, the design steps as toggles, Expand and Close, and the open step. */
+/** The Design panel next to the chat: its title, the design steps as tabs, Expand and Close, and the open step. */
 export function DesignPanel({ project, current, chatId, expanded, onExpand, onClose }: Props) {
   return (
     <section aria-label="Design" className="flex h-full min-h-0 min-w-0 flex-col bg-background">

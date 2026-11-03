@@ -394,7 +394,7 @@ describe("Plant page", { timeout: 20000 }, () => {
       within(await screen.findByRole("dialog")).getByRole("button", { name: "Save version" }),
     );
     await screen.findByText("Plant v2 saved");
-    await user.click(screen.getByRole("tab", { name: "History" }));
+    await user.click(screen.getByRole("button", { name: "History" }));
     await user.click(await screen.findByRole("button", { name: "Restore version 1" }));
     expect(await screen.findByText(/Version 1 loaded into the editor/)).toBeVisible();
     expect(screen.getByRole("button", { name: "Discard changes" })).toBeEnabled();

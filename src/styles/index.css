@@ -158,6 +158,10 @@
   ::after {
     border-color: var(--border);
   }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--muted) 35%, transparent) transparent;
+  }
   html,
   body {
     height: 100%;

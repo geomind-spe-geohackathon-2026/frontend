@@ -193,7 +193,7 @@ function DocumentsTable({
   );
 }
 
-/** The project documents: upload, the list with its searchable status, and delete with a confirmation. */
+/** The project Library: upload, the list with its searchable status, and delete with a confirmation. */
 export function DocumentsPage() {
   const projectId = useRequiredParam("projectId");
   const documents = useInfiniteQuery(documentsQuery(projectId));
@@ -204,8 +204,8 @@ export function DocumentsPage() {
   return (
     <div className="flex flex-col">
       <PageHeader
-        title="Documents"
-        description="The assistant can search these."
+        title="Library"
+        description="Data files, reports and papers of the project; the assistant can search them."
         actions={<UploadButton projectId={projectId} />}
       />
       {formats.data === undefined ? null : (

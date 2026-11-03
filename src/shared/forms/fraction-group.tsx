@@ -30,46 +30,48 @@ export function FractionGroup({ name, label, schema }: Props) {
   const total = toTotal(value);
   const entries = Object.entries(schema.properties ?? {});
   return (
-    <fieldset className="flex flex-col gap-2 rounded-card border border-border p-3">
-      <legend className="px-1 text-[13px] font-medium text-text">{label}</legend>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-3 gap-y-1.5">
-        {entries.map(([key, child]) => (
-          <div key={key} className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2">
-            <span className="text-[12.5px] text-muted">{labelOf(key, child)}</span>
-            <ScalarControl
-              id={`${name}.${key}`}
-              name={`${name}.${key}.value`}
-              schema={child.properties?.value ?? {}}
-              invalid={false}
-              describedBy={undefined}
-              label={`${labelOf(key, child)} in mol %`}
-              scale={percent}
-            />
-          </div>
-        ))}
-      </div>
-      {total === null ? null : (
-        <p className="inline-flex items-center gap-1 text-[12.5px] tabular-nums">
-          Total {total.toFixed(1)} %
-          {Math.abs(total - percent) <= tolerance ? null : (
-            <span className="inline-flex items-center gap-1 text-warn">
-              <TriangleAlert aria-hidden="true" className="size-3.5" />
-              should be 100 %
-            </span>
-          )}
-        </p>
-      )}
-      <details className="text-[12px] text-muted">
-        <summary className="cursor-pointer">Advanced</summary>
-        <div className="mt-1 flex flex-col gap-1">
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 text-[13px] font-medium text-text">{label}</legend>
+      <div className="ml-1.5 flex flex-col gap-2 border-l border-border pl-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-3 gap-y-1.5">
           {entries.map(([key, child]) => (
-            <div key={key} className="flex items-center gap-2">
-              <span className="w-16">{labelOf(key, child)}</span>
-              <ValueExtras name={`${name}.${key}`} label={labelOf(key, child)} schema={child} />
+            <div key={key} className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2">
+              <span className="text-[12.5px] text-muted">{labelOf(key, child)}</span>
+              <ScalarControl
+                id={`${name}.${key}`}
+                name={`${name}.${key}.value`}
+                schema={child.properties?.value ?? {}}
+                invalid={false}
+                describedBy={undefined}
+                label={`${labelOf(key, child)} in mol %`}
+                scale={percent}
+              />
             </div>
           ))}
         </div>
-      </details>
+        {total === null ? null : (
+          <p className="inline-flex items-center gap-1 text-[12.5px] tabular-nums">
+            Total {total.toFixed(1)} %
+            {Math.abs(total - percent) <= tolerance ? null : (
+              <span className="inline-flex items-center gap-1 text-warn">
+                <TriangleAlert aria-hidden="true" className="size-3.5" />
+                should be 100 %
+              </span>
+            )}
+          </p>
+        )}
+        <details className="text-[12px] text-muted">
+          <summary className="cursor-pointer">Advanced</summary>
+          <div className="mt-1 flex flex-col gap-1">
+            {entries.map(([key, child]) => (
+              <div key={key} className="flex items-center gap-2">
+                <span className="w-16">{labelOf(key, child)}</span>
+                <ValueExtras name={`${name}.${key}`} label={labelOf(key, child)} schema={child} />
+              </div>
+            ))}
+          </div>
+        </details>
+      </div>
     </fieldset>
   );
 }

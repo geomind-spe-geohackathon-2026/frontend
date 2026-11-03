@@ -10,7 +10,7 @@ import { NewStudyDialog } from "./new-study-dialog";
 import { StudyTable } from "./study-table";
 import { useRefreshOnFinish } from "./use-refresh-on-finish";
 
-/** The 3 · Study page: studies of the project with progress, status, result links and a New study dialog. */
+/** The Study page: studies of the project with progress, status, result links and a New study dialog. */
 export function StudyPage() {
   const projectId = useRequiredParam("projectId");
   const studies = useInfiniteQuery(studiesQuery(projectId));
@@ -24,7 +24,7 @@ export function StudyPage() {
   return (
     <>
       <PageHeader
-        title="3 · Study"
+        title="Study"
         description="Heavy calculations run in the background. This list refreshes while one is running."
         actions={
           <Button

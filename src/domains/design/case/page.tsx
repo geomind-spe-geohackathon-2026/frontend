@@ -8,7 +8,7 @@ import { ConflictDialog } from "@/shared/forms/conflict-dialog";
 import type { SeriesSource } from "@/shared/forms/field-context";
 import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
-import { SchemaForm } from "@/shared/forms/schema-form";
+import { ConfigEditor } from "@/shared/forms/config-editor";
 import { UnsavedChangesDialog, useUnsavedGuard } from "@/shared/forms/unsaved-guard";
 import {
   isRecord,
@@ -18,6 +18,7 @@ import {
   type JsonSchema,
 } from "@/shared/forms/json-schema";
 import { PageHeader } from "@/shared/layout/page-header";
+import { HistoryButton } from "@/shared/layout/history-button";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,7 +37,6 @@ import {
   useUploadCaseFile,
 } from "./api";
 import { BlockerBanner } from "./blocker-banner";
-import { FilesButton } from "./files-panel";
 import { HistoryPanel } from "./history-panel";
 import { toEmptyCase } from "./empty-case";
 import type { Case, MissingValue } from "@/shared/api/types";
@@ -52,7 +52,6 @@ const FIELD_HINTS = {
   "site.reservoir.temperature":
     "Leave empty to compute it from the surface temperature and the gradient",
 };
-const historyTab = "history";
 
 function focusField(path: string): void {
   let candidate = path;
@@ -344,13 +343,13 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
             <MissingCount missing={[...editor.missing, ...editor.plantMissing]} section={section} />
           </TabsTrigger>
         ))}
-        <TabsTrigger value={historyTab}>History</TabsTrigger>
       </TabsList>
       {sections.map((section) => (
         <TabsContent key={section} value={section}>
           {section === REQUIREMENTS ? <p className="mb-2 text-muted">{REQUIREMENTS_HINT}</p> : null}
-          <SchemaForm
+          <ConfigEditor
             key={`${String(saved.version)}-${String(generation)}-${section}`}
+            jsonLabel={`JSON of ${labelOf(section, schema.properties?.[section] ?? {})}`}
             schema={schema.properties?.[section] ?? {}}
             initial={editor.content[section]}
             prefix={section}
@@ -367,28 +366,23 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
           />
         </TabsContent>
       ))}
-      <TabsContent value={historyTab}>
-        <HistoryPanel projectId={projectId} current={saved.version} />
-      </TabsContent>
     </Tabs>
   );
 }
 
 type ActionsProps = {
-  version: number;
   dirty: boolean;
   canSave: boolean;
-  files: ReactNode;
+  history: ReactNode;
   onDiscard: () => void;
   onSave: () => void;
 };
 
-function CaseActions({ version, dirty, canSave, files, onDiscard, onSave }: ActionsProps) {
+function CaseActions({ dirty, canSave, history, onDiscard, onSave }: ActionsProps) {
   return (
     <>
-      <Badge variant="off">Case v{version}</Badge>
       {dirty ? <span className="text-[12px] text-warn">unsaved changes</span> : null}
-      {files}
+      {history}
       <Button disabled={!dirty} onClick={onDiscard}>
         Discard changes
       </Button>
@@ -439,7 +433,8 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
     setGeneration((value) => value + 1);
   });
   const blocker = useUnsavedGuard(editor.dirty);
-  const tab = params.get("tab") ?? sectionsOf(schema)[0] ?? historyTab;
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const tab = params.get("tab") ?? sectionsOf(schema)[0] ?? "";
   const canSave = editor.dirty && editor.problems.length === 0 && !editor.isChecking;
   const showTab = (next: string) => {
     setParams({ tab: next }, { replace: true });
@@ -453,14 +448,18 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
   return (
     <>
       <PageHeader
-        title="1 · Case"
+        title="Case"
+        badge={<Badge variant="off">v{saved.version}</Badge>}
         description="Everything the design needs that is not the plant."
         actions={
           <CaseActions
-            version={saved.version}
             dirty={editor.dirty}
             canSave={canSave && !flow.save.isPending}
-            files={<FilesButton projectId={projectId} saved={saved} content={editor.content} />}
+            history={
+              <HistoryButton what="case" open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+                <HistoryPanel projectId={projectId} current={saved.version} />
+              </HistoryButton>
+            }
             onDiscard={flow.discard}
             onSave={() => {
               flow.setIsNoting(true);
@@ -485,12 +484,12 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
   );
 }
 
-/** The 1 · Case page: sections from gemini's case schema, forms with units, validation and versions. */
+/** The Case page: sections from gemini's case schema, forms with units, validation and versions. */
 export function CasePage() {
   const projectId = useRequiredParam("projectId");
   const schema = useQuery(caseSchemaQuery());
   const saved = useQuery(caseQuery(projectId));
-  const header = <PageHeader title="1 · Case" />;
+  const header = <PageHeader title="Case" />;
   if (schema.isError) {
     return (
       <>

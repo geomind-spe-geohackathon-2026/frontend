@@ -4,7 +4,7 @@ import { DialogClose } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Notice } from "@/shared/ui/notice";
-import { SchemaForm } from "@/shared/forms/schema-form";
+import { ConfigEditor } from "@/shared/forms/config-editor";
 import { isRecord, type Problem } from "@/shared/forms/json-schema";
 import { findMissing } from "@/shared/forms/missing";
 import type { StudyCreate, StudyKind } from "@/shared/api/types";
@@ -105,8 +105,9 @@ export function NewStudyForm({ projectId, kinds, error, pending, onSubmit }: Pro
       {selected === null ? null : <p className="text-muted">{selected.description}</p>}
       <NameField value={name} onValue={setName} />
       {selected === null ? null : (
-        <SchemaForm
+        <ConfigEditor
           key={selected.kind}
+          jsonLabel="JSON of the study settings"
           schema={selected.schema}
           initial={{}}
           missing={missing}

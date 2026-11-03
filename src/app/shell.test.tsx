@@ -96,8 +96,8 @@ describe("shell levels", () => {
 
   it("shows the progress label next to each design step", { timeout: 20_000 }, async () => {
     renderApp({ path: `${base}/design/case` });
-    const steps = await screen.findByRole("radiogroup", { name: "Design steps" });
-    expect(within(steps).getByRole("radio", { name: /Study.*1 running/ })).toBeInTheDocument();
+    const steps = await screen.findByRole("tablist", { name: "Design steps" });
+    expect(within(steps).getByRole("tab", { name: /Study.*1 running/ })).toBeInTheDocument();
   });
 
   it("hides the operation entries unless the flag is on", async () => {
@@ -158,13 +158,13 @@ describe("project routes", () => {
     ["assistant/chat/chat-1", "Chat"],
     ["assistant/runs", "Runs and logs"],
     ["assistant/runs/run-1", "Run log"],
-    ["design/case", "1 · Case"],
-    ["design/plant", "2 · Plant"],
-    ["design/study", "3 · Study"],
-    ["design/results", "4 · Results"],
-    ["design/results/result-1", "4 · Results"],
+    ["design/case", "Case"],
+    ["design/plant", "Plant"],
+    ["design/study", "Study"],
+    ["design/results", "Results"],
+    ["design/results/result-1", "Results"],
     ["design/report", "Report"],
-    ["documents", "Documents"],
+    ["library", "Library"],
     ["settings", "Project settings"],
   ];
 

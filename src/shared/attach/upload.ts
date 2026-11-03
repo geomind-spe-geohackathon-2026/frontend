@@ -36,3 +36,13 @@ export async function toReadDocument(projectId: string, file: File): Promise<voi
 export function toMessageWithFiles(content: string, names: string[]): string {
   return names.length === 0 ? content : `${content}\n\nAttached files: ${names.join(", ")}`;
 }
+
+/** Uploads a file to the project's documents without waiting for the assistant to read it. */
+export async function uploadDocument(projectId: string, file: File): Promise<void> {
+  toData(
+    await api.POST("/workspace/documents", {
+      body: { project: projectId, file },
+      bodySerializer: toFormData,
+    }),
+  );
+}

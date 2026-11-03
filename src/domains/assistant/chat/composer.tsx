@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent, type SubmitEvent } from "react";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
+import { clearDraft, readDraft } from "@/shared/attach/chat-draft";
 import { useAttachments } from "@/shared/attach/use-attachments";
 import {
   InputGroup,
@@ -26,7 +27,7 @@ type Props = {
 
 /** The message input with attached files: Send while no run is active, Cancel run while one is. */
 export function Composer({ projectId, sending, active, cancelling, onSend, onCancel }: Props) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(() => readDraft(projectId));
   const files = useAttachments(projectId);
 
   function handleSubmit(event: SubmitEvent): void {
@@ -35,6 +36,7 @@ export function Composer({ projectId, sending, active, cancelling, onSend, onCan
     if (content === "" || active || files.reading) return;
     onSend(toMessageWithFiles(content, files.names));
     setText("");
+    clearDraft(projectId);
     files.clear();
   }
 

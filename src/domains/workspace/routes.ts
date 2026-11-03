@@ -13,7 +13,7 @@ export const workspaceRoutes: DomainRoutes = {
       lazy: () => import("./overview/page").then((m) => ({ Component: m.OverviewPage })),
     },
     {
-      path: "documents",
+      path: "library",
       lazy: () => import("./documents/page").then((m) => ({ Component: m.DocumentsPage })),
     },
     {

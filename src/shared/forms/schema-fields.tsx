@@ -2,6 +2,7 @@ import { Plus, Trash2, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toChildPath, toFullPath, useFieldContext } from "./field-context";
 import { FieldFrame, isReported } from "./field-frame";
 import {
@@ -41,6 +42,8 @@ function toSingular(label: string): string {
 }
 
 const selectClass = "aria-invalid:border-warn";
+
+const branchClass = "ml-1.5 flex flex-col gap-2.5 border-l border-border pl-4";
 
 function ModeButton({ text, onClick }: { text: string; onClick: () => void }) {
   return (
@@ -210,17 +213,19 @@ function ListItem({ name, path, label, schema, onRemove }: NodeProps & { onRemov
   const title = isRecord(value) && typeof value.name === "string" ? value.name : label;
   const sentence = describeItem?.(value) ?? null;
   return (
-    <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="font-mono text-[13px] font-medium">{title}</h3>
           {sentence === null ? null : <p className="text-[12.5px] text-muted">{sentence}</p>}
         </div>
-        <Button aria-label={`Remove ${label}`} onClick={onRemove}>
+        <Button variant="ghost" size="icon-sm" aria-label={`Remove ${label}`} onClick={onRemove}>
           <Trash2 aria-hidden="true" className="size-3.5" />
         </Button>
       </div>
-      <div className="[&>fieldset]:border-0 [&>fieldset]:p-0 [&>fieldset>legend]:sr-only">
+      <div
+        className={`${branchClass} [&>fieldset>div]:ml-0 [&>fieldset>div]:border-l-0 [&>fieldset>div]:pl-0 [&>fieldset>legend]:sr-only`}
+      >
         <FieldNode name={name} path={path} label={label} schema={schema} />
       </div>
     </div>
@@ -232,7 +237,7 @@ function ListField({ name, path, label, schema }: NodeProps) {
   const { fields, append, remove } = useFieldArray({ control, name });
   const item = schema.items ?? {};
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {path.includes(".") ? <h3 className="text-[13px] font-medium">{label}</h3> : null}
       {fields.map((field, index) => (
         <ListItem
@@ -308,12 +313,11 @@ function OptionalGroup({ name, path, label, children }: NodeProps & { children: 
   const needsAttention =
     isReported(missing, full) || problems.some((problem) => problem.path.startsWith(full));
   return (
-    <details
-      open={hasContent(value) || needsAttention || !path.includes(".")}
-      className="rounded-card border border-border p-3"
-    >
-      <summary className="cursor-pointer text-[12.5px] text-muted">{label}</summary>
-      <div className="mt-2.5 flex flex-col gap-2.5">{children}</div>
+    <details open={hasContent(value) || needsAttention || !path.includes(".")}>
+      <summary className="cursor-pointer text-[13px] font-medium text-muted-foreground">
+        {label}
+      </summary>
+      <div className={`mt-2.5 ${branchClass}`}>{children}</div>
     </details>
   );
 }
@@ -354,9 +358,9 @@ function GroupFields(props: NodeProps) {
         {basic.map(child)}
       </div>
       {advanced.length === 0 ? null : (
-        <details className="rounded-control border border-border p-2">
+        <details>
           <summary className="cursor-pointer text-[12.5px] text-muted">Advanced</summary>
-          <div className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-start gap-x-3 gap-y-2.5">
+          <div className="mt-2 ml-1.5 border-l border-border pl-4 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-start gap-x-3 gap-y-2.5">
             {advanced.map(child)}
           </div>
         </details>
@@ -367,9 +371,9 @@ function GroupFields(props: NodeProps) {
   if (path === "") return <div className="flex flex-col gap-3">{body}</div>;
   if (optional) return <OptionalGroup {...props}>{body}</OptionalGroup>;
   return (
-    <fieldset className="flex flex-col gap-2.5 rounded-card border border-border p-3">
-      <legend className="px-1 text-[13px] font-medium text-text">{label}</legend>
-      {body}
+    <fieldset className="flex flex-col gap-2.5">
+      <legend className="mb-2.5 text-[13px] font-medium text-text">{label}</legend>
+      <div className={branchClass}>{body}</div>
     </fieldset>
   );
 }
@@ -435,27 +439,21 @@ function VariantField(props: NodeProps) {
   }
   return (
     <div className="col-span-full flex flex-col gap-2">
-      <div
-        role="radiogroup"
-        aria-label={`Form of ${props.label === "" ? "the value" : props.label}`}
-        className="inline-flex self-start rounded-control border border-border p-0.5"
+      <Tabs
+        value={String(active)}
+        onValueChange={(next) => {
+          setChosen(Number(next));
+          setValue(props.name, undefined, { shouldDirty: true, shouldValidate: true });
+        }}
       >
-        {variants.map((option, index) => (
-          <button
-            key={toVariantLabel(option)}
-            type="button"
-            role="radio"
-            aria-checked={index === active}
-            className={`rounded-control px-2.5 py-1 text-[12.5px] ${index === active ? "bg-accent-soft font-medium text-accent" : "text-muted"}`}
-            onClick={() => {
-              setChosen(index);
-              setValue(props.name, undefined, { shouldDirty: true, shouldValidate: true });
-            }}
-          >
-            {toVariantLabel(option)}
-          </button>
-        ))}
-      </div>
+        <TabsList aria-label={`Form of ${props.label === "" ? "the value" : props.label}`}>
+          {variants.map((option, index) => (
+            <TabsTrigger key={toVariantLabel(option)} value={String(index)}>
+              {toVariantLabel(option)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <VariantBody {...props} schema={variant} />
     </div>
   );

@@ -120,7 +120,10 @@ describe("SchemaForm", () => {
         prefix="economics"
       />,
     );
-    expect(screen.getByRole("radio", { name: "Fill in here" })).toBeChecked();
+    expect(screen.getByRole("tab", { name: "Fill in here" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     expect(screen.getByLabelText("Discount rate")).toBeVisible();
   });
 
@@ -133,7 +136,7 @@ describe("SchemaForm", () => {
         prefix="economics"
       />,
     );
-    await userEvent.click(screen.getByRole("radio", { name: "Fill in here" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Fill in here" }));
     expect(screen.getByLabelText("Discount rate")).toBeVisible();
   });
 

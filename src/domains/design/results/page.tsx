@@ -10,7 +10,7 @@ import { ResultPane } from "./result-pane";
 
 const compareTab = "compare";
 
-/** The 4 · Results page: one tab per result plus Compare; the selected tab is part of the address. */
+/** The Results page: one tab per result plus Compare; the selected tab is part of the address. */
 export function ResultsPage() {
   const projectId = useRequiredParam("projectId");
   const { resultId } = useParams();
@@ -60,10 +60,7 @@ export function ResultsPage() {
 
   return (
     <>
-      <PageHeader
-        title="4 · Results"
-        description="Designs found by the studies, with their checks."
-      />
+      <PageHeader title="Results" description="Designs found by the studies, with their checks." />
       {renderBody()}
     </>
   );

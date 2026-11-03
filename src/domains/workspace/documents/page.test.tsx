@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
-const path = "/projects/example-project-1/documents";
+const path = "/projects/example-project-1/library";
 
 describe("documents page", () => {
   it("lists documents with size and searchable status", async () => {
@@ -48,7 +48,7 @@ describe("documents page", () => {
   });
 
   it("shows the empty state for a project without documents", async () => {
-    renderApp({ path: "/projects/example-project-2/documents" });
+    renderApp({ path: "/projects/example-project-2/library" });
     expect(await screen.findByText(/No documents yet/)).toBeVisible();
   });
 

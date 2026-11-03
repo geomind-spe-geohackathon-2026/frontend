@@ -13,6 +13,8 @@ One entry point generates a form from gemini's JSON schema, with units, missing 
 />
 ```
 
+Every hand-made JSON config uses `ConfigEditor` (same props plus `jsonLabel`): the `SchemaForm` as an indented tree (each group's children sit under a left rule, like JSON nesting) and below it the same value as editable JSON in CodeMirror, loaded on demand. A form edit rewrites the JSON; a valid JSON edit resets the form to it and reports it through `onChange`; invalid JSON leaves the last valid value. Use `ConfigEditor`, not a bare `SchemaForm`, for any new config.
+
 The parent owns the value. It keeps what `onChange` reports, compares it with the saved document with `isEqualDocument` (empty parts and key order ignored) to know if it is dirty, and resets the form by changing `key` (after a save or a discard). Never copy server data into form state.
 
 ## What the schema drives
@@ -20,7 +22,7 @@ The parent owns the value. It keeps what `onChange` reports, compares it with th
 - A quantity is an object with `value` and `unit` properties: a number input and a unit select (or a fixed unit label). Typing the first value sets the unit to the first one the schema lists; no value is ever invented.
 - A scalar with a `unit` string (module parameters) shows the unit next to the label.
 - Strings, numbers, integers, booleans and enums become the matching control. Clearing a number removes the value.
-- Objects become fieldsets, lists of objects get add and remove buttons, `anyOf`/`oneOf` picks the alternative that fits the value (a file reference of a series is shown read only).
+- Objects become fieldsets drawn as tree branches, lists of objects get add and remove buttons, `anyOf`/`oneOf` picks the alternative that fits the value (a file reference of a series is shown read only).
 - Free objects (`{type: "object"}` with no properties) are not drawn and are kept as they are.
 - Labels come from `title` or the humanised property name.
 

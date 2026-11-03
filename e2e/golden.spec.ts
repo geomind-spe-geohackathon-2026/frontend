@@ -74,15 +74,8 @@ async function saveProfileToCase(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Add to Case" }).click({ timeout: 60_000 });
   await expect(page.getByText(/Case v\d+ saved/)).toBeVisible();
   await expect(page.getByText(/case is not complete yet/)).toBeHidden();
-  await page.getByRole("link", { name: "1 Case" }).click();
-  await page.getByRole("button", { name: /^Files/ }).click();
-  await expect(
-    page
-      .getByRole("dialog")
-      .getByText(/scripted/)
-      .first(),
-  ).toBeVisible();
-  await page.keyboard.press("Escape");
+  await page.getByRole("link", { name: "Design", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Case", exact: true })).toBeVisible();
 }
 
 test("golden path", async ({ page }, info) => {

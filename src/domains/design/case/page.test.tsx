@@ -23,7 +23,7 @@ describe("Case page", { timeout: 20000 }, () => {
     const names = within(tabs)
       .getAllByRole("tab")
       .map((tab) => tab.textContent.replace(/\d+$/, ""));
-    expect(names).toEqual(["Demand", "Site", "Economics", "Requirements", "History"]);
+    expect(names).toEqual(["Demand", "Site", "Economics", "Requirements"]);
     const banner = screen.getByRole("region", { name: "Missing values" });
     expect(banner).toHaveTextContent("2 values missing");
     expect(banner).toHaveTextContent("Economics › Gas price: value, unit missing");
@@ -46,7 +46,7 @@ describe("Case page", { timeout: 20000 }, () => {
       within(screen.getByRole("dialog")).getByRole("button", { name: "Save version" }),
     );
     expect(await screen.findByText("Case v2 saved")).toBeVisible();
-    expect(screen.getByText("Case v2")).toBeVisible();
+    expect(screen.getByText("v2", { exact: true })).toBeVisible();
   });
 
   it("offers a reload when somebody saved a newer version", async () => {
@@ -80,7 +80,7 @@ describe("Case page", { timeout: 20000 }, () => {
     renderApp({ path: withoutCase });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "Start the case" }));
-    expect(await screen.findByText("Case v1")).toBeVisible();
+    expect(await screen.findByText("v1", { exact: true })).toBeVisible();
   });
 
   it("shows the error state with a retry when the case cannot be loaded", async () => {

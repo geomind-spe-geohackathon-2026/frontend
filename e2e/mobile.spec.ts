@@ -13,7 +13,7 @@ const routes = [
   `${project}/design/study`,
   `${project}/design/results`,
   `${project}/design/report?result=example-result-1`,
-  `${project}/documents`,
+  `${project}/library`,
   `${project}/settings`,
 ];
 

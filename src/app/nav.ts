@@ -8,7 +8,6 @@ import {
   Gauge,
   LayoutDashboard,
   ScrollText,
-  Settings,
   ShieldCheck,
   Workflow,
   type LucideIcon,
@@ -36,8 +35,7 @@ const pageNav: NavGroup[] = [
     items: [
       { to: "overview", label: "Overview", icon: LayoutDashboard },
       { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
-      { to: "documents", label: "Documents", icon: Files },
-      { to: "settings", label: "Project settings", icon: Settings },
+      { to: "library", label: "Library", icon: Files },
     ],
   },
 ];
@@ -85,6 +83,7 @@ export function toProjectCrumbs(pathname: string, project: { id: string; name: s
   if (rest.startsWith("assistant/chat") || toDesignItem(rest) !== undefined) {
     return [...head, { label: "Chat" }];
   }
+  if (rest.startsWith("settings")) return [...head, { label: "Project settings" }];
   for (const group of projectNav) {
     const item = group.items.find((candidate) => rest.startsWith(candidate.to));
     if (item !== undefined) return [...head, { label: item.label }];

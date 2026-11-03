@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
-describe("projects home", () => {
+describe("projects home", { timeout: 20_000 }, () => {
   afterEach(() => {
     server.events.removeAllListeners();
   });
@@ -30,19 +30,11 @@ describe("projects home", () => {
     expect(await screen.findByText("0 chats · 0 runs")).toBeVisible();
   });
 
-  it("filters by name from the search box and keeps the search in the URL", async () => {
-    const { router } = renderApp({ path: "/projects" });
+  it("opens the main Search dialog from the search icon", async () => {
+    renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "Search projects" }));
-    await user.type(screen.getByRole("searchbox", { name: "Search projects" }), "campus");
-    await screen.findByRole("link", { name: /Example campus plant/ });
-    expect(screen.queryByRole("link", { name: /Example district plant/ })).not.toBeInTheDocument();
-    expect(router.state.location.search).toBe("?q=campus");
-  });
-
-  it("says so when no project matches", async () => {
-    renderApp({ path: "/projects?q=zzz" });
-    expect(await screen.findByText("No project matches.")).toBeVisible();
+    expect(await screen.findByPlaceholderText("Search projects and chats…")).toBeVisible();
   });
 
   it("shows the first-use message when there are no projects", async () => {
@@ -71,7 +63,7 @@ describe("projects home", () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.type(screen.getByLabelText("Name"), "Example new plant");
+    await user.type(await screen.findByLabelText("Name"), "Example new plant");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeVisible();
     expect(router.state.location.pathname).toBe("/projects/example-project-3/assistant/chat");
@@ -82,7 +74,7 @@ describe("projects home", () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.type(screen.getByLabelText("Name"), "   ");
+    await user.type(await screen.findByLabelText("Name"), "   ");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByText("Enter a name for the project.")).toBeVisible();
   });
@@ -100,7 +92,7 @@ describe("projects home", () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.click(screen.getByRole("radio", { name: "A project zip" }));
+    await user.click(await screen.findByRole("tab", { name: "Project zip" }));
     expect(screen.getByLabelText("Project zip")).toBeVisible();
     expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
   });
@@ -118,8 +110,8 @@ describe("projects home", () => {
     const { router } = renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.click(screen.getByRole("radio", { name: "A copy of another project's case" }));
-    await user.type(screen.getByLabelText("Name"), "Example copy");
+    await user.click(await screen.findByRole("tab", { name: "Copy a case" }));
+    await user.type(await screen.findByLabelText("Name"), "Example copy");
     await user.selectOptions(
       await screen.findByLabelText("Project to copy"),
       await screen.findByRole("option", { name: "Example district plant" }),
@@ -144,8 +136,8 @@ describe("projects home", () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
-    await user.click(screen.getByRole("radio", { name: "A copy of another project's case" }));
-    await user.type(screen.getByLabelText("Name"), "Example copy");
+    await user.click(await screen.findByRole("tab", { name: "Copy a case" }));
+    await user.type(await screen.findByLabelText("Name"), "Example copy");
     await user.selectOptions(
       await screen.findByLabelText("Project to copy"),
       await screen.findByRole("option", { name: "Example campus plant" }),

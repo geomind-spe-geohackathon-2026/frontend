@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
+import { openMainDialog } from "@/shared/layout/main-dialog";
 import { createHandlers } from "@/mocks/handlers";
 import { session } from "@/shared/api/session";
 import { server } from "./server";
@@ -41,6 +42,8 @@ afterEach(() => {
   server.resetHandlers();
   session.clear();
   window.localStorage.clear();
+  window.sessionStorage.clear();
+  openMainDialog(null);
   document.documentElement.removeAttribute("data-theme");
 });
 

@@ -2,6 +2,17 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.11 (2026-11-03)
+
+- Sidebar: the open project has two parts, its pages (Overview, Runs and logs, Library) and then its Chats. Pinned, the project and Chats open and close from their titles. The project's "…" menu holds Pin, Rename and Settings; Project settings left the list.
+- Documents is now Library (it holds data files, reports and papers). Knowledge (soon) sits above Scheduled.
+- New project dialog, the same everywhere: Start from (Empty case, Copy a case, Project zip), Name, "What do you want to work on?" (it waits in the first chat; nothing is sent until you send it) and a drop zone for context files, which go to the Library.
+- Projects page: the search icon opens the main Search dialog.
+- One switch style: every toggle is a shadcn Tabs list (design steps, From a file / Fill in here, new project start). The extra toggle components are gone.
+- Design pages: titles without numbers; the version (and on Plant the problems) sit next to the title. History is a button next to Save version on Case and Plant and opens in a large window; the Plant page always shows the flowsheet. The Files button is gone for now.
+- One config editor for every hand-made JSON config (all Case sections, new study settings): the form is an indented tree, like the JSON itself, and the same JSON shows below as editable text (CodeMirror). Each follows the other; Requirements looks like the other sections.
+- Thin scrollbars without a track.
+
 ## 1.1.10 (2026-11-03)
 
 - One sidebar everywhere: Geomind and the sidebar toggle at the top; New (opens New project), Search (projects and the chats of the open project), Projects and Scheduled (soon); then Pinned; then the open project with Overview, Runs and logs, Documents, Project settings and its chats; the user menu at the bottom.

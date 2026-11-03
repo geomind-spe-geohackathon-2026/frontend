@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError, hasCode } from "@/shared/api/errors";
 import { ConflictDialog } from "@/shared/forms/conflict-dialog";
@@ -7,11 +7,11 @@ import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { UnsavedChangesDialog, useUnsavedGuard } from "@/shared/forms/unsaved-guard";
 import { PageHeader } from "@/shared/layout/page-header";
+import { HistoryButton } from "@/shared/layout/history-button";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   flowsheetQuery,
@@ -21,7 +21,7 @@ import {
   plantVersionQuery,
   useSaveFlowsheet,
 } from "./api";
-import { FlowsheetTab, type FlowsheetProps } from "./flowsheet-tab";
+import { FlowsheetTab } from "./flowsheet-tab";
 import { HistoryPanel } from "./history-panel";
 import { ValidityStatus, toMissingModules } from "./validity-status";
 import type { ParameterDraft } from "./parameters-panel";
@@ -96,27 +96,23 @@ type ActionsProps = {
   version: number;
   dirty: boolean;
   canSave: boolean;
+  history: ReactNode;
   onTemplate: () => void;
   onDiscard: () => void;
   onSave: () => void;
 };
 
 function PlantActions({
-  editor,
-  version,
   dirty,
   canSave,
-  graph,
-  onSelect,
-  selected,
+  history,
   ...handlers
-}: ActionsProps) {
+}: Pick<ActionsProps, "dirty" | "canSave" | "history" | "onTemplate" | "onDiscard" | "onSave">) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <ValidityStatus editor={editor} graph={graph} selected={selected} onSelect={onSelect} />
-      <Badge variant="off">v{version}</Badge>
       {dirty ? <span className="text-[12.5px] text-muted">unsaved changes</span> : null}
       <Button onClick={handlers.onTemplate}>Start from template</Button>
+      {history}
       <Button disabled={!dirty} onClick={handlers.onDiscard}>
         Discard changes
       </Button>
@@ -205,7 +201,6 @@ function usePlantParams() {
   };
   return {
     selected: params.get("module"),
-    tab: params.get("tab") ?? "flowsheet",
     isFollowing: params.has(followKey),
     setValues,
     setParam: (key: string, value: string | null) => {
@@ -230,38 +225,22 @@ function useFollowMissing(
   });
 }
 
-type TabsProps = FlowsheetProps & {
-  tab: string;
-  onTab: (tab: string) => void;
-  onRestore: (number: number) => void;
-};
-
-function PlantTabs({ tab, onTab, onRestore, ...flowsheet }: TabsProps) {
-  return (
-    <Tabs value={tab} onValueChange={onTab}>
-      <TabsList aria-label="Plant views">
-        <TabsTrigger value="flowsheet">Flowsheet</TabsTrigger>
-        <TabsTrigger value="history">History</TabsTrigger>
-      </TabsList>
-      <TabsContent value="flowsheet">
-        <FlowsheetTab {...flowsheet} />
-      </TabsContent>
-      <TabsContent value="history">
-        <HistoryPanel
-          projectId={flowsheet.projectId}
-          current={flowsheet.saved.version}
-          onRestore={onRestore}
-        />
-      </TabsContent>
-    </Tabs>
-  );
-}
-
-function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
+function PlantHeader({ error, version, ...actions }: ActionsProps & { error: unknown }) {
   return (
     <>
       <PageHeader
-        title="2 · Plant"
+        title="Plant"
+        badge={
+          <>
+            <Badge variant="off">v{version}</Badge>
+            <ValidityStatus
+              editor={actions.editor}
+              graph={actions.graph}
+              selected={actions.selected}
+              onSelect={actions.onSelect}
+            />
+          </>
+        }
         description="The modules of the plant and how they are connected."
         actions={<PlantActions {...actions} />}
       />
@@ -274,23 +253,42 @@ function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
   );
 }
 
-function useRestore(
-  projectId: string,
-  editor: Editor,
-  setParam: (key: string, value: string | null) => void,
-) {
+function useRestore(projectId: string, editor: Editor) {
   const queryClient = useQueryClient();
   return async (number: number) => {
     editor.restore(await queryClient.query(plantVersionQuery(projectId, number)));
-    setParam("tab", null);
     toast(`Version ${String(number)} loaded into the editor; save to keep it`);
   };
+}
+
+function PlantHistory({
+  projectId,
+  current,
+  onRestore,
+}: {
+  projectId: string;
+  current: number;
+  onRestore: (number: number) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <HistoryButton what="plant" open={open} onOpenChange={setOpen}>
+      <HistoryPanel
+        projectId={projectId}
+        current={current}
+        onRestore={(number) => {
+          setOpen(false);
+          void onRestore(number);
+        }}
+      />
+    </HistoryButton>
+  );
 }
 
 function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   const editor = usePlantEditor(projectId, saved);
   const params = usePlantParams();
-  const { selected, tab, setParam } = params;
+  const { selected, setParam } = params;
   const [draft, setDraft] = useState<ParameterDraft | null>(null);
   const [isPickingTemplate, setIsPickingTemplate] = useState(false);
   const flow = useSaveFlow(projectId);
@@ -310,13 +308,14 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
     editor.reset();
     setDraft(null);
   };
-  const restore = useRestore(projectId, editor, setParam);
+  const restore = useRestore(projectId, editor);
   return (
     <>
       <PlantHeader
         {...{ editor, graph, selected, dirty, canSave }}
         version={saved.version}
         error={flow.error}
+        history={<PlantHistory projectId={projectId} current={saved.version} onRestore={restore} />}
         onSelect={select}
         onTemplate={() => {
           setIsPickingTemplate(true);
@@ -326,17 +325,13 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
           flow.setIsNoting(true);
         }}
       />
-      <PlantTabs
-        {...{ projectId, saved, palette, graph, editor, actions, selected, draft, tab }}
+      <FlowsheetTab
+        {...{ projectId, saved, palette, graph, editor, actions, selected, draft }}
         onSelect={select}
         onDraft={setDraft}
         onConflict={() => {
           flow.setHasConflict(true);
         }}
-        onTab={(next) => {
-          setParam("tab", next === "flowsheet" ? null : next);
-        }}
-        onRestore={(number) => void restore(number)}
       />
       <PlantDialogs
         {...{ saved, editor, flow, isPickingTemplate, onDiscard: discard }}
@@ -389,13 +384,13 @@ function EmptyPlant({ projectId }: { projectId: string }) {
   );
 }
 
-/** The 2 · Plant page: a flowsheet editor on gemini's plant document, with validation, versions and templates. */
+/** The Plant page: a flowsheet editor on gemini's plant document, with validation, versions and templates. */
 export function PlantPage() {
   const projectId = useRequiredParam("projectId");
   const saved = useQuery(flowsheetQuery(projectId));
   const palette = useQuery(paletteQuery());
   const ports = useQuery(portsQuery());
-  const header = <PageHeader title="2 · Plant" />;
+  const header = <PageHeader title="Plant" />;
   if (palette.isError) {
     return (
       <>

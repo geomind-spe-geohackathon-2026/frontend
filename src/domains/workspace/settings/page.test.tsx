@@ -6,7 +6,7 @@ import { renderApp } from "@/testing/render-app";
 const path = "/projects/example-project-1/settings";
 
 describe("project settings", () => {
-  it("renames the project and shows the new name in the sidebar", async () => {
+  it("renames the project and shows the new name in the sidebar", { timeout: 20_000 }, async () => {
     renderApp({ path });
     const user = userEvent.setup();
     const input = await screen.findByLabelText("Name");
@@ -15,7 +15,9 @@ describe("project settings", () => {
     await user.click(screen.getByRole("button", { name: "Save name" }));
     expect(await screen.findByText("Project renamed")).toBeVisible();
     expect(
-      await screen.findByText("Example renamed plant", { selector: "[data-sidebar=group-label]" }),
+      await screen.findByText("Example renamed plant", {
+        selector: "[data-sidebar=group-label] span",
+      }),
     ).toBeVisible();
   });
 
