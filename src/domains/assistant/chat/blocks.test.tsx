@@ -191,4 +191,10 @@ describe("Blocks", () => {
     render(<Blocks running={false} blocks={[tool("t1", "cut", gap)]} />);
     expect(screen.getByRole("status")).toHaveTextContent("No search range for the well depth");
   });
+
+  it("says why a run stopped when no design could be made or verified", () => {
+    const end: Block = { ...failedEnd, reason: "no_verified", message: "none verified" };
+    render(<Blocks running={false} blocks={[end]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("none passed verification");
+  });
 });

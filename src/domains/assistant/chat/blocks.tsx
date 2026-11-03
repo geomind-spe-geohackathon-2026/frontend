@@ -87,8 +87,15 @@ function ToolCard({ block }: { block: ToolBlock }) {
   );
 }
 
+const stopTexts: Record<string, string> = {
+  no_alternatives: "Stopped: no plant family could be designed for this case.",
+  no_verified: "Stopped: designs were found, but none passed verification.",
+};
+
 function toEndText(block: EndBlock, problem: string | null): string {
   const { status, message, reason } = block;
+  const known = stopTexts[reason];
+  if (known !== undefined) return known;
   if (status === "failed" && problem !== null) return problem;
   if (status === "cancelled" || message === null) return `Run ${status}`;
   const budget = toBudgetStop(message);

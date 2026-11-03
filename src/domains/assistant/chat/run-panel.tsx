@@ -1,3 +1,4 @@
+import { AlternativesTable } from "./alternatives-table";
 import { Chip } from "@/shared/ui/chip";
 import { useQuery } from "@tanstack/react-query";
 import { projectQuery } from "@/shared/api/projects";
@@ -100,6 +101,7 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
           <ProblemView document={view.problem.document} project={project.data} />
         </CardBody>
       </Card>
+      <AlternativesTable document={view.problem.document} projectId={projectId} />
       <Link
         to={`/projects/${projectId}/assistant/runs/${runId}`}
         className="block rounded-card border border-border bg-surface px-3 py-2 text-center"
