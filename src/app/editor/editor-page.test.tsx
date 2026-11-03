@@ -138,4 +138,21 @@ describe("Editor page", () => {
       expect(router.state.location.search).toContain("module=heat");
     }, slow);
   });
+
+  it("shows the plant read-only on a phone", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: () => ({ matches: false }),
+    });
+    try {
+      renderApp({ path: editor });
+      expect(await screen.findByText(/Read-only on a phone/, {}, slow)).toBeVisible();
+      expect(screen.getByRole("complementary", { name: "Chat dock" })).toBeVisible();
+    } finally {
+      Object.defineProperty(window, "matchMedia", {
+        writable: true,
+        value: () => ({ matches: true }),
+      });
+    }
+  });
 });

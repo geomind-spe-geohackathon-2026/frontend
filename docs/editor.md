@@ -29,6 +29,6 @@ Status: done, next, or blocked (with what it waits for).
 | E10 | Stream values on connections (flow, temperature) after a run. | blocked: results have no per-connection values; on the list for Sahand to ask gemini |
 | E11 | Readable chat endings for the stop codes `no_case` and `case_incomplete`: `tool.finished` carries `problem` (contract version 50), shown by `toFailureText` and at the end of a failed run. | done |
 | E12 | Report diagram: lines between Treatment and Heating still cross; choose port order by where the other end of each line sits (`shared/plant/flowsheet-layout.ts`). | next |
-| E13 | Phones: the editor shows the canvas read-only with the chat; editing stays on desktop. | next |
+| E13 | Phones (below 640 px): the plant is read-only with a notice, and the chat sits below it; editing stays on larger screens. | done |
 
 Visual checks still to do on production (handed over from the backend thread): the report diagram, Plant zoom in the competition project, wide report tables on a phone, Compare labels with several designs, Days covered in the dark theme, and Plant section unit conversion.

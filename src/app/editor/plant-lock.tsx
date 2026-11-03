@@ -1,9 +1,9 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
-type Props = { isLocked: boolean; children: ReactNode };
+type Props = { isLocked: boolean; message: string; children: ReactNode };
 
-/** Keeps the plant read-only while a study runs, so the run and the canvas show the same design. */
-export function PlantLock({ isLocked, children }: Props) {
+/** Keeps the plant read-only, with a message that says why, such as a running study. */
+export function PlantLock({ isLocked, message, children }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = ref.current;
@@ -12,18 +12,18 @@ export function PlantLock({ isLocked, children }: Props) {
     else element.removeAttribute("inert");
   }, [isLocked]);
   return (
-    <div className="relative" aria-busy={isLocked}>
-      <div ref={ref} className={isLocked ? "opacity-60" : undefined}>
-        {children}
-      </div>
+    <div aria-busy={isLocked}>
       {isLocked ? (
         <div
           role="status"
-          className="absolute inset-x-0 top-2 mx-auto w-fit rounded-card border border-accent bg-accent-soft px-3 py-1.5"
+          className="mb-2 rounded-card border border-accent bg-accent-soft px-3 py-1.5"
         >
-          A study is running. The plant is read-only until it ends.
+          {message}
         </div>
       ) : null}
+      <div ref={ref} className={isLocked ? "opacity-60" : undefined}>
+        {children}
+      </div>
     </div>
   );
 }

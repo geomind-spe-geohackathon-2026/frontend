@@ -8,6 +8,7 @@ import { PlantLock } from "./plant-lock";
 import { ResultsDrawer } from "./results-drawer";
 import { RunBar } from "./run-bar";
 import { useActiveStudy } from "./use-active-study";
+import { useWideScreen } from "./use-wide-screen";
 
 const chatKey = "chat";
 const panelsKey = "panels";
@@ -55,11 +56,17 @@ function useEditorParams() {
   };
 }
 
+function toLockMessage(isRunning: boolean): string {
+  if (isRunning) return "A study is running. The plant is read-only until it ends.";
+  return "Read-only on a phone. Edit the plant on a larger screen, or ask in the chat.";
+}
+
 /** The Editor: plant, chat dock and results drawer on one screen, with the study toolbar on top. */
 export function EditorPage() {
   const projectId = useRequiredParam("projectId");
   const { chatId, panels, setChat, setPanels, showHistory, selectModule } = useEditorParams();
   const isRunning = useActiveStudy(projectId);
+  const isWide = useWideScreen();
   return (
     <div className="flex min-h-[560px] flex-col gap-3 min-[1000px]:h-[calc(100dvh-86px)]">
       <RunBar
@@ -80,7 +87,7 @@ export function EditorPage() {
       {isRunning ? null : <ModuleResults projectId={projectId} onModule={selectModule} />}
       <div className="flex min-h-0 flex-1 gap-3 max-[1000px]:flex-col">
         <section aria-label="Plant" className="@container min-w-0 flex-1 overflow-auto">
-          <PlantLock isLocked={isRunning}>
+          <PlantLock isLocked={isRunning || !isWide} message={toLockMessage(isRunning)}>
             <PlantPage />
           </PlantLock>
         </section>
