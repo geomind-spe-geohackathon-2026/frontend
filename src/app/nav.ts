@@ -59,9 +59,15 @@ export const projectNav: NavGroup[] =
 export type Crumb = { label: string; to?: string };
 
 const homeLabels: Record<string, string> = { "/account": "Account", "/users": "Users" };
+const topLabels: Record<string, string> = {
+  "/connectors": "Connectors",
+  "/knowledge": "Knowledge",
+};
 
-/** Breadcrumb of a page outside a project: Projects, then the page. */
+/** Breadcrumb of a page outside a project: Projects, then the page; Connectors and Knowledge stand alone. */
 export function toHomeCrumbs(pathname: string): Crumb[] {
+  const top = topLabels[pathname];
+  if (top !== undefined) return [{ label: top }];
   const page = homeLabels[pathname];
   if (page === undefined) return [{ label: "Projects" }];
   return [{ label: "Projects", to: "/projects" }, { label: page }];

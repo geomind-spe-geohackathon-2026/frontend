@@ -2,6 +2,12 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## Unreleased (on dev; ships when the backend has the routes)
+
+- Knowledge page (sidebar, no longer "soon"): the agents' shared memory. Values with their source and status, search, Add value (a source with a page or a link is required), CSV catalogue import, delete; Past designs open in a window.
+- Connectors page: MCP servers for the agents. Add connector (URL, transport, token or key, never shown again), status dot, tools window (read only or asks approval), Check, On, Remove.
+- The routes are typed by hand in `shared/api/pending.ts` until `schema.d.ts` is regenerated; a server without them shows "This server does not offer ... yet".
+
 ## 1.1.13 (2026-11-03)
 
 - Config editor everywhere: no columns. Each field takes its own row; a group (such as Ground) opens with a line on its left and its fields indented under it. Under a quantity's name, its value and unit, then Range and Uncertainty, sit behind the same line.

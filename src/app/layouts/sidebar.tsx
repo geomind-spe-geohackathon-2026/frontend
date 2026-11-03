@@ -137,9 +137,28 @@ function SoonItem({ label, icon: Icon }: { label: string; icon: LucideIcon }) {
   );
 }
 
-function MainItems() {
+function MainLink({ to, label, icon: Icon }: { to: string; label: string; icon: LucideIcon }) {
   const { setOpenMobile } = useSidebar();
-  const onProjects = useMatch({ path: "/projects", end: true }) !== null;
+  const active = useMatch({ path: to, end: true }) !== null;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active} tooltip={label}>
+        <Link
+          to={to}
+          className={linkClass}
+          onClick={() => {
+            setOpenMobile(false);
+          }}
+        >
+          <Icon aria-hidden="true" />
+          <span>{label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+function MainItems() {
   return (
     <nav aria-label="Main">
       <SidebarGroup className="py-1">
@@ -166,22 +185,9 @@ function MainItems() {
               <span>Search</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={onProjects} tooltip="Projects">
-              <Link
-                to="/projects"
-                className={linkClass}
-                onClick={() => {
-                  setOpenMobile(false);
-                }}
-              >
-                <FolderOpen aria-hidden="true" />
-                <span>Projects</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SoonItem label="Connectors" icon={Plug} />
-          <SoonItem label="Knowledge" icon={BookOpen} />
+          <MainLink to="/projects" label="Projects" icon={FolderOpen} />
+          <MainLink to="/connectors" label="Connectors" icon={Plug} />
+          <MainLink to="/knowledge" label="Knowledge" icon={BookOpen} />
           <SoonItem label="Scheduled" icon={CalendarClock} />
         </SidebarMenu>
       </SidebarGroup>

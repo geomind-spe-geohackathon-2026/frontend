@@ -2,6 +2,7 @@ import type { RequestHandler } from "msw";
 import { assistantHandlers } from "./assistant";
 import { caseHandlers } from "./case";
 import { identityHandlers } from "./identity";
+import { pendingHandlers } from "./knowledge";
 import { plantHandlers } from "./plant";
 import { reportHandlers } from "./report";
 import { resultsHandlers } from "./results";
@@ -19,5 +20,6 @@ export function createHandlers(): RequestHandler[] {
     ...studyHandlers(),
     ...resultsHandlers(),
     ...reportHandlers(),
+    ...pendingHandlers(),
   ];
 }

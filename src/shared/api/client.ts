@@ -2,6 +2,7 @@ import createClient from "openapi-fetch";
 import { ApiError, fromResponse } from "./errors";
 import { session } from "./session";
 import type { paths } from "./schema";
+import type { PendingPaths } from "./pending";
 import type { TokenPair } from "./types";
 
 const authPath = "/identity/authn/";
@@ -90,7 +91,7 @@ function createAuthFetch(baseUrl: string): (request: Request) => Promise<Respons
 
 /** Builds the typed /api/v1 client: bearer token, single-flight refresh on 401, ApiError on failure. */
 export function createApiClient(baseUrl: string) {
-  return createClient<paths>({ baseUrl, fetch: createAuthFetch(baseUrl) });
+  return createClient<paths & PendingPaths>({ baseUrl, fetch: createAuthFetch(baseUrl) });
 }
 
 /** The application client. */

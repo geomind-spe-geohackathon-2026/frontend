@@ -6,6 +6,14 @@ export const workspaceRoutes: DomainRoutes = {
       path: "/projects",
       lazy: () => import("./projects/page").then((m) => ({ Component: m.ProjectsPage })),
     },
+    {
+      path: "/knowledge",
+      lazy: () => import("./knowledge/page").then((m) => ({ Component: m.KnowledgePage })),
+    },
+    {
+      path: "/connectors",
+      lazy: () => import("./connectors/page").then((m) => ({ Component: m.ConnectorsPage })),
+    },
   ],
   project: [
     {
