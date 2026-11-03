@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.20 (2026-11-03)
+
+- Chat box: the log button is back next to the usage ring instead of inside its window; the ring's window only shows usage.
+
 ## 1.1.19 (2026-11-03)
 
 - Chat usage ring fills with how much of the model's context the last call used, as soon as the server sends `context_window` on `step.started` (asked of the backend); the window shows the share in percent too. Older servers: the ring stays empty as before.

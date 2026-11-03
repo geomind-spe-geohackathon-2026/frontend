@@ -1,6 +1,4 @@
-import { useState, type ReactNode } from "react";
-import { ScrollText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 import { InputGroupButton } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Quantity } from "@/shared/quantity/quantity";
@@ -44,15 +42,13 @@ type Props = {
   window: number | null;
   usage: Usage;
   cost: number;
-  onOpenLog: () => void;
 };
 
-/** Like Claude's composer: a quiet ring that opens what this chat used so far, with the log one click away. */
-export function UsageRing({ context, window, usage, cost, onOpenLog }: Props) {
-  const [open, setOpen] = useState(false);
+/** Like Claude's composer: a quiet ring that opens what this chat used so far. */
+export function UsageRing({ context, window, usage, cost }: Props) {
   const share = window === null || window === 0 ? null : context / window;
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover>
       <PopoverTrigger asChild>
         <InputGroupButton
           size="icon-sm"
@@ -80,18 +76,6 @@ export function UsageRing({ context, window, usage, cost, onOpenLog }: Props) {
             <Quantity value={cost} unit="USD" fractionDigits={3} />
           </Row>
         </dl>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-2 w-full justify-start"
-          onClick={() => {
-            setOpen(false);
-            onOpenLog();
-          }}
-        >
-          <ScrollText aria-hidden="true" />
-          Open the log
-        </Button>
       </PopoverContent>
     </Popover>
   );

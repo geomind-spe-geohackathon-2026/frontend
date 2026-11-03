@@ -16,11 +16,6 @@ async function sendMessage(text: string): Promise<void> {
   await user.click(screen.getByRole("button", { name: "Send" }));
 }
 
-async function openLog(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.click(await screen.findByRole("button", { name: "Usage of this chat" }));
-  await user.click(await screen.findByRole("button", { name: "Open the log" }));
-}
-
 describe("chat page", () => {
   it("lists the chats and replays the finished run with its tool cards and delegated agent", async () => {
     renderApp({ path: `${base}/example-chat-1` });
@@ -32,7 +27,7 @@ describe("chat page", () => {
       "aria-current",
       "page",
     );
-    await openLog(userEvent.setup());
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Log of this chat" }));
     expect((await screen.findAllByText("done")).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Open full log" })).toHaveAttribute(
       "href",
@@ -64,7 +59,7 @@ describe("chat page", () => {
 
   it("shows the problem state the run built", async () => {
     renderApp({ path: `${base}/example-chat-1` });
-    await openLog(userEvent.setup());
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Log of this chat" }));
     const panel = await screen.findByRole("heading", { name: "What it knows" });
     const card = panel.closest("div")?.parentElement;
     expect(card).not.toBeNull();
