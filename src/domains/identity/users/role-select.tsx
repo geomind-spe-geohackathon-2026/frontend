@@ -1,4 +1,5 @@
 import type { User } from "@/shared/api/types";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Role = User["role"];
 
@@ -17,7 +18,7 @@ function isRole(value: string): value is Role {
 /** A select for the two roles, admin and member. */
 export function RoleSelect({ id, value, onChange, label, disabled }: Props) {
   return (
-    <select
+    <NativeSelect
       id={id}
       aria-label={label}
       value={value}
@@ -25,10 +26,10 @@ export function RoleSelect({ id, value, onChange, label, disabled }: Props) {
       onChange={(event) => {
         if (isRole(event.target.value)) onChange(event.target.value);
       }}
-      className="rounded-control border border-border bg-surface px-2 py-[7px]"
+      className=""
     >
-      <option value="member">member</option>
-      <option value="admin">admin</option>
-    </select>
+      <NativeSelectOption value="member">member</NativeSelectOption>
+      <NativeSelectOption value="admin">admin</NativeSelectOption>
+    </NativeSelect>
   );
 }

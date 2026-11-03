@@ -1,7 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { checkModuleId, readConnections, splitPort } from "@/shared/plant/spec";
 import type { PlantSpec } from "./types";
@@ -22,7 +22,8 @@ function IdField({ spec, moduleId, onRename }: Pick<Props, "spec" | "moduleId" |
     if (problem === null && text !== moduleId) onRename(text);
   };
   return (
-    <Field label="Module id" htmlFor="module-id">
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor="module-id">Module id</FieldLabel>
       <Input
         id="module-id"
         value={text}

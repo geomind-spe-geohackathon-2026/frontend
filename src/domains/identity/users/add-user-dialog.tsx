@@ -10,11 +10,36 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useCreateUser } from "./api";
 import { RoleSelect } from "./role-select";
+
+function AccountFields() {
+  return (
+    <>
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="new-user-name">Name</FieldLabel>
+        <Input id="new-user-name" name="name" required />
+      </Field>
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="new-user-email">Email</FieldLabel>
+        <Input id="new-user-email" name="email" type="email" required />
+      </Field>
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="new-user-password">First password</FieldLabel>
+        <Input
+          id="new-user-password"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          required
+        />
+      </Field>
+    </>
+  );
+}
 
 function AddUserForm({ onCreated }: { onCreated: () => void }) {
   const [role, setRole] = useState<User["role"]>("member");
@@ -42,22 +67,9 @@ function AddUserForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <Field label="Name" htmlFor="new-user-name">
-        <Input id="new-user-name" name="name" required />
-      </Field>
-      <Field label="Email" htmlFor="new-user-email">
-        <Input id="new-user-email" name="email" type="email" required />
-      </Field>
-      <Field label="First password" htmlFor="new-user-password">
-        <Input
-          id="new-user-password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-        />
-      </Field>
-      <Field label="Role" htmlFor="new-user-role">
+      <AccountFields />
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="new-user-role">Role</FieldLabel>
         <RoleSelect id="new-user-role" value={role} onChange={setRole} />
       </Field>
       {create.error === null ? null : (

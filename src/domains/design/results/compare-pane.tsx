@@ -2,12 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { Scatter, type ScatterPoint } from "@/shared/charts/scatter";
 import { Card, CardContent } from "@/components/ui/card";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Notice } from "@/shared/ui/notice";
 import type { ResultComparison, Kpi, Result } from "@/shared/api/types";
 import { comparisonQuery } from "./api";
 import { findKpi, toMergedPoints, toSharedKpis } from "./compare";
 import { CompareTable } from "./compare-table";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = { projectId: string; results: Result[] };
 
@@ -78,21 +79,22 @@ function KpiSelect({
   onValue: (value: string) => void;
 }) {
   return (
-    <Field label={label} htmlFor={id}>
-      <select
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <NativeSelect
         id={id}
         value={value}
         onChange={(event) => {
           onValue(event.target.value);
         }}
-        className="rounded-control border border-border bg-surface px-2.5 py-[7px]"
+        className=""
       >
         {kpis.map((kpi) => (
-          <option key={kpi.name} value={kpi.name}>
+          <NativeSelectOption key={kpi.name} value={kpi.name}>
             {kpi.title}
-          </option>
+          </NativeSelectOption>
         ))}
-      </select>
+      </NativeSelect>
     </Field>
   );
 }

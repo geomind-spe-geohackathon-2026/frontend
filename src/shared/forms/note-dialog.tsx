@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 type Props = {
@@ -32,7 +32,8 @@ export function NoteDialog({ open, pending, onSave, onClose }: Props) {
             onSave(note.trim());
           }}
         >
-          <Field label="Note" htmlFor="version-note">
+          <Field className="gap-1.5">
+            <FieldLabel htmlFor="version-note">Note</FieldLabel>
             <Input
               id="version-note"
               value={note}

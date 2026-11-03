@@ -43,6 +43,7 @@ import type { Case, MissingValue } from "@/shared/api/types";
 import type { CaseContent } from "./types";
 import { toRequirementText } from "./requirement-text";
 import { useCaseEditor } from "./use-case-editor";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 const REQUIREMENTS = "requirements";
 const REQUIREMENTS_HINT =
@@ -144,21 +145,21 @@ function CopyCase({ projectId }: { projectId: string }) {
         Copy from another project
       </label>
       <div className="flex flex-wrap items-center gap-2">
-        <select
+        <NativeSelect
           id="case-source"
-          className="rounded-control border border-border bg-surface px-2 py-[7px]"
+          className=""
           value={source}
           onChange={(event) => {
             setSource(event.target.value);
           }}
         >
-          <option value="">Choose a project</option>
+          <NativeSelectOption value="">Choose a project</NativeSelectOption>
           {others.map((project) => (
-            <option key={project.id} value={project.id}>
+            <NativeSelectOption key={project.id} value={project.id}>
               {project.name}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
         <Button
           disabled={source === "" || copy.isPending}
           onClick={() => {

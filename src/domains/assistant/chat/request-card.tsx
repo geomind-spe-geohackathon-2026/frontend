@@ -1,6 +1,6 @@
 import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import type { Answer } from "@/shared/api/types";
 import type { RunRequest } from "@/shared/sse/types";
@@ -16,7 +16,8 @@ function Approval({ pending, onAnswer }: Pick<Props, "pending" | "onAnswer">) {
   const [reason, setReason] = useState("");
   return (
     <div className="space-y-2">
-      <Field label="Reason (optional)" htmlFor="approval-reason">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="approval-reason">Reason (optional)</FieldLabel>
         <Input
           id="approval-reason"
           value={reason}
@@ -74,7 +75,8 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
       {request.options === undefined ? (
         <form onSubmit={handleSubmit} className="flex items-end gap-2">
           <div className="flex-1">
-            <Field label="Your answer" htmlFor="question-answer">
+            <Field className="gap-1.5">
+              <FieldLabel htmlFor="question-answer">Your answer</FieldLabel>
               <Input
                 id="question-answer"
                 value={text}

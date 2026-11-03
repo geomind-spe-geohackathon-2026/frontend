@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { toFieldResult, toFieldText, toRangeText } from "./parameter-fields";
 import type { FieldEdit, ParameterField } from "./parameter-fields";
 import { ParameterRange, type RangeEdit, type Search } from "./parameter-range";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = {
   field: ParameterField;
@@ -16,8 +17,7 @@ type Props = {
   onRange: (name: string, edit: RangeEdit | null) => void;
 };
 
-const selectClass =
-  "min-w-0 rounded-control border border-border bg-surface px-1.5 py-[7px] aria-invalid:border-warn";
+const selectClass = "min-w-0 aria-invalid:border-warn";
 
 type ControlProps = {
   field: ParameterField;
@@ -30,7 +30,7 @@ type ControlProps = {
 
 function ChoiceControl({ field, id, text, invalid, describedBy, onText }: ControlProps) {
   return (
-    <select
+    <NativeSelect
       id={id}
       aria-invalid={invalid}
       aria-describedby={describedBy}
@@ -40,13 +40,15 @@ function ChoiceControl({ field, id, text, invalid, describedBy, onText }: Contro
         onText(event.target.value);
       }}
     >
-      {field.nullable || text === "" ? <option value="">Not set</option> : null}
+      {field.nullable || text === "" ? (
+        <NativeSelectOption value="">Not set</NativeSelectOption>
+      ) : null}
       {field.options.map((option) => (
-        <option key={option} value={option}>
+        <NativeSelectOption key={option} value={option}>
           {option}
-        </option>
+        </NativeSelectOption>
       ))}
-    </select>
+    </NativeSelect>
   );
 }
 
@@ -95,7 +97,7 @@ function UnitControl({
 }) {
   if (field.units.length > 1) {
     return (
-      <select
+      <NativeSelect
         aria-label={`Unit of ${field.label}`}
         className={`${selectClass} max-w-[92px] shrink-0`}
         value={unit ?? ""}
@@ -104,11 +106,11 @@ function UnitControl({
         }}
       >
         {field.units.map((option) => (
-          <option key={option} value={option}>
+          <NativeSelectOption key={option} value={option}>
             {option}
-          </option>
+          </NativeSelectOption>
         ))}
-      </select>
+      </NativeSelect>
     );
   }
   if (unit === null || unit === "-") return null;

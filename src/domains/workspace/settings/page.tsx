@@ -8,7 +8,7 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useDeleteProject, useExportProject, useRenameProject, useSetBudget } from "./api";
@@ -30,7 +30,8 @@ function RenameForm({ project }: { project: Project }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <Field label="Name" htmlFor="project-name">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="project-name">Name</FieldLabel>
         <Input id="project-name" name="name" defaultValue={project.name} required />
       </Field>
       {rename.error === null ? null : (
@@ -75,7 +76,8 @@ function BudgetForm({ project }: { project: Project }) {
           The assistant stops once the project reaches a cap. Empty means no cap.
         </p>
       </div>
-      <Field label="Token cap" htmlFor="project-max-tokens">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="project-max-tokens">Token cap</FieldLabel>
         <Input
           id="project-max-tokens"
           name="max_tokens"
@@ -85,7 +87,8 @@ function BudgetForm({ project }: { project: Project }) {
           defaultValue={project.budget.max_tokens ?? ""}
         />
       </Field>
-      <Field label="Cost cap (USD)" htmlFor="project-max-cost">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="project-max-cost">Cost cap (USD)</FieldLabel>
         <Input
           id="project-max-cost"
           name="max_cost"

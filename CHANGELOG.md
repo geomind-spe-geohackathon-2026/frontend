@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.3 (2026-11-03)
+
+- Forms use shadcn Field and FieldLabel; every drop-down is shadcn Native Select (still a native select, so keyboard and phone pickers work as before).
+- Loading, empty and error panels use shadcn Spinner, Empty and Alert. The hand-written Field component is gone.
+
 ## 1.1.2 (2026-11-03)
 
 - Every table (runs, studies, documents, users, history, results, chat alternatives, Markdown) uses shadcn Table; the hand-written scroll wrapper is gone.

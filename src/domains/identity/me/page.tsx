@@ -6,7 +6,7 @@ import type { User } from "@/shared/api/types";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useChangePassword } from "./api";
 
@@ -49,7 +49,8 @@ function PasswordForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Field label="Current password" htmlFor="old_password">
+          <Field className="gap-1.5">
+            <FieldLabel htmlFor="old_password">Current password</FieldLabel>
             <Input
               id="old_password"
               name="old_password"
@@ -58,7 +59,8 @@ function PasswordForm() {
               required
             />
           </Field>
-          <Field label="New password" htmlFor="new_password">
+          <Field className="gap-1.5">
+            <FieldLabel htmlFor="new_password">New password</FieldLabel>
             <Input
               id="new_password"
               name="new_password"

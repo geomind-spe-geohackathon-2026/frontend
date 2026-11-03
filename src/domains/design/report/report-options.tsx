@@ -1,9 +1,10 @@
 import { toShortId } from "@/lib/shortid";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import type { ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = {
   results: Result[];
@@ -18,7 +19,7 @@ type Props = {
   onCompact: () => void;
 };
 
-const selectClass = "w-full rounded-control border border-border bg-surface px-2.5 py-[7px]";
+const selectClass = "w-full";
 
 function PartsFieldset({
   parts,
@@ -74,8 +75,9 @@ export function ReportOptions({
   return (
     <Card>
       <CardContent className="flex flex-col gap-3">
-        <Field label="Design" htmlFor="report-result">
-          <select
+        <Field className="gap-1.5">
+          <FieldLabel htmlFor="report-result">Design</FieldLabel>
+          <NativeSelect
             id="report-result"
             className={selectClass}
             value={result}
@@ -84,14 +86,15 @@ export function ReportOptions({
             }}
           >
             {results.map((entry) => (
-              <option key={entry.id} value={entry.id}>
+              <NativeSelectOption key={entry.id} value={entry.id}>
                 {entry.name}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </Field>
-        <Field label="Agent log from" htmlFor="report-run">
-          <select
+        <Field className="gap-1.5">
+          <FieldLabel htmlFor="report-run">Agent log from</FieldLabel>
+          <NativeSelect
             id="report-run"
             className={selectClass}
             value={run}
@@ -99,14 +102,14 @@ export function ReportOptions({
               onRun(event.target.value);
             }}
           >
-            <option value="">No run</option>
+            <NativeSelectOption value="">No run</NativeSelectOption>
             {runs.map((entry) => (
-              <option
+              <NativeSelectOption
                 key={entry.id}
                 value={entry.id}
-              >{`Run ${toShortId(entry.id)} (${entry.status})`}</option>
+              >{`Run ${toShortId(entry.id)} (${entry.status})`}</NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </Field>
         <PartsFieldset parts={parts} chosen={chosen} onPart={onPart} onCompact={onCompact} />
       </CardContent>

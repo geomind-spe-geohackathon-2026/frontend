@@ -11,10 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { projectsQuery, useCreateProject, useImportProject } from "./api";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Source = "empty" | "copy" | "zip";
 
@@ -71,20 +72,16 @@ function CopyPicker() {
   const projects = useInfiniteQuery(projectsQuery(""));
   const items = toItems(projects.data?.pages);
   return (
-    <Field label="Project to copy" htmlFor="project-copy">
-      <select
-        id="project-copy"
-        name="case_from"
-        required
-        className="w-full rounded-control border border-border bg-surface px-2.5 py-[7px]"
-      >
-        <option value="" />
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor="project-copy">Project to copy</FieldLabel>
+      <NativeSelect id="project-copy" name="case_from" required className="w-full">
+        <NativeSelectOption value="" />
         {items.map((project) => (
-          <option key={project.id} value={project.id}>
+          <NativeSelectOption key={project.id} value={project.id}>
             {project.name}
-          </option>
+          </NativeSelectOption>
         ))}
-      </select>
+      </NativeSelect>
     </Field>
   );
 }
@@ -147,12 +144,14 @@ function NewProjectForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <SourceChoice source={source} onChange={setSource} />
       {source === "zip" ? (
-        <Field label="Project zip" htmlFor="project-zip">
+        <Field className="gap-1.5">
+          <FieldLabel htmlFor="project-zip">Project zip</FieldLabel>
           <Input id="project-zip" name="file" type="file" accept=".zip" required />
         </Field>
       ) : (
         <>
-          <Field label="Name" htmlFor="project-name">
+          <Field className="gap-1.5">
+            <FieldLabel htmlFor="project-name">Name</FieldLabel>
             <Input id="project-name" name="name" />
           </Field>
           {nameMissing ? <NameProblem /> : null}

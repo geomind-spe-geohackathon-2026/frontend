@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Notice } from "@/shared/ui/notice";
 import { SchemaForm } from "@/shared/forms/schema-form";
 import { isRecord, type Problem } from "@/shared/forms/json-schema";
 import { findMissing } from "@/shared/forms/missing";
 import type { StudyCreate, StudyKind } from "@/shared/api/types";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = {
   projectId: string;
@@ -27,31 +28,33 @@ function KindSelect({
   onValue: (value: string) => void;
 }) {
   return (
-    <Field label="Kind" htmlFor="study-kind">
-      <select
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor="study-kind">Kind</FieldLabel>
+      <NativeSelect
         id="study-kind"
         value={value}
         onChange={(event) => {
           onValue(event.target.value);
         }}
-        className="w-full rounded-control border border-border bg-surface px-2.5 py-[7px]"
+        className="w-full"
       >
-        <option value="">Choose a kind</option>
+        <NativeSelectOption value="">Choose a kind</NativeSelectOption>
         {kinds
           .filter((entry) => entry.use === "method")
           .map((entry) => (
-            <option key={entry.kind} value={entry.kind}>
+            <NativeSelectOption key={entry.kind} value={entry.kind}>
               {entry.title}
-            </option>
+            </NativeSelectOption>
           ))}
-      </select>
+      </NativeSelect>
     </Field>
   );
 }
 
 function NameField({ value, onValue }: { value: string; onValue: (value: string) => void }) {
   return (
-    <Field label="Name" htmlFor="study-name">
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor="study-name">Name</FieldLabel>
       <Input
         id="study-name"
         value={value}

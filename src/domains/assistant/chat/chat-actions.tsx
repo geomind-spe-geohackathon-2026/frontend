@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useDeleteChat, useRenameChat } from "./api";
 
@@ -26,7 +26,8 @@ function RenameForm({ projectId, chat, onClose }: Omit<Props, "onDeleted">) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <Field label="Title" htmlFor="chat-title">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="chat-title">Title</FieldLabel>
         <Input
           id="chat-title"
           value={title}

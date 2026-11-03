@@ -26,4 +26,4 @@ All in `src/shared/charts/`, no dependencies:
 - `line-chart.tsx`: `LineChart`. Series with `[time, value]` points (ISO text or numbers), one colour per series, a legend with each unit.
 - `progress-bar.tsx`: `ProgressBar`. A `null` value draws an indeterminate bar with no `aria-valuenow`. Studies stay `0 of 1` until they end, so the Study page uses this for running studies instead of a percentage.
 
-`shared/ui/notice.tsx` (`Notice`) is the shared loading, empty, error and permission (403) panel used by the C8 pages.
+`shared/ui/notice.tsx` (`Notice`) is the shared loading, empty, error and permission (403) panel used by the C8 pages; it is built from shadcn Spinner, Empty and Alert.

@@ -22,6 +22,7 @@ import { FractionGroup, isFractionGroup } from "./fraction-group";
 import { FilePicker, SeriesPicker } from "./series-picker";
 import { ValueExtras } from "./value-extras";
 import { toUnitChoices } from "./units";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 export type NodeProps = {
   name: string;
@@ -39,8 +40,7 @@ function toSingular(label: string): string {
   return label.endsWith("s") ? label.slice(0, -1) : label;
 }
 
-const selectClass =
-  "rounded-control border border-border bg-surface px-2 py-[7px] aria-invalid:border-warn";
+const selectClass = "aria-invalid:border-warn";
 
 function ModeButton({ text, onClick }: { text: string; onClick: () => void }) {
   return (
@@ -86,7 +86,7 @@ function UnitControl({
   const unit: unknown = useWatch({ control, name });
   if (units.length === 0) return null;
   return (
-    <select
+    <NativeSelect
       aria-label={`Unit of ${label}`}
       aria-invalid={invalid}
       disabled={disabled}
@@ -99,13 +99,15 @@ function UnitControl({
         });
       }}
     >
-      {typeof unit === "string" && units.includes(unit) ? null : <option value="">unit</option>}
+      {typeof unit === "string" && units.includes(unit) ? null : (
+        <NativeSelectOption value="">unit</NativeSelectOption>
+      )}
       {toUnitChoices(units, unit).map((option) => (
-        <option key={option} value={option}>
+        <NativeSelectOption key={option} value={option}>
           {option}
-        </option>
+        </NativeSelectOption>
       ))}
-    </select>
+    </NativeSelect>
   );
 }
 

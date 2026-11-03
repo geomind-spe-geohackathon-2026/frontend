@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toFieldMessage } from "@/shared/api/errors";
 import { useSession } from "@/shared/api/session";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/shared/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "./api";
 
@@ -37,10 +37,12 @@ function SignInForm({ target }: { target: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex w-[min(380px,100%)] flex-col gap-3.5">
-      <Field label="Email" htmlFor="email">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="email">Email</FieldLabel>
         <Input id="email" name="email" type="email" autoComplete="username" required />
       </Field>
-      <Field label="Password" htmlFor="password">
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="password">Password</FieldLabel>
         <Input
           id="password"
           name="password"

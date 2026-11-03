@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { plantSearchQuery, useSavePlantRanges } from "./api";
 import { ParameterRange, toRanges, type RangeEdit } from "./parameter-range";
 import type { PlantSearch } from "@/shared/api/types";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = { projectId: string; version: number; structureDirty: boolean };
 type Entry = PlantSearch["search"][string];
@@ -44,20 +45,20 @@ function UnitChoice({ label, entry, unit, onUnit }: UnitProps) {
   const choices = Object.keys(entry.units);
   if (choices.length > 1) {
     return (
-      <select
+      <NativeSelect
         aria-label={`Unit of ${label}`}
-        className="max-w-[92px] min-w-0 shrink-0 rounded-control border border-border bg-surface px-1.5 py-[7px]"
+        className="max-w-[92px] min-w-0 shrink-0"
         value={unit ?? ""}
         onChange={(event) => {
           onUnit(event.target.value);
         }}
       >
         {choices.map((choice) => (
-          <option key={choice} value={choice}>
+          <NativeSelectOption key={choice} value={choice}>
             {choice}
-          </option>
+          </NativeSelectOption>
         ))}
-      </select>
+      </NativeSelect>
     );
   }
   if (unit === null) return null;

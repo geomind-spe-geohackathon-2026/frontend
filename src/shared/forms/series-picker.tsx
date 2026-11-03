@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFieldContext, type SeriesSource } from "./field-context";
 import { expectedSteps, toPoints, toTable, valueColumns } from "./series-data";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = { id: string; name: string; label: string; units: string[] };
 
-const selectClass = "min-w-0 rounded-control border border-border bg-surface px-2 py-[7px]";
+const selectClass = "min-w-0";
 
 function useField(name: string): [string, (next: string) => void] {
   const { control, setValue } = useFormContext();
@@ -26,12 +27,14 @@ function useField(name: string): [string, (next: string) => void] {
 function Options({ options, value }: { options: string[]; value: string }) {
   return (
     <>
-      <option value="" />
-      {value === "" || options.includes(value) ? null : <option value={value}>{value}</option>}
+      <NativeSelectOption value="" />
+      {value === "" || options.includes(value) ? null : (
+        <NativeSelectOption value={value}>{value}</NativeSelectOption>
+      )}
       {options.map((option) => (
-        <option key={option} value={option}>
+        <NativeSelectOption key={option} value={option}>
           {option.split("/").at(-1)}
-        </option>
+        </NativeSelectOption>
       ))}
     </>
   );
@@ -147,7 +150,7 @@ function Choice({
   onChange: (next: string) => void;
 }) {
   return (
-    <select
+    <NativeSelect
       {...(id === undefined ? {} : { id })}
       aria-label={label}
       className={selectClass}
@@ -158,7 +161,7 @@ function Choice({
       }}
     >
       <Options options={options} value={value} />
-    </select>
+    </NativeSelect>
   );
 }
 

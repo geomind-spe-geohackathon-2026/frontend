@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import type { JsonSchema } from "./json-schema";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 type Props = {
   id: string;
@@ -16,8 +17,7 @@ type Props = {
 
 const scaledDigits = 6;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-const selectClass =
-  "w-full rounded-control border border-border bg-surface px-2.5 py-[7px] aria-invalid:border-warn";
+const selectClass = "aria-invalid:border-warn";
 
 function toNumber(text: string): number | undefined {
   if (text.trim() === "") return undefined;
@@ -116,7 +116,7 @@ function EnumControl({
   words: boolean;
 }) {
   return (
-    <select
+    <NativeSelect
       {...common}
       className={selectClass}
       value={optionLabel(current)}
@@ -124,13 +124,13 @@ function EnumControl({
         update(event.target.value === "" ? undefined : event.target.value);
       }}
     >
-      <option value="" />
+      <NativeSelectOption value="" />
       {options.map((option) => (
-        <option key={optionLabel(option)} value={optionLabel(option)}>
+        <NativeSelectOption key={optionLabel(option)} value={optionLabel(option)}>
           {words ? toWord(optionLabel(option)) : optionLabel(option)}
-        </option>
+        </NativeSelectOption>
       ))}
-    </select>
+    </NativeSelect>
   );
 }
 
