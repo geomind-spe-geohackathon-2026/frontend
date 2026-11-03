@@ -54,4 +54,18 @@ describe("project sidebar", () => {
     const pinned = within(await screen.findByRole("navigation", { name: "Pinned" }));
     expect(pinned.getByRole("link", { name: /Design the example plant/ })).toBeInTheDocument();
   });
+
+  it("opens the project settings as a window from the project menu", async () => {
+    const user = userEvent.setup();
+    const { router } = renderApp({ path: "/projects/example-project-1/overview" });
+    await screen.findByRole("navigation", { name: "Project" });
+    const menu = await screen.findAllByRole("button", { name: /^Actions of / });
+    const project = menu.find((button) => button.closest('[data-sidebar="group"]') !== null);
+    if (project === undefined) throw new Error("no project menu");
+    await user.click(project);
+    await user.click(await screen.findByRole("menuitem", { name: "Settings" }));
+    const dialog = within(await screen.findByRole("dialog", { name: "Project settings" }));
+    expect(await dialog.findByLabelText("Name")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/projects/example-project-1/overview");
+  });
 });

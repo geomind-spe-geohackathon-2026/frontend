@@ -34,8 +34,8 @@ const pageNav: NavGroup[] = [
     label: null,
     items: [
       { to: "overview", label: "Overview", icon: LayoutDashboard },
-      { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
       { to: "library", label: "Library", icon: Files },
+      { to: "assistant/runs", label: "Runs and logs", icon: ScrollText },
     ],
   },
 ];

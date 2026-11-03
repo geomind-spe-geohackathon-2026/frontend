@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useDeleteProject, useExportProject, useRenameProject, useSetBudget } from "./api";
 import { startDownload } from "./download";
@@ -197,26 +204,57 @@ function DeleteRow({ project }: { project: Project }) {
   );
 }
 
-/** Project settings: rename, the assistant budget, export as a zip, and delete with an in-page confirmation. */
+/** The settings of one project: rename, the assistant budget, export as a zip, and delete with a confirmation. */
+export function SettingsBody({ projectId }: { projectId: string }) {
+  const project = useQuery(projectQuery(projectId));
+  if (project.isPending) return <Notice status="loading" what="the project" />;
+  if (project.isError) return <p role="alert">{project.error.message}</p>;
+  return (
+    <div className="flex flex-col gap-5">
+      <RenameForm key={project.data.updated} project={project.data} />
+      <BudgetForm key={`budget-${project.data.updated}`} project={project.data} />
+      <ExportRow project={project.data} />
+      <DeleteRow project={project.data} />
+    </div>
+  );
+}
+
+/** Project settings as a window over the current page, opened from the project's menu in the sidebar. */
+export function SettingsDialog({
+  projectId,
+  open,
+  onOpenChange,
+}: {
+  projectId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[calc(100svh-4rem)] flex-col gap-4 sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Project settings</DialogTitle>
+          <DialogDescription>Name, assistant budget, export and delete.</DialogDescription>
+        </DialogHeader>
+        <div className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6 pb-1">
+          <SettingsBody projectId={projectId} />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** The project settings route, for a direct link; the sidebar opens the same settings as a window. */
 export function SettingsPage() {
   const projectId = useRequiredParam("projectId");
-  const project = useQuery(projectQuery(projectId));
-
   return (
     <div className="flex w-[min(600px,100%)] flex-col gap-3.5">
       <PageHeader title="Project settings" />
-      {project.isPending ? <Notice status="loading" what="the project" /> : null}
-      {project.isError ? <p role="alert">{project.error.message}</p> : null}
-      {project.data === undefined ? null : (
-        <Card>
-          <CardContent className="flex flex-col gap-5">
-            <RenameForm key={project.data.updated} project={project.data} />
-            <BudgetForm key={`budget-${project.data.updated}`} project={project.data} />
-            <ExportRow project={project.data} />
-            <DeleteRow project={project.data} />
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardContent>
+          <SettingsBody projectId={projectId} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, type ReactNode, type SubmitEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import { ChevronRight, Ellipsis } from "lucide-react";
 import { useRenameProject } from "@/domains/workspace/settings/api";
+import { SettingsDialog } from "@/domains/workspace/settings/page";
 import { isPinned, togglePin, usePins } from "@/shared/layout/pins";
 import type { Project } from "@/shared/api/types";
 import { Button } from "@/components/ui/button";
@@ -92,10 +92,10 @@ function RenameDialog({ project, onClose }: { project: Project; onClose: () => v
 
 /** The project's "…" menu beside its name in the sidebar: Pin, Rename and Settings. */
 export function ProjectMenu({ project }: { project: Project }) {
-  const navigate = useNavigate();
   const pins = usePins();
   const pinned = isPinned(pins, "project", project.id);
   const [renaming, setRenaming] = useState(false);
+  const [settings, setSettings] = useState(false);
   return (
     <>
       <DropdownMenu>
@@ -127,7 +127,7 @@ export function ProjectMenu({ project }: { project: Project }) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => {
-              void navigate(`/projects/${project.id}/settings`);
+              setSettings(true);
             }}
           >
             Settings
@@ -142,6 +142,7 @@ export function ProjectMenu({ project }: { project: Project }) {
           }}
         />
       ) : null}
+      <SettingsDialog projectId={project.id} open={settings} onOpenChange={setSettings} />
     </>
   );
 }

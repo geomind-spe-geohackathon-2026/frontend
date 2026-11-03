@@ -33,7 +33,7 @@ export function FractionGroup({ name, label, schema }: Props) {
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-2 text-[13px] font-medium text-text">{label}</legend>
       <div className="ml-1.5 flex flex-col gap-2 border-l border-border pl-4">
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-3 gap-y-1.5">
+        <div className="flex max-w-md flex-col gap-1.5">
           {entries.map(([key, child]) => (
             <div key={key} className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2">
               <span className="text-[12.5px] text-muted">{labelOf(key, child)}</span>

@@ -9,6 +9,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { chatsQuery } from "@/shared/sse/chats";
+import { activeRunsQuery } from "@/shared/api/runs";
 import { ErrorNotice } from "@/shared/sse/notice";
 import type { Chat } from "@/shared/api/types";
 import { Ellipsis } from "lucide-react";
@@ -33,13 +34,28 @@ type Props = {
 };
 
 const dots: Record<string, string> = {
-  running: "bg-accent",
+  running: "bg-muted-foreground animate-pulse",
+  approval: "bg-accent",
   waiting: "bg-warn",
   queued: "bg-border",
   done: "bg-ok",
   failed: "bg-bad",
   cancelled: "bg-border",
 };
+
+const words: Record<string, string> = {
+  approval: "waits for your approval",
+  waiting: "needs your input",
+};
+
+function useDotState(projectId: string, chat: Chat): string {
+  const active = useQuery(activeRunsQuery(projectId));
+  const last = chat.last_run;
+  if (last === null) return "none";
+  if (last.status !== "waiting") return last.status;
+  const request = active.data?.items.find((run) => run.id === last.id)?.request;
+  return request?.kind === "approval" ? "approval" : "waiting";
+}
 
 function ChatMenu({
   title,
@@ -100,9 +116,20 @@ function ChatItemDialog({
   );
 }
 
-function ChatLink({ chat, active, href }: { chat: Chat; active: boolean; href: string }) {
+function ChatLink({
+  projectId,
+  chat,
+  active,
+  href,
+}: {
+  projectId: string;
+  chat: Chat;
+  active: boolean;
+  href: string;
+}) {
   const { setOpenMobile } = useSidebar();
-  const status = chat.last_run === null ? "no run yet" : chat.last_run.status;
+  const state = useDotState(projectId, chat);
+  const status = state === "none" ? "no run yet" : (words[state] ?? state);
   return (
     <SidebarMenuButton asChild isActive={active} className="h-auto py-1.5">
       <Link
@@ -116,7 +143,7 @@ function ChatLink({ chat, active, href }: { chat: Chat; active: boolean; href: s
       >
         <span
           aria-hidden="true"
-          className={`size-2 flex-none rounded-full ${dots[chat.last_run?.status ?? "none"] ?? "bg-border"}`}
+          className={`size-2 flex-none rounded-full ${dots[state] ?? "bg-border"}`}
         />
         <span className="min-w-0 flex-1 truncate">{chat.title}</span>
         <span className="sr-only">
@@ -142,7 +169,7 @@ function ChatItem({
   const pins = usePins();
   return (
     <SidebarMenuItem>
-      <ChatLink chat={chat} active={active} href={href} />
+      <ChatLink projectId={projectId} chat={chat} active={active} href={href} />
       <ChatMenu
         title={chat.title}
         pinned={isPinned(pins, "chat", chat.id)}

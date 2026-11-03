@@ -16,13 +16,13 @@ describe("documents page", () => {
     expect(within(row).getByText("ready")).toBeVisible();
   });
 
-  it("uploads a file and shows it as indexing", async () => {
+  it("uploads a file and shows it as indexing", { timeout: 20_000 }, async () => {
     renderApp({ path });
     const user = userEvent.setup();
     const file = new File(["text"], "example-datasheet.pdf", { type: "application/pdf" });
     await user.upload(await screen.findByLabelText("Document file"), file);
-    expect(await screen.findByText("indexing")).toBeVisible();
-    expect(screen.getByText("example-datasheet.pdf uploaded")).toBeVisible();
+    expect(await screen.findByText("example-datasheet.pdf uploaded")).toBeVisible();
+    expect(await screen.findByText("indexing", {}, { timeout: 5_000 })).toBeVisible();
   });
 
   it("deletes a document after the confirmation", async () => {

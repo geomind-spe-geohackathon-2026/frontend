@@ -2,6 +2,15 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.13 (2026-11-03)
+
+- Config editor everywhere: no columns. Each field takes its own row; a group (such as Ground) opens with a line on its left and its fields indented under it. Under a quantity's name, its value and unit, then Range and Uncertainty, sit behind the same line.
+- Project settings open as a window from the project's "…" menu, over the current page. The settings link still works on its own.
+- Chat dots in the sidebar: green done, red failed, orange when the run needs your input, blue when it waits for your approval, and a pulsing grey while running.
+- User menu with an icon on each item; Theme is one item with a submenu (System, Light, Dark).
+- Sidebar: Runs and logs comes last in the project part (Overview, Library, Runs and logs).
+- The step tabs in the Design panel title bar no longer show a scrollbar.
+
 ## 1.1.12 (2026-11-03)
 
 - Chat: one centred column like a chat app. The message box has + (attach) on the left and, on the right, the cost of the chat so far, a log button and a round send button (a stop button while a run is active). The log button opens a large window with the last run (status, time, tokens, agents), what the assistant knows, and every run of the chat with its tokens and cost. The run column beside the chat is gone.

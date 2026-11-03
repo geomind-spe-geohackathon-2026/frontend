@@ -154,27 +154,29 @@ function QuantityField({
     >
       {({ id, invalid, describedBy }) => (
         <>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
-            <ScalarControl
-              id={id}
-              name={`${name}.value`}
-              schema={valueSchema}
-              invalid={invalid}
-              describedBy={describedBy}
-              scale={percent ? 100 : undefined}
-            />
-            <UnitControl
-              name={`${name}.unit`}
-              label={label}
-              units={units}
-              invalid={invalid || lacksUnit}
-              disabled={!invalid && (!isRecord(quantity) || quantity.value === undefined)}
-            />
-          </div>
-          {lacksUnit ? <UnitWarning /> : null}
-          <div className="flex flex-wrap items-center gap-3">
-            <ValueExtras name={name} label={label} schema={schema} />
-            {onSeries === undefined ? null : <ModeButton text="∿ series" onClick={onSeries} />}
+          <div className="ml-1.5 flex flex-col gap-1.5 border-l border-border pl-4">
+            <div className="grid max-w-md grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+              <ScalarControl
+                id={id}
+                name={`${name}.value`}
+                schema={valueSchema}
+                invalid={invalid}
+                describedBy={describedBy}
+                scale={percent ? 100 : undefined}
+              />
+              <UnitControl
+                name={`${name}.unit`}
+                label={label}
+                units={units}
+                invalid={invalid || lacksUnit}
+                disabled={!invalid && (!isRecord(quantity) || quantity.value === undefined)}
+              />
+            </div>
+            {lacksUnit ? <UnitWarning /> : null}
+            <div className="flex flex-wrap items-center gap-3">
+              <ValueExtras name={name} label={label} schema={schema} />
+              {onSeries === undefined ? null : <ModeButton text="∿ series" onClick={onSeries} />}
+            </div>
           </div>
         </>
       )}
@@ -194,13 +196,15 @@ function ScalarField({ name, path, label, schema, optional = false }: NodeProps)
       required={!optional}
     >
       {({ id, invalid, describedBy }) => (
-        <ScalarControl
-          id={id}
-          name={name}
-          schema={schema}
-          invalid={invalid}
-          describedBy={describedBy}
-        />
+        <div className="max-w-md">
+          <ScalarControl
+            id={id}
+            name={name}
+            schema={schema}
+            invalid={invalid}
+            describedBy={describedBy}
+          />
+        </div>
       )}
     </FieldFrame>
   );
@@ -354,15 +358,11 @@ function GroupFields(props: NodeProps) {
       {schema.description === undefined ? null : (
         <p className="text-[12.5px] text-muted">{schema.description}</p>
       )}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-start gap-x-3 gap-y-2.5">
-        {basic.map(child)}
-      </div>
+      <div className="flex flex-col gap-2.5">{basic.map(child)}</div>
       {advanced.length === 0 ? null : (
         <details>
           <summary className="cursor-pointer text-[12.5px] text-muted">Advanced</summary>
-          <div className="mt-2 ml-1.5 border-l border-border pl-4 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-start gap-x-3 gap-y-2.5">
-            {advanced.map(child)}
-          </div>
+          <div className={`mt-2.5 ${branchClass}`}>{advanced.map(child)}</div>
         </details>
       )}
       {nested.map(child)}

@@ -191,7 +191,10 @@ describe("theme", () => {
     renderApp({ path: "/projects" });
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "User menu" }));
-    await user.click(await screen.findByRole("menuitemradio", { name: "Theme: dark" }));
+    (await screen.findByRole("menuitem", { name: "Theme" })).focus();
+    await user.keyboard("{ArrowRight}");
+    (await screen.findByRole("menuitemradio", { name: "Dark" })).focus();
+    await user.keyboard("{Enter}");
     expect(document.documentElement).toHaveAttribute("data-theme", "dark");
     expect(window.localStorage.getItem("geomind.theme")).toBe("dark");
   });

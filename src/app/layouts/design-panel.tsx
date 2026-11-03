@@ -25,7 +25,7 @@ function Steps({ project, current, chatId }: Pick<Props, "project" | "current" |
         const chat = chatId === null ? "" : `?chat=${chatId}`;
         void navigate(`/projects/${project.id}/${to}${chat}`);
       }}
-      className="min-w-0 overflow-x-auto"
+      className="min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <TabsList aria-label="Design steps">
         {designItems.map((item) => {

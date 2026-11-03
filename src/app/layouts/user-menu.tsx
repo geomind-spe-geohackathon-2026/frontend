@@ -1,4 +1,4 @@
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, LogOut, SunMoon, UserRound, Users } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { meQuery, signOut } from "@/shared/api/me";
@@ -13,18 +13,46 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
 const themes: { value: Theme; label: string }[] = [
-  { value: "system", label: "Theme: system" },
-  { value: "light", label: "Theme: light" },
-  { value: "dark", label: "Theme: dark" },
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
 ];
 
 function isTheme(value: string): value is Theme {
   return themes.some((theme) => theme.value === value);
+}
+
+function ThemeMenu({ theme, onTheme }: { theme: Theme; onTheme: (theme: Theme) => void }) {
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <SunMoon aria-hidden="true" />
+        Theme
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => {
+            if (isTheme(value)) onTheme(value);
+          }}
+        >
+          {themes.map((item) => (
+            <DropdownMenuRadioItem key={item.value} value={item.value}>
+              {item.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
 }
 
 function UserButton({ user, ...props }: { user: User | undefined }) {
@@ -74,32 +102,27 @@ export function UserMenu() {
               </>
             )}
             <DropdownMenuItem asChild>
-              <Link to="/account">Account and password</Link>
+              <Link to="/account">
+                <UserRound aria-hidden="true" />
+                Account and password
+              </Link>
             </DropdownMenuItem>
             {user?.role === "admin" ? (
               <DropdownMenuItem asChild>
-                <Link to="/users">Users</Link>
+                <Link to="/users">
+                  <Users aria-hidden="true" />
+                  Users
+                </Link>
               </DropdownMenuItem>
             ) : null}
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={theme}
-              onValueChange={(value) => {
-                if (isTheme(value)) setTheme(value);
-              }}
-            >
-              {themes.map((item) => (
-                <DropdownMenuRadioItem key={item.value} value={item.value}>
-                  {item.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
+            <ThemeMenu theme={theme} onTheme={setTheme} />
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={() => {
                 void signOut(queryClient);
               }}
             >
+              <LogOut aria-hidden="true" />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
