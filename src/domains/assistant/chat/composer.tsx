@@ -102,7 +102,7 @@ export function Composer({
           aria-label="Message"
           placeholder="Tell the assistant what you need"
           rows={1}
-          className="max-h-48 min-h-11"
+          className="max-h-48 min-h-14 px-4 pt-4 pb-2"
           value={text}
           onKeyDown={submitOnEnter}
           onChange={(event) => {
