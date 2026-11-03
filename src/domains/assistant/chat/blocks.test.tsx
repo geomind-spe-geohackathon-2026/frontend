@@ -180,4 +180,15 @@ describe("Blocks", () => {
     expect(screen.getByText("Read a document")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("no readable text");
   });
+
+  it("shows the message of a problem code it does not know", () => {
+    const gap: ToolProblem = {
+      code: "missing_assumption",
+      path: null,
+      message: "No search range for the well depth",
+      suggestions: [],
+    };
+    render(<Blocks running={false} blocks={[tool("t1", "cut", gap)]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("No search range for the well depth");
+  });
 });
