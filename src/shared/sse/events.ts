@@ -205,21 +205,15 @@ function toFinished(fields: Fields): RunEventBody {
   return message === null ? body : { ...body, message };
 }
 
-function toFields(type: string, data: string): Fields {
-  const value: unknown = JSON.parse(data);
-  if (!isFields(value)) throw invalid(type, "data");
-  return value;
-}
-
 function toParent(fields: Fields): string | null {
   const parent = optionalString(fields, "parent");
   return parent === null ? null : fromRunId(parent);
 }
 
-/** Converts one server-sent event (name, JSON data, id) into a RunEvent; unknown names give null. */
-export function fromEvent(type: string, data: string, id: string): RunEvent | null {
-  if (data === "") return null;
-  const fields = toFields(type, data);
+/** Converts a parsed event (name, data, id) into a RunEvent; unknown names give null. */
+export function fromPayload(type: string, data: unknown, id: string): RunEvent | null {
+  if (!isFields(data)) throw invalid(type, "data");
+  const fields = data;
   const body = toStepBody(type, fields) ?? toStateBody(type, fields);
   if (body === null) return null;
   const sequence = Number.parseInt(id, 10);
@@ -229,4 +223,11 @@ export function fromEvent(type: string, data: string, id: string): RunEvent | nu
     agent: requireString(fields, "agent", type),
     parent: toParent(fields),
   };
+}
+
+/** Converts one server-sent event (name, JSON data, id) into a RunEvent; unknown names give null. */
+export function fromEvent(type: string, data: string, id: string): RunEvent | null {
+  if (data === "") return null;
+  const payload: unknown = JSON.parse(data);
+  return fromPayload(type, payload, id);
 }

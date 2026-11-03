@@ -4,7 +4,7 @@ import type { RunEvent, RunRequest, Usage } from "@/shared/sse/types";
 import { applyChanges } from "./patch";
 
 export type Block =
-  | { kind: "text"; id: string; agent: string; text: string; open: boolean }
+  | { kind: "text"; id: string; agent: string; text: string; open: boolean; settled: number }
   | {
       kind: "tool";
       id: string;
@@ -109,13 +109,17 @@ function changeText(view: View, event: RunEvent & { type: "text.delta" }): View 
   if (id === undefined) return view;
   return changeBlock(view, id, (block) => {
     if (block.kind !== "text") return block;
-    return { ...block, text: event.buffered === true ? event.text : block.text + event.text };
+    if (event.buffered === true) {
+      return { ...block, text: event.text, settled: event.text.length };
+    }
+    return { ...block, text: block.text + event.text };
   });
 }
 
 function startStep(view: View, event: RunEvent & { type: "step.started" }): View {
   const id = nextId(view);
-  const next = addBlock(view, { kind: "text", id, agent: event.agent, text: "", open: true });
+  const block: Block = { kind: "text", id, agent: event.agent, text: "", open: true, settled: 0 };
+  const next = addBlock(view, block);
   const key = toStepKey(event.agent, event.index);
   return { ...next, openSteps: { ...next.openSteps, [key]: id } };
 }
@@ -126,7 +130,14 @@ function finishStep(view: View, event: RunEvent & { type: "step.finished" }): Vi
   if (id === undefined) return view;
   const rest = Object.fromEntries(Object.entries(view.openSteps).filter(([name]) => name !== key));
   const next = changeBlock(view, id, (block) =>
-    block.kind === "text" ? { ...block, text: event.text, open: false } : block,
+    block.kind === "text"
+      ? {
+          ...block,
+          text: event.text,
+          open: false,
+          settled: block.text === "" ? event.text.length : block.settled,
+        }
+      : block,
   );
   return { ...next, openSteps: rest };
 }

@@ -18,6 +18,10 @@ class ResizeObserverStub {
 beforeAll(() => {
   server.listen({ onUnhandledFrame: "error" });
   window.ResizeObserver = ResizeObserverStub;
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: () => ({ matches: true }),
+  });
   window.HTMLElement.prototype.scrollIntoView = () => undefined;
   window.HTMLElement.prototype.hasPointerCapture = () => false;
   window.HTMLElement.prototype.releasePointerCapture = () => undefined;

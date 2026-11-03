@@ -4,7 +4,25 @@ import { Blocks } from "./blocks";
 import type { Block } from "./view";
 
 function text(id: string, value: string): Block {
-  return { kind: "text", id, agent: "coordinator", text: value, open: false };
+  return {
+    kind: "text",
+    id,
+    agent: "coordinator",
+    text: value,
+    open: false,
+    settled: value.length,
+  };
+}
+
+function liveText(value: string): Block {
+  return {
+    kind: "text",
+    id: "b0",
+    agent: "coordinator",
+    text: value,
+    open: true,
+    settled: value.length,
+  };
 }
 
 function tool(id: string, error: string | null): Block {
@@ -95,8 +113,25 @@ describe("Blocks", () => {
     expect(screen.queryByText(/design loop/)).not.toBeInTheDocument();
   });
 
+  it("shows text live while the run goes, not only in the closed steps", () => {
+    render(<Blocks running blocks={[liveText("The doublet delivers")]} />);
+    expect(screen.getByText("The doublet delivers")).toBeVisible();
+  });
+
+  it("shows the answer of a route still being written, and never its JSON", () => {
+    const route = '{"kind": "answer", "answer": "The doublet';
+    render(<Blocks running blocks={[liveText(route)]} />);
+    expect(screen.getByText("The doublet")).toBeVisible();
+    expect(screen.queryByText(/"kind"/)).not.toBeInTheDocument();
+  });
+
+  it("hides a route to a loop while it is written", () => {
+    render(<Blocks running blocks={[liveText('{"kind": "loop", "lo')]} />);
+    expect(screen.queryByText(/kind/)).not.toBeInTheDocument();
+  });
+
   it("does not say Thinking once the run is over", () => {
-    const open: Block = { kind: "text", id: "b0", agent: "a", text: "", open: true };
+    const open: Block = { kind: "text", id: "b0", agent: "a", text: "", open: true, settled: 0 };
     const { rerender } = render(<Blocks running blocks={[open]} />);
     expect(screen.getByText("Thinking")).toBeVisible();
     rerender(<Blocks running={false} blocks={[open]} />);

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Chip } from "@/shared/ui/chip";
@@ -12,7 +13,8 @@ import {
   toBudgetStop,
   toSummary,
 } from "@/shared/sse/pretty";
-import { fromRoute } from "@/shared/sse/route";
+import { fromPartialRoute, fromRoute } from "@/shared/sse/route";
+import { PacedMarkdown } from "./paced-markdown";
 import type { Block, RecordedStudy } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
@@ -20,6 +22,7 @@ type TextBlock = Extract<Block, { kind: "text" }>;
 type EndBlock = Extract<Block, { kind: "end" }>;
 
 const internalStop = "error";
+const partialLoopNote = /^[a-z]*( loop(:( \{.*)?)?)?$/;
 const internalFailure = "The assistant stopped with an internal error in geomind";
 
 /** The tool an agent ends with; its text is the answer, shown as the message. */
@@ -123,9 +126,22 @@ function isHiddenText(text: string): boolean {
 }
 
 function toShownText(block: TextBlock): string | null {
+  if (block.open && toLiveText(block.text) === null) return null;
   const route = fromRoute(block.text);
   if (route !== null) return null;
   return isHiddenText(block.text) ? null : block.text;
+}
+
+function toLiveText(text: string): string | null {
+  const route = fromRoute(text);
+  if (route !== null) return route.kind === "answer" ? route.answer : null;
+  if (text.trimStart().startsWith("{")) return fromPartialRoute(text);
+  return isHiddenText(text) || partialLoopNote.test(text.trim()) ? null : text;
+}
+
+function toLiveBlock(blocks: Block[]): TextBlock | null {
+  const last = blocks.findLast((block) => block.kind === "text" && toLiveText(block.text) !== null);
+  return last?.kind === "text" ? last : null;
 }
 
 function toAnswer(blocks: Block[]): TextBlock | null {
@@ -158,7 +174,7 @@ function toDoneLabel(work: Block[]): string {
   return failed === 0 ? label : `${label}, ${String(failed)} needed another try`;
 }
 
-function WorkItem({ block }: { block: Block }) {
+const WorkItem = memo(function WorkItem({ block }: { block: Block }) {
   if (block.kind === "tool") return <ToolCard block={block} />;
   if (block.kind === "request") {
     return <p className="text-[12px] text-muted">{toRequestText(block.request.message)}</p>;
@@ -169,7 +185,7 @@ function WorkItem({ block }: { block: Block }) {
       <MarkdownText text={block.text} />
     </div>
   );
-}
+});
 
 function WorkLog({ work, label }: { work: Block[]; label: string }) {
   return (
@@ -184,8 +200,8 @@ function WorkLog({ work, label }: { work: Block[]; label: string }) {
 
 /** A run as one quiet line of work that opens to its steps; only the answer and a stop stand out. */
 export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean }) {
-  const last = running ? null : toAnswer(blocks);
-  const answer = last === null ? null : toAnswerText(last);
+  const last = running ? toLiveBlock(blocks) : toAnswer(blocks);
+  const answer = last === null ? null : running ? toLiveText(last.text) : toAnswerText(last);
   const work = blocks.filter((block) => isWork(block) && block.id !== last?.id);
   const end = blocks.find((block) => block.kind === "end");
   const stopped = end?.kind === "end" && end.status !== "done";
@@ -200,7 +216,9 @@ export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean 
       {work.length === 0 ? null : (
         <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />
       )}
-      {answer === null ? null : <MarkdownText text={answer} />}
+      {answer === null || last === null ? null : (
+        <PacedMarkdown key={last.id} text={answer} settled={last.settled} open={last.open} />
+      )}
       {!running && !stopped && failure !== null ? (
         <p role="status" className="text-bad">
           {failure}

@@ -9,20 +9,21 @@ import { applyEvent, emptyView, loadProblem, type ProblemState, type View } from
 
 type Action =
   | { kind: "reset" }
-  | { kind: "event"; event: RunEvent }
+  | { kind: "events"; events: RunEvent[] }
   | { kind: "problem"; problem: ProblemState }
   | { kind: "failure"; error: ApiError };
 
 type Stream = { view: View; failure: ApiError | null };
 
 const emptyStream: Stream = { view: emptyView, failure: null };
+const batchMs = 80;
 
 function reduceAction(stream: Stream, action: Action): Stream {
   switch (action.kind) {
     case "reset":
       return emptyStream;
-    case "event":
-      return { ...stream, view: applyEvent(stream.view, action.event) };
+    case "events":
+      return { ...stream, view: action.events.reduce(applyEvent, stream.view) };
     case "problem":
       return { ...stream, view: loadProblem(stream.view, action.problem) };
     case "failure":
@@ -30,7 +31,25 @@ function reduceAction(stream: Stream, action: Action): Stream {
   }
 }
 
-/** Streams a run over SSE (replayed from event 0 on every mount) and folds the events into the live view. */
+function toBatcher(flush: (events: RunEvent[]) => void) {
+  let pending: RunEvent[] = [];
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  return {
+    add(event: RunEvent) {
+      pending.push(event);
+      timer ??= setTimeout(() => {
+        timer = null;
+        flush(pending);
+        pending = [];
+      }, batchMs);
+    },
+    stop() {
+      if (timer !== null) clearTimeout(timer);
+    },
+  };
+}
+
+/** Streams a run (replayed from event 0 on every mount) and folds its events into the live view, at most once per batch. */
 export function useRunView(projectId: string, chatId: string | null, runId: string | null): Stream {
   const [stream, dispatch] = useReducer(reduceAction, emptyStream);
   const { view } = stream;
@@ -45,16 +64,20 @@ export function useRunView(projectId: string, chatId: string | null, runId: stri
     if (runId === null) return;
     const controller = new AbortController();
     let finished = false;
+    const batch = toBatcher((events) => {
+      dispatch({ kind: "events", events });
+    });
     dispatch({ kind: "reset" });
     void streamEvents({
       path: `/assistant/runs/${runId}/events`,
+      socketPath: `/assistant/runs/${runId}/stream`,
       signal: controller.signal,
       isFinished: () => finished,
       onFailure: (error) => {
         dispatch({ kind: "failure", error });
       },
       onEvent: (event) => {
-        dispatch({ kind: "event", event });
+        batch.add(event);
         if (event.type === "request" || event.type === "run.started") {
           void queryClient.invalidateQueries({ queryKey: chatsKey(projectId) });
         }
@@ -65,6 +88,7 @@ export function useRunView(projectId: string, chatId: string | null, runId: stri
     });
     return () => {
       controller.abort();
+      batch.stop();
     };
   }, [runId, projectId, queryClient]);
 

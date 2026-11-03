@@ -92,6 +92,7 @@ describe("chat page", () => {
     await waitFor(() => {
       expect(screen.getAllByText("done").length).toBeGreaterThan(1);
     });
+    await screen.findByText(/Worked through/);
     const live = document.querySelector("main")?.textContent;
     cleanup();
     renderApp({ path: `${base}/example-chat-1` });

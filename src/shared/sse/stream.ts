@@ -2,7 +2,9 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { api, toBaseUrl } from "@/shared/api/client";
 import { ApiError, fromResponse } from "@/shared/api/errors";
 import { session } from "@/shared/api/session";
+import { toApiMode } from "@/shared/api/mode";
 import { fromEvent } from "./events";
+import { streamSocket } from "./socket";
 import type { RunEvent } from "./types";
 
 type Options = {
@@ -12,6 +14,7 @@ type Options = {
   onFailure: (error: ApiError) => void;
   isFinished: () => boolean;
   lastEventId?: string;
+  socketPath?: string;
 };
 
 const retryDelayMs = 1500;
@@ -24,15 +27,26 @@ function withToken(init: RequestInit | undefined): RequestInit {
   return { ...init, headers };
 }
 
-async function fetchWithToken(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  const response = await fetch(input, withToken(init));
-  if (response.status !== 401) return response;
-  const refreshed = await api.GET("/identity/me").then(
+function toRefreshed(): Promise<boolean> {
+  return api.GET("/identity/me").then(
     () => true,
     () => false,
   );
-  if (!refreshed) return response;
+}
+
+async function fetchWithToken(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const response = await fetch(input, withToken(init));
+  if (response.status !== 401) return response;
+  if (!(await toRefreshed())) return response;
   return fetch(input, withToken(init));
+}
+
+function toSocketUrl(path: string): string {
+  return `${toBaseUrl(import.meta.env.VITE_API_URL).replace(/^http/, "ws")}${path}`;
+}
+
+function toResume(lastEventId: string | null): { lastEventId?: string } {
+  return lastEventId === null ? {} : { lastEventId };
 }
 
 function isRetryable(error: unknown): boolean {
@@ -40,8 +54,7 @@ function isRetryable(error: unknown): boolean {
   return error.status >= 500 || retryableStatuses.includes(error.status);
 }
 
-/** Reads the events of a run over SSE with the bearer token; reconnects with Last-Event-ID until the signal aborts. */
-export async function streamEvents(options: Options): Promise<void> {
+async function streamServerEvents(options: Options): Promise<void> {
   const headers: Record<string, string> = {};
   if (options.lastEventId !== undefined) headers["Last-Event-ID"] = options.lastEventId;
   try {
@@ -73,4 +86,18 @@ export async function streamEvents(options: Options): Promise<void> {
         : new ApiError({ status: 0, code: "stream_failed", message: "The live stream stopped" }),
     );
   }
+}
+
+/** Reads a run's events over a WebSocket when it has a socket path, and over SSE when a socket cannot connect. */
+export async function streamEvents(options: Options): Promise<void> {
+  const { socketPath, lastEventId, ...rest } = options;
+  const isReal = toApiMode(import.meta.env.VITE_API_MODE, import.meta.env.DEV) === "real";
+  if (socketPath === undefined || !isReal) return streamServerEvents(options);
+  const end = await streamSocket({
+    ...rest,
+    url: toSocketUrl(socketPath),
+    lastEventId: lastEventId ?? null,
+    refresh: toRefreshed,
+  });
+  if (!end.finished) await streamServerEvents({ ...rest, ...toResume(end.lastEventId) });
 }

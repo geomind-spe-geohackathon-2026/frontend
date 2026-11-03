@@ -7,7 +7,15 @@ export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
   publicDir: command === "serve" ? "public" : false,
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
-  server: { proxy: { "/api": process.env.VITE_PROXY_TARGET ?? "http://localhost:8000" } },
+  server: {
+    proxy: {
+      "/api": {
+        target: process.env.VITE_PROXY_TARGET ?? "http://localhost:8000",
+        changeOrigin: true,
+        ws: true,
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     globals: false,

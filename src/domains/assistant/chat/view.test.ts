@@ -8,12 +8,27 @@ function fold(events: RunEvent[], from: View = emptyView): View {
   return events.reduce(applyEvent, from);
 }
 
+function toShape(view: View): View {
+  const blocks = view.blocks.map((block) =>
+    block.kind === "text" ? { ...block, settled: 0 } : block,
+  );
+  return { ...view, blocks };
+}
+
 const recorded = toEvents(toRecording(0, "run-1", "example question", "approved"), "run-1", 1);
 const stored = recorded.filter((event) => event.type !== "text.delta");
 
 describe("applyEvent", () => {
   it("shows the same view live and after a reload replayed from the stored events", () => {
-    expect(fold(stored)).toEqual(fold(recorded));
+    expect(toShape(fold(stored))).toEqual(toShape(fold(recorded)));
+  });
+
+  it("settles text that came whole and paces text that came in pieces", () => {
+    const toTexts = (view: View) => view.blocks.filter((block) => block.kind === "text");
+    const whole = toTexts(fold(stored)).filter((block) => block.text !== "");
+    const pieces = toTexts(fold(recorded)).filter((block) => block.text !== "");
+    expect(whole.every((block) => block.settled === block.text.length)).toBe(true);
+    expect(pieces.some((block) => block.settled === 0)).toBe(true);
   });
 
   it("shows the same view when the stream is read in two parts, as after a reconnect", () => {
