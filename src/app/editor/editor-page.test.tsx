@@ -3,12 +3,32 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeAll, describe, expect, it } from "vitest";
 import { plantKeys } from "@/domains/design/plant/api";
-import type { Version } from "@/shared/api/types";
+import type { Study, Version } from "@/shared/api/types";
 import { exampleAdmin } from "@/mocks/identity";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
 const slow = { timeout: 5000 };
+
+function toStudy(status: Study["status"]): Study {
+  return {
+    id: "example-study-1",
+    project: "example-project-1",
+    kind: "size",
+    name: "Example size study",
+    settings: {},
+    status,
+    progress: { done: status === "done" ? 1 : 0, total: 1 },
+    started_by: { kind: "user", name: "Example Admin", run: null },
+    case_version: 2,
+    plant_version: 3,
+    result: status === "done" ? "example-result-1" : null,
+    error: null,
+    missing: [],
+    created: "2026-01-12T14:00:00Z",
+    ended: status === "done" ? "2026-01-12T14:03:00Z" : null,
+  };
+}
 const editor = "/projects/example-project-1/design/editor";
 
 beforeAll(async () => {
@@ -89,4 +109,33 @@ describe("Editor page", () => {
       expect(router.state.location.search).toContain("tab=history");
     }, slow);
   }, 15000);
+
+  it("keeps the plant read-only while a study runs", async () => {
+    server.use(
+      http.get("*/api/v1/design/study", () =>
+        HttpResponse.json({ items: [toStudy("running")], next: null }),
+      ),
+    );
+    renderApp({ path: editor });
+    expect(await screen.findByText(/plant is read-only until it ends/, {}, slow)).toBeVisible();
+    const plant = screen.getByRole("region", { name: "Plant" });
+    expect(plant.querySelector("[inert]")).not.toBeNull();
+    expect(screen.queryByRole("region", { name: "Module results" })).toBeNull();
+  });
+
+  it("shows each module's key result and selects the module on a click", async () => {
+    server.use(
+      http.get("*/api/v1/design/study", () =>
+        HttpResponse.json({ items: [toStudy("done")], next: null }),
+      ),
+    );
+    const { router } = renderApp({ path: editor });
+    const strip = await screen.findByRole("region", { name: "Module results" }, slow);
+    const chip = await within(strip).findByRole("button", { name: /Heat .*MW/ }, slow);
+    expect(screen.getByRole("region", { name: "Plant" }).querySelector("[inert]")).toBeNull();
+    await userEvent.click(chip);
+    await waitFor(() => {
+      expect(router.state.location.search).toContain("module=heat");
+    }, slow);
+  });
 });

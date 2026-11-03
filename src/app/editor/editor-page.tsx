@@ -2,9 +2,12 @@ import { useSearchParams } from "react-router-dom";
 import { PlantPage } from "@/domains/design/plant/page";
 import { useRequiredParam } from "@/shared/layout/params";
 import { ChatDock } from "./chat-dock";
+import { ModuleResults } from "./module-results";
 import { PlantChangeNotice } from "./plant-change-notice";
+import { PlantLock } from "./plant-lock";
 import { ResultsDrawer } from "./results-drawer";
 import { RunBar } from "./run-bar";
+import { useActiveStudy } from "./use-active-study";
 
 const chatKey = "chat";
 const panelsKey = "panels";
@@ -46,13 +49,17 @@ function useEditorParams() {
     showHistory: () => {
       update("tab", "history");
     },
+    selectModule: (id: string) => {
+      update("module", id);
+    },
   };
 }
 
 /** The Editor: plant, chat dock and results drawer on one screen, with the study toolbar on top. */
 export function EditorPage() {
   const projectId = useRequiredParam("projectId");
-  const { chatId, panels, setChat, setPanels, showHistory } = useEditorParams();
+  const { chatId, panels, setChat, setPanels, showHistory, selectModule } = useEditorParams();
+  const isRunning = useActiveStudy(projectId);
   return (
     <div className="flex min-h-[560px] flex-col gap-3 min-[1000px]:h-[calc(100dvh-86px)]">
       <RunBar
@@ -70,9 +77,12 @@ export function EditorPage() {
         }}
       />
       <PlantChangeNotice projectId={projectId} onHistory={showHistory} />
+      {isRunning ? null : <ModuleResults projectId={projectId} onModule={selectModule} />}
       <div className="flex min-h-0 flex-1 gap-3 max-[1000px]:flex-col">
         <section aria-label="Plant" className="@container min-w-0 flex-1 overflow-auto">
-          <PlantPage />
+          <PlantLock isLocked={isRunning}>
+            <PlantPage />
+          </PlantLock>
         </section>
         {panels.chat ? (
           <aside
