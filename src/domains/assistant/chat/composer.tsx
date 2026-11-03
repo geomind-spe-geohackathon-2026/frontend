@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent, type ReactNode, type SubmitEvent } from "react";
 import { ArrowUp, Square } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { clearDraft, readDraft } from "@/shared/attach/chat-draft";
@@ -34,14 +35,14 @@ function SendButton({
         size="icon-sm"
         variant="default"
         className="rounded-full"
-        aria-label="Cancel run"
-        title="Cancel run"
+        aria-label={cancelling ? "Stopping the run" : "Cancel run"}
+        title={cancelling ? "Stopping after the current step" : "Cancel run"}
         disabled={cancelling}
         onClick={() => {
           onCancel();
         }}
       >
-        <Square aria-hidden="true" className="fill-current" />
+        {cancelling ? <Spinner /> : <Square aria-hidden="true" className="fill-current" />}
       </InputGroupButton>
     );
   }
