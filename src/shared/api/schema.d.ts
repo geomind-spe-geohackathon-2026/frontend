@@ -1113,7 +1113,7 @@ export interface components {
              * Project
              * Format: uuid
              */
-            project: string;
+            project?: string | null;
         };
         /** Budget */
         Budget: {
@@ -1386,7 +1386,7 @@ export interface components {
              * Project
              * Format: uuid
              */
-            project: string;
+            project: string | null;
             /**
              * Searchable
              * @enum {string}
@@ -4373,8 +4373,8 @@ export interface operations {
     };
     list_documents_api_v1_workspace_documents_get: {
         parameters: {
-            query: {
-                project: string;
+            query?: {
+                project?: string | null;
                 cursor?: string | null;
                 limit?: number;
             };

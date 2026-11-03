@@ -2,7 +2,7 @@ import type { RequestHandler } from "msw";
 import { assistantHandlers } from "./assistant";
 import { caseHandlers } from "./case";
 import { identityHandlers } from "./identity";
-import { pendingHandlers } from "./knowledge";
+import { pendingHandlers } from "./connectors";
 import { plantHandlers } from "./plant";
 import { reportHandlers } from "./report";
 import { resultsHandlers } from "./results";

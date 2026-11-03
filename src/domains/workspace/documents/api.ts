@@ -2,18 +2,28 @@ import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query
 import { api, toData, toFormData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
 
+/** A project id for its Library, or null for the shared Knowledge. */
+export type Scope = string | null;
+
 export const documentKeys = {
-  all: (projectId: string) => ["projects", projectId, "documents"] as const,
+  all: (scope: Scope) =>
+    scope === null
+      ? (["knowledge", "documents"] as const)
+      : (["projects", scope, "documents"] as const),
 };
+
+function toProject(scope: Scope): { project?: string } {
+  return scope === null ? {} : { project: scope };
+}
 
 const pollingMs = 2000;
 
 /** Paged query options for the project documents; polls while a document is still being indexed. */
-export const documentsQuery = (projectId: string) => ({
-  ...pagedQuery(documentKeys.all(projectId), async (cursor, signal) =>
+export const documentsQuery = (scope: Scope) => ({
+  ...pagedQuery(documentKeys.all(scope), async (cursor, signal) =>
     toData(
       await api.GET("/workspace/documents", {
-        params: { query: { project: projectId, ...(cursor === null ? {} : { cursor }) } },
+        params: { query: { ...toProject(scope), ...(cursor === null ? {} : { cursor }) } },
         signal,
       }),
     ),
@@ -28,23 +38,23 @@ export const documentsQuery = (projectId: string) => ({
 });
 
 /** Mutation that uploads one file to the project and refreshes the list. */
-export function useUploadDocument(projectId: string) {
+export function useUploadDocument(scope: Scope) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (file: File) => {
       return toData(
         await api.POST("/workspace/documents", {
-          body: { project: projectId, file },
+          body: { ...toProject(scope), file },
           bodySerializer: toFormData,
         }),
       );
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(projectId) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(scope) }),
   });
 }
 
 /** Mutation that deletes one document and refreshes the list. */
-export function useDeleteDocument(projectId: string) {
+export function useDeleteDocument(scope: Scope) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (documentId: string) => {
@@ -52,7 +62,7 @@ export function useDeleteDocument(projectId: string) {
         params: { path: { document_id: documentId } },
       });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(projectId) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all(scope) }),
   });
 }
 

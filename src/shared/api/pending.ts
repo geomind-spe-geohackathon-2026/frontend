@@ -1,73 +1,3 @@
-import type { Page } from "./pagination";
-
-export type KnowledgeStatus = "verified" | "secondary" | "placeholder";
-
-type EntryBase = {
-  id: string;
-  section: "knowledge" | "experience";
-  project: string | null;
-  created: string;
-  updated: string;
-  created_by: { kind: "seed" | "user" | "agent"; id: string | null };
-  origin?: string | null;
-};
-
-/** One cited reference value in the shared memory. */
-export type KnowledgeEntry = EntryBase & {
-  section: "knowledge";
-  item: string;
-  value: number | string;
-  unit?: string | null;
-  title: string;
-  publisher: string;
-  year: number;
-  page?: string | null;
-  link?: string | null;
-  price_year?: number | null;
-  currency?: string | null;
-  status: KnowledgeStatus;
-  note?: string | null;
-};
-
-export type KnowledgeCreate = {
-  id: string;
-  project?: string;
-  item: string;
-  value: number | string;
-  unit: string | null;
-  title: string;
-  publisher: string;
-  year: number;
-  page: string | null;
-  link: string | null;
-  price_year: number | null;
-  currency: string | null;
-  status: Exclude<KnowledgeStatus, "placeholder">;
-  note: string | null;
-};
-
-/** One past design that passed review; written by geomind, read-only here. */
-export type ExperienceEntry = EntryBase & {
-  section: "experience";
-  run?: string | null;
-  verdict?: unknown;
-  features?: Record<string, unknown>;
-  kpis?: Record<string, unknown>;
-  lessons?: unknown;
-};
-
-export type KnowledgeImport = {
-  added: number;
-  replaced: number;
-  errors: { row: number; message: string }[];
-};
-
-export type KnowledgeSettings = {
-  sections: string[];
-  similarity: number | null;
-  available: boolean;
-};
-
 export type ConnectorTool = { name: string; description: string; read_only: boolean };
 
 /** One MCP server the agents may use; the secret is never sent back. */
@@ -132,35 +62,10 @@ type Route = {
   patch?: never;
   trace?: never;
 };
-type Section = "knowledge" | "experience";
-type EntryPath = { section: Section; entry_id: string };
-type EntryQuery = { project?: string };
 type ConnectorPath = { connector_id: string };
 
-/** Routes the backend has not published yet (Knowledge, Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
+/** Routes the backend has not published yet (Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
 export type PendingPaths = {
-  "/workspace/knowledge": Omit<Route, "get" | "post"> & {
-    get: Read<
-      Page<KnowledgeEntry | ExperienceEntry>,
-      { section: Section; q?: string; cursor?: string; project?: string }
-    >;
-    post: Write<KnowledgeEntry, KnowledgeCreate>;
-  };
-  "/workspace/knowledge/settings": Omit<Route, "get"> & {
-    get: Read<KnowledgeSettings, never>;
-  };
-  "/workspace/knowledge/import": Omit<Route, "post"> & {
-    post: {
-      parameters: NoParams;
-      requestBody: { content: { "multipart/form-data": { file: Blob } } };
-      responses: { 200: Json<KnowledgeImport> };
-    };
-  };
-  "/workspace/knowledge/{section}/{entry_id}": Omit<Route, "get" | "patch" | "delete"> & {
-    get: Read<KnowledgeEntry | ExperienceEntry, EntryQuery, EntryPath>;
-    patch: Write<KnowledgeEntry, Partial<KnowledgeCreate>, EntryPath>;
-    delete: Remove<EntryPath>;
-  };
   "/workspace/connectors": Omit<Route, "get" | "post"> & {
     get: Read<Connector[], never>;
     post: Write<Connector, ConnectorCreate>;

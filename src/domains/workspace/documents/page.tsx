@@ -15,7 +15,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { documentFormatsQuery, documentsQuery, useDeleteDocument, useUploadDocument } from "./api";
+import {
+  documentFormatsQuery,
+  documentsQuery,
+  useDeleteDocument,
+  useUploadDocument,
+  type Scope,
+} from "./api";
 import { toSizeLabel } from "./format";
 import type { Document } from "@/shared/api/types";
 import {
@@ -44,8 +50,8 @@ const searchableTone: Record<Document["searchable"], "ok" | "warn" | "bad"> = {
   failed: "bad",
 };
 
-function useUploadFiles(projectId: string) {
-  const upload = useUploadDocument(projectId);
+function useUploadFiles(scope: Scope) {
+  const upload = useUploadDocument(scope);
   const [failure, setFailure] = useState<Error | null>(null);
   const [pending, setPending] = useState(false);
   const send = async (files: File[]) => {
@@ -108,15 +114,15 @@ function UploadButton({
 }
 
 function DeleteDialog({
-  projectId,
+  scope,
   document,
   onClose,
 }: {
-  projectId: string;
+  scope: Scope;
   document: Document | null;
   onClose: () => void;
 }) {
-  const remove = useDeleteDocument(projectId);
+  const remove = useDeleteDocument(scope);
   return (
     <Dialog
       open={document !== null}
@@ -218,21 +224,21 @@ function DocumentsTable({
   );
 }
 
-/** The project Library: upload or drop files, the list with its searchable status, and delete with a confirmation. */
-export function DocumentsPage() {
-  const projectId = useRequiredParam("projectId");
-  const documents = useInfiniteQuery(documentsQuery(projectId));
+type ViewProps = { scope: Scope; title: string; description: string; className: string };
+
+function DocumentsView({ scope, title, description, className }: ViewProps) {
+  const documents = useInfiniteQuery(documentsQuery(scope));
   const formats = useQuery(documentFormatsQuery());
   const [deleting, setDeleting] = useState<Document | null>(null);
   const items = toItems(documents.data?.pages);
-  const upload = useUploadFiles(projectId);
+  const upload = useUploadFiles(scope);
   const accept = formats.data?.join(",");
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col gap-3 ${className}`}>
       <PageHeader
-        title="Library"
-        description="Data files, reports and papers of the project; the assistant can search them."
+        title={title}
+        description={description}
         actions={<UploadButton onFiles={upload.send} pending={upload.pending} />}
       />
       {upload.failure === null ? null : <UploadFailure error={upload.failure} />}
@@ -269,12 +275,37 @@ export function DocumentsPage() {
         </Button>
       ) : null}
       <DeleteDialog
-        projectId={projectId}
+        scope={scope}
         document={deleting}
         onClose={() => {
           setDeleting(null);
         }}
       />
     </div>
+  );
+}
+
+/** The project Library: the project's own files; upload or drop them, see whether they are searchable, delete them. */
+export function DocumentsPage() {
+  const projectId = useRequiredParam("projectId");
+  return (
+    <DocumentsView
+      scope={projectId}
+      title="Library"
+      description="Data files, reports and papers of the project; the assistant can search them."
+      className=""
+    />
+  );
+}
+
+/** Knowledge: shared documents the agents search (RAG) in every project; papers, reports, standards, catalogues. */
+export function KnowledgePage() {
+  return (
+    <DocumentsView
+      scope={null}
+      title="Knowledge"
+      description="Papers, reports and standards the agents search in every project."
+      className="mx-auto w-[min(1040px,100%)]"
+    />
   );
 }

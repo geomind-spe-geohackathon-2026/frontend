@@ -117,6 +117,14 @@ const exampleDocuments: Document[] = [
     searchable: "ready",
     created: "2026-01-10T10:00:00Z",
   },
+  {
+    id: "example-document-knowledge-1",
+    project: null,
+    name: "example-cost-catalogue.pdf",
+    size: 204800,
+    searchable: "ready",
+    created: "2026-01-09T10:00:00Z",
+  },
 ];
 
 function toCopyFailure(body: ProjectCreate, source: Project | undefined) {
@@ -230,7 +238,7 @@ function documentHandlers(documents: Document[]): RequestHandler[] {
     ),
     http.get(toRoute("/workspace/documents/formats"), () => HttpResponse.json([".md", ".pdf"])),
     http.get(toRoute("/workspace/documents"), ({ request }) => {
-      const project = new URL(request.url).searchParams.get("project");
+      const project = new URL(request.url).searchParams.get("project") ?? null;
       const items = documents.filter((document) => document.project === project);
       return HttpResponse.json<Page<Document>>({ items, next: null });
     }),
@@ -238,12 +246,12 @@ function documentHandlers(documents: Document[]): RequestHandler[] {
       const form = await request.formData();
       const file = form.get("file");
       const project = form.get("project");
-      if (file === null || typeof file === "string" || typeof project !== "string") {
-        return toErrorResponse(422, "validation_failed", "A project and a file are required");
+      if (file === null || typeof file === "string") {
+        return toErrorResponse(422, "validation_failed", "A file is required");
       }
       const document: Document = {
         id: `example-document-${String(documents.length + 1)}`,
-        project,
+        project: typeof project === "string" ? project : null,
         name: file.name,
         size: file.size,
         searchable: "pending",
