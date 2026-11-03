@@ -197,4 +197,17 @@ describe("Blocks", () => {
     render(<Blocks running={false} blocks={[end]} />);
     expect(screen.getByRole("status")).toHaveTextContent("none passed verification");
   });
+
+  it("says that a helper agent stopped, with its reason", () => {
+    const stopped: ToolProblem = {
+      code: "nested_stopped",
+      path: null,
+      message: "the token budget ran out",
+      suggestions: [],
+    };
+    render(<Blocks running={false} blocks={[tool("t1", "cut", stopped)]} />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "A helper agent stopped: the token budget ran out",
+    );
+  });
 });

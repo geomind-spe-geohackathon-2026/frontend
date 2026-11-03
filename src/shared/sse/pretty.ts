@@ -120,6 +120,7 @@ export function toToolName(tool: string): string {
 
 function toProblemText(problem: ToolProblem): string {
   if (problem.code === "no_case") return noCaseText;
+  if (problem.code === "nested_stopped") return `A helper agent stopped: ${problem.message}`;
   const known = problemTexts[problem.code];
   if (known !== undefined) return known;
   if (problem.code === "case_incomplete") {
