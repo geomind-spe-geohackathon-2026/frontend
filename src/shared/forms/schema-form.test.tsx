@@ -7,6 +7,27 @@ import { SchemaForm } from "./schema-form";
 const siteSchema = exampleCaseSchema.properties?.site ?? {};
 
 describe("SchemaForm", () => {
+  it("lists the fields in the order of the JSON, then the empty ones", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        ground: { type: "number" },
+        fluid: { type: "number" },
+        air: { type: "number" },
+      },
+    };
+    render(
+      <SchemaForm
+        schema={schema}
+        initial={{ air: 1, fluid: 2 }}
+        onChange={vi.fn()}
+        prefix="site"
+      />,
+    );
+    const labels = screen.getAllByRole("spinbutton").map((input) => input.id);
+    expect(labels).toEqual(["field-site.air", "field-site.fluid", "field-site.ground"]);
+  });
+
   it("renders no form element, so it can sit inside a form", () => {
     const { container } = render(
       <form>

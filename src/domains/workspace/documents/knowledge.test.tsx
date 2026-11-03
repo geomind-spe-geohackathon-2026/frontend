@@ -22,4 +22,14 @@ describe("knowledge page", () => {
     expect(await screen.findByText("example-standard.pdf uploaded")).toBeVisible();
     expect(await screen.findByText("indexing", {}, { timeout: 5_000 })).toBeVisible();
   });
+
+  it("opens a file in a window from its View button", async () => {
+    renderApp({ path });
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole("button", { name: "View example-cost-catalogue.pdf" }),
+    );
+    expect(await screen.findByRole("dialog", { name: "example-cost-catalogue.pdf" })).toBeVisible();
+    expect(await screen.findByText("Example text of example-cost-catalogue.pdf")).toBeVisible();
+  });
 });

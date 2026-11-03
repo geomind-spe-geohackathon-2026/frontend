@@ -77,4 +77,11 @@ export type PendingPaths = {
   "/workspace/mcp/{connector_id}/check": Omit<Route, "post"> & {
     post: Act<Connector, ConnectorPath>;
   };
+  "/workspace/rag/{document_id}/file": Omit<Route, "get"> & {
+    get: {
+      parameters: WithPath<{ document_id: string }>;
+      requestBody?: never;
+      responses: { 200: { content: { "application/octet-stream": Blob } } };
+    };
+  };
 };

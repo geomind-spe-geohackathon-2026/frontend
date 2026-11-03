@@ -53,6 +53,16 @@ const FIELD_HINTS = {
     "Leave empty to compute it from the surface temperature and the gradient",
 };
 
+const sectionOrder = ["demand", "site", "utilities", "economics", "requirements", "time"];
+
+function caseSections(schema: JsonSchema): string[] {
+  const rank = (name: string) => {
+    const index = sectionOrder.indexOf(name);
+    return index < 0 ? sectionOrder.length : index;
+  };
+  return [...sectionsOf(schema)].sort((a, b) => rank(a) - rank(b));
+}
+
 function focusField(path: string): void {
   let candidate = path;
   while (candidate !== "") {
@@ -174,7 +184,7 @@ function CopyCase({ projectId }: { projectId: string }) {
 }
 
 function toStepHint(schema: JsonSchema): string {
-  return sectionsOf(schema)
+  return caseSections(schema)
     .filter((section) => section !== "initial_state")
     .map((section) => labelOf(section, schema.properties?.[section] ?? {}))
     .join(" → ");
@@ -332,7 +342,7 @@ function useSeriesSource(projectId: string, saved: Case, time: unknown): SeriesS
 }
 
 function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
-  const sections = sectionsOf(schema);
+  const sections = caseSections(schema);
   const series = useSeriesSource(projectId, saved, editor.content.time);
   return (
     <Tabs value={tab} onValueChange={onTab}>
@@ -434,7 +444,7 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
   });
   const blocker = useUnsavedGuard(editor.dirty);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const tab = params.get("tab") ?? sectionsOf(schema)[0] ?? "";
+  const tab = params.get("tab") ?? caseSections(schema)[0] ?? "";
   const canSave = editor.dirty && editor.problems.length === 0 && !editor.isChecking;
   const showTab = (next: string) => {
     setParams({ tab: next }, { replace: true });

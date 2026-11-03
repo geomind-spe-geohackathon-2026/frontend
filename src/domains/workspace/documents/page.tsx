@@ -23,6 +23,7 @@ import {
   type Scope,
 } from "./api";
 import { toSizeLabel } from "./format";
+import { FileViewer } from "./viewer";
 import type { Document } from "@/shared/api/types";
 import {
   Table,
@@ -168,9 +169,11 @@ function DeleteDialog({
 function DocumentsTable({
   documents,
   onDelete,
+  onView,
 }: {
   documents: Document[];
   onDelete: (document: Document) => void;
+  onView: (document: Document) => void;
 }) {
   return (
     <Card className={tableCardClass}>
@@ -206,21 +209,64 @@ function DocumentsTable({
                 </Badge>
               </TableCell>
               <TableCell className="px-3 py-2">{toDateLabel(document.created)}</TableCell>
-              <TableCell className="px-3 py-2 text-right">
-                <Button
-                  aria-label={`Delete ${document.name}`}
-                  onClick={() => {
-                    onDelete(document);
-                  }}
-                >
-                  Delete
-                </Button>
-              </TableCell>
+              <RowActions document={document} onDelete={onDelete} onView={onView} />
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </Card>
+  );
+}
+
+function RowActions({
+  document,
+  onDelete,
+  onView,
+}: {
+  document: Document;
+  onDelete: (document: Document) => void;
+  onView: (document: Document) => void;
+}) {
+  return (
+    <TableCell className="flex justify-end gap-2 px-3 py-2">
+      <Button
+        aria-label={`View ${document.name}`}
+        onClick={() => {
+          onView(document);
+        }}
+      >
+        View
+      </Button>
+      <Button
+        aria-label={`Delete ${document.name}`}
+        onClick={() => {
+          onDelete(document);
+        }}
+      >
+        Delete
+      </Button>
+    </TableCell>
+  );
+}
+
+function LoadMore({
+  query,
+}: {
+  query: {
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
+    fetchNextPage: () => Promise<unknown>;
+  };
+}) {
+  if (!query.hasNextPage) return null;
+  return (
+    <Button
+      className="self-start"
+      disabled={query.isFetchingNextPage}
+      onClick={() => void query.fetchNextPage()}
+    >
+      Load more
+    </Button>
   );
 }
 
@@ -230,6 +276,7 @@ function DocumentsView({ scope, title, description, className }: ViewProps) {
   const documents = useInfiniteQuery(documentsQuery(scope));
   const formats = useQuery(documentFormatsQuery());
   const [deleting, setDeleting] = useState<Document | null>(null);
+  const [viewing, setViewing] = useState<Document | null>(null);
   const items = toItems(documents.data?.pages);
   const upload = useUploadFiles(scope);
   const accept = formats.data?.join(",");
@@ -255,7 +302,7 @@ function DocumentsView({ scope, title, description, className }: ViewProps) {
       ) : null}
       {items.length === 0 ? null : (
         <>
-          <DocumentsTable documents={items} onDelete={setDeleting} />
+          <DocumentsTable documents={items} onDelete={setDeleting} onView={setViewing} />
           <DropZone
             label="Files to add"
             accept={accept}
@@ -265,15 +312,13 @@ function DocumentsView({ scope, title, description, className }: ViewProps) {
           />
         </>
       )}
-      {documents.hasNextPage ? (
-        <Button
-          className="self-start"
-          disabled={documents.isFetchingNextPage}
-          onClick={() => void documents.fetchNextPage()}
-        >
-          Load more
-        </Button>
-      ) : null}
+      <LoadMore query={documents} />
+      <FileViewer
+        document={viewing}
+        onClose={() => {
+          setViewing(null);
+        }}
+      />
       <DeleteDialog
         scope={scope}
         document={deleting}

@@ -260,6 +260,15 @@ function documentHandlers(documents: Document[]): RequestHandler[] {
       documents.push(document);
       return HttpResponse.json<Document>(document, { status: 201 });
     }),
+    http.get(toRoute("/workspace/rag/:documentId/file"), ({ params }) => {
+      const document = documents.find((item) => item.id === params.documentId);
+      if (document === undefined) {
+        return toErrorResponse(404, "rag_document_not_found", "Document not found");
+      }
+      return new HttpResponse(`Example text of ${document.name}`, {
+        headers: { "Content-Type": "text/plain" },
+      });
+    }),
     http.delete(toRoute("/workspace/rag/:documentId"), ({ params }) => {
       const index = documents.findIndex((item) => item.id === params.documentId);
       if (index < 0) return toErrorResponse(404, "rag_document_not_found", "Document not found");

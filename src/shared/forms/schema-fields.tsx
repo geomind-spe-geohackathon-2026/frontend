@@ -326,13 +326,28 @@ function OptionalGroup({ name, path, label, children }: NodeProps & { children: 
   );
 }
 
+function toDocumentOrder(
+  entries: [string, JsonSchema][],
+  current: unknown,
+): [string, JsonSchema][] {
+  const keys = isRecord(current) ? Object.keys(current) : [];
+  const rank = (key: string) => {
+    const index = keys.indexOf(key);
+    return index < 0 ? keys.length : index;
+  };
+  return entries
+    .map((entry, index) => ({ entry, index }))
+    .sort((a, b) => rank(a.entry[0]) - rank(b.entry[0]) || a.index - b.index)
+    .map(({ entry }) => entry);
+}
+
 function GroupFields(props: NodeProps) {
   const { name, path, label, optional = false } = props;
   const { control } = useFormContext();
   const current: unknown = useWatch({ control, name });
   const schema = toRequirementSchema(props.schema, current);
   if (isFractionGroup(schema) && path !== "") return <FractionGroup {...props} />;
-  const entries = formEntries(schema);
+  const entries = toDocumentOrder(formEntries(schema), current);
   const required = new Set(schema.required ?? []);
   const child = ([key, childSchema]: [string, JsonSchema]) => (
     <FieldNode

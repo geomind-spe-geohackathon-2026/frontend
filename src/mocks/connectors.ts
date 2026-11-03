@@ -66,7 +66,8 @@ function connectorHandlers(): RequestHandler[] {
           ...change,
           ...(secret === undefined ? {} : { has_secret: secret !== "" }),
         });
-        if (connector === undefined) return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
+        if (connector === undefined)
+          return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
         return HttpResponse.json(connector);
       },
     ),
@@ -74,7 +75,8 @@ function connectorHandlers(): RequestHandler[] {
       toRoute("/workspace/mcp/:connector_id/check"),
       ({ params }) => {
         const connector = update(params.connector_id, { checked: new Date().toISOString() });
-        if (connector === undefined) return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
+        if (connector === undefined)
+          return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
         return HttpResponse.json(connector);
       },
     ),
