@@ -42,7 +42,7 @@ function MemoryField({ project }: { project: Project }) {
 function ConnectorChoice({ project }: { project: Project }) {
   const connectors = useQuery(connectorsQuery());
   const save = useSetAgentTools(project.id);
-  const chosen = new Set(project.connectors ?? []);
+  const chosen = new Set(project.mcp ?? []);
   if (connectors.isError || connectors.data === undefined) return null;
   return (
     <fieldset className="flex flex-col gap-1.5">
@@ -64,7 +64,7 @@ function ConnectorChoice({ project }: { project: Project }) {
               const next = new Set(chosen);
               if (checked === true) next.add(connector.id);
               else next.delete(connector.id);
-              save.mutate({ connectors: [...next] });
+              save.mutate({ mcp: [...next] });
             }}
           />
           {connector.name}

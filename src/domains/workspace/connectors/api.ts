@@ -12,8 +12,7 @@ function useRefresh() {
 export function useAddConnector() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: async (body: ConnectorCreate) =>
-      toData(await api.POST("/workspace/connectors", { body })),
+    mutationFn: async (body: ConnectorCreate) => toData(await api.POST("/workspace/mcp", { body })),
     onSuccess: refresh,
   });
 }
@@ -24,7 +23,7 @@ export function useUpdateConnector(connectorId: string) {
   return useMutation({
     mutationFn: async (body: ConnectorUpdate) =>
       toData(
-        await api.PATCH("/workspace/connectors/{connector_id}", {
+        await api.PATCH("/workspace/mcp/{connector_id}", {
           params: { path: { connector_id: connectorId } },
           body,
         }),
@@ -39,7 +38,7 @@ export function useCheckConnector(connectorId: string) {
   return useMutation({
     mutationFn: async () =>
       toData(
-        await api.POST("/workspace/connectors/{connector_id}/check", {
+        await api.POST("/workspace/mcp/{connector_id}/check", {
           params: { path: { connector_id: connectorId } },
         }),
       ),
@@ -52,7 +51,7 @@ export function useDeleteConnector(connectorId: string) {
   const refresh = useRefresh();
   return useMutation({
     mutationFn: async () => {
-      await api.DELETE("/workspace/connectors/{connector_id}", {
+      await api.DELETE("/workspace/mcp/{connector_id}", {
         params: { path: { connector_id: connectorId } },
       });
     },

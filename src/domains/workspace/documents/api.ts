@@ -22,7 +22,7 @@ const pollingMs = 2000;
 export const documentsQuery = (scope: Scope) => ({
   ...pagedQuery(documentKeys.all(scope), async (cursor, signal) =>
     toData(
-      await api.GET("/workspace/documents", {
+      await api.GET("/workspace/rag", {
         params: { query: { ...toProject(scope), ...(cursor === null ? {} : { cursor }) } },
         signal,
       }),
@@ -43,7 +43,7 @@ export function useUploadDocument(scope: Scope) {
   return useMutation({
     mutationFn: async (file: File) => {
       return toData(
-        await api.POST("/workspace/documents", {
+        await api.POST("/workspace/rag", {
           body: { ...toProject(scope), file },
           bodySerializer: toFormData,
         }),
@@ -58,7 +58,7 @@ export function useDeleteDocument(scope: Scope) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (documentId: string) => {
-      await api.DELETE("/workspace/documents/{document_id}", {
+      await api.DELETE("/workspace/rag/{document_id}", {
         params: { path: { document_id: documentId } },
       });
     },
@@ -70,5 +70,5 @@ export function useDeleteDocument(scope: Scope) {
 export const documentFormatsQuery = () =>
   queryOptions({
     queryKey: ["documents", "formats"],
-    queryFn: async () => toData(await api.GET("/workspace/documents/formats")),
+    queryFn: async () => toData(await api.GET("/workspace/rag/formats")),
   });

@@ -876,7 +876,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/workspace/documents": {
+    "/workspace/rag": {
         parameters: {
             query?: never;
             header?: never;
@@ -894,7 +894,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/workspace/documents/formats": {
+    "/workspace/rag/formats": {
         parameters: {
             query?: never;
             header?: never;
@@ -911,7 +911,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/workspace/documents/{document_id}": {
+    "/workspace/rag/{document_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1889,8 +1889,8 @@ export interface components {
             updated: string;
             /** Memory */
             memory?: "on" | "off" | null;
-            /** Connectors */
-            connectors?: string[];
+            /** Mcp */
+            mcp?: string[];
         };
         /** ProjectCreate */
         ProjectCreate: {
@@ -1900,8 +1900,8 @@ export interface components {
             name: string;
             /** Memory */
             memory?: "on" | "off" | null;
-            /** Connectors */
-            connectors?: string[] | null;
+            /** Mcp */
+            mcp?: string[] | null;
         };
         /** ProjectUpdate */
         ProjectUpdate: {
@@ -1910,8 +1910,8 @@ export interface components {
             name?: string | null;
             /** Memory */
             memory?: "on" | "off" | null;
-            /** Connectors */
-            connectors?: string[] | null;
+            /** Mcp */
+            mcp?: string[] | null;
         };
         /** RangeEnds */
         RangeEnds: {

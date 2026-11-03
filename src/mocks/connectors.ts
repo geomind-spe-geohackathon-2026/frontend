@@ -51,40 +51,37 @@ function connectorHandlers(): RequestHandler[] {
     return connectors.find((item) => item.id === id);
   };
   return [
-    http.get(toRoute("/workspace/connectors"), () => HttpResponse.json(connectors)),
-    http.post<NoParams, ConnectorCreate>(toRoute("/workspace/connectors"), async ({ request }) => {
+    http.get(toRoute("/workspace/mcp"), () => HttpResponse.json(connectors)),
+    http.post<NoParams, ConnectorCreate>(toRoute("/workspace/mcp"), async ({ request }) => {
       next += 1;
       const connector = toConnector(await request.json(), `example-connector-${String(next)}`);
       connectors = [...connectors, connector];
       return HttpResponse.json(connector);
     }),
     http.patch<{ connector_id: string }, ConnectorUpdate>(
-      toRoute("/workspace/connectors/:connector_id"),
+      toRoute("/workspace/mcp/:connector_id"),
       async ({ params, request }) => {
         const { secret, ...change } = await request.json();
         const connector = update(params.connector_id, {
           ...change,
           ...(secret === undefined ? {} : { has_secret: secret !== "" }),
         });
-        if (connector === undefined) return toErrorResponse(404, "not_found", "No such connector");
+        if (connector === undefined) return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
         return HttpResponse.json(connector);
       },
     ),
     http.post<{ connector_id: string }>(
-      toRoute("/workspace/connectors/:connector_id/check"),
+      toRoute("/workspace/mcp/:connector_id/check"),
       ({ params }) => {
         const connector = update(params.connector_id, { checked: new Date().toISOString() });
-        if (connector === undefined) return toErrorResponse(404, "not_found", "No such connector");
+        if (connector === undefined) return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
         return HttpResponse.json(connector);
       },
     ),
-    http.delete<{ connector_id: string }>(
-      toRoute("/workspace/connectors/:connector_id"),
-      ({ params }) => {
-        connectors = connectors.filter((item) => item.id !== params.connector_id);
-        return new HttpResponse(null, { status: 204 });
-      },
-    ),
+    http.delete<{ connector_id: string }>(toRoute("/workspace/mcp/:connector_id"), ({ params }) => {
+      connectors = connectors.filter((item) => item.id !== params.connector_id);
+      return new HttpResponse(null, { status: 204 });
+    }),
   ];
 }
 

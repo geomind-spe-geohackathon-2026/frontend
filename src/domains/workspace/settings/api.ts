@@ -38,7 +38,7 @@ export function useSetBudget(projectId: string) {
 export function useSetAgentTools(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { memory?: "on" | "off"; connectors?: string[] }) =>
+    mutationFn: async (body: { memory?: "on" | "off"; mcp?: string[] }) =>
       toData(
         await api.PATCH("/workspace/projects/{project_id}", {
           params: { path: { project_id: projectId } },

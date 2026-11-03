@@ -11,7 +11,7 @@ function pause(ms: number): Promise<void> {
 
 async function toReadState(projectId: string, documentId: string): Promise<string | undefined> {
   const page = toData(
-    await api.GET("/workspace/documents", { params: { query: { project: projectId } } }),
+    await api.GET("/workspace/rag", { params: { query: { project: projectId } } }),
   );
   return page.items.find((item) => item.id === documentId)?.searchable;
 }
@@ -19,7 +19,7 @@ async function toReadState(projectId: string, documentId: string): Promise<strin
 /** Uploads a file to the project's documents and waits until the assistant can read it. */
 export async function toReadDocument(projectId: string, file: File): Promise<void> {
   const document = toData(
-    await api.POST("/workspace/documents", {
+    await api.POST("/workspace/rag", {
       body: { project: projectId, file },
       bodySerializer: toFormData,
     }),
@@ -40,7 +40,7 @@ export function toMessageWithFiles(content: string, names: string[]): string {
 /** Uploads a file to the project's documents without waiting for the assistant to read it. */
 export async function uploadDocument(projectId: string, file: File): Promise<void> {
   toData(
-    await api.POST("/workspace/documents", {
+    await api.POST("/workspace/rag", {
       body: { project: projectId, file },
       bodySerializer: toFormData,
     }),

@@ -7,5 +7,5 @@ export const connectorKeys = { all: ["connectors"] as const };
 export const connectorsQuery = () =>
   queryOptions({
     queryKey: connectorKeys.all,
-    queryFn: async ({ signal }) => toData(await api.GET("/workspace/connectors", { signal })),
+    queryFn: async ({ signal }) => toData(await api.GET("/workspace/mcp", { signal })),
   });

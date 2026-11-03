@@ -66,15 +66,15 @@ type ConnectorPath = { connector_id: string };
 
 /** Routes the backend has not published yet (Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
 export type PendingPaths = {
-  "/workspace/connectors": Omit<Route, "get" | "post"> & {
+  "/workspace/mcp": Omit<Route, "get" | "post"> & {
     get: Read<Connector[], never>;
     post: Write<Connector, ConnectorCreate>;
   };
-  "/workspace/connectors/{connector_id}": Omit<Route, "patch" | "delete"> & {
+  "/workspace/mcp/{connector_id}": Omit<Route, "patch" | "delete"> & {
     patch: Write<Connector, ConnectorUpdate, ConnectorPath>;
     delete: Remove<ConnectorPath>;
   };
-  "/workspace/connectors/{connector_id}/check": Omit<Route, "post"> & {
+  "/workspace/mcp/{connector_id}/check": Omit<Route, "post"> & {
     post: Act<Connector, ConnectorPath>;
   };
 };

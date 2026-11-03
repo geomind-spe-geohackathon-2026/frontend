@@ -53,7 +53,7 @@ describe("documents page", () => {
 
   it("shows the server error", async () => {
     server.use(
-      http.get("*/api/v1/workspace/documents", () =>
+      http.get("*/api/v1/workspace/rag", () =>
         HttpResponse.json(
           { error: { code: "internal", message: "Storage is down", details: {} } },
           { status: 500 },

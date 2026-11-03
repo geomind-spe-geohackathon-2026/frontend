@@ -38,7 +38,7 @@ const exampleProjects: Project[] = [
     runs: 5,
     budget: noBudget,
     memory: null,
-    connectors: [],
+    mcp: [],
   },
   {
     id: "example-project-2",
@@ -204,17 +204,17 @@ function projectChangeHandlers(projects: Project[]): RequestHandler[] {
   return [
     http.patch<
       { projectId: string },
-      { name?: string; budget?: Project["budget"]; memory?: "on" | "off"; connectors?: string[] }
+      { name?: string; budget?: Project["budget"]; memory?: "on" | "off"; mcp?: string[] }
     >(toRoute("/workspace/projects/:projectId"), async ({ params, request }) => {
       const project = projects.find((item) => item.id === params.projectId);
       if (project === undefined) {
         return toErrorResponse(404, "project_not_found", "Project not found");
       }
-      const { name, budget, memory, connectors } = await request.json();
+      const { name, budget, memory, mcp } = await request.json();
       if (name !== undefined) project.name = name;
       if (budget !== undefined) project.budget = budget;
       if (memory !== undefined) project.memory = memory;
-      if (connectors !== undefined) project.connectors = connectors;
+      if (mcp !== undefined) project.mcp = mcp;
       return HttpResponse.json<Project>(project);
     }),
     http.delete(toRoute("/workspace/projects/:projectId"), ({ params }) => {
@@ -236,13 +236,13 @@ function documentHandlers(documents: Document[]): RequestHandler[] {
     http.get(toRoute("/system/health"), () =>
       HttpResponse.json({ status: "ok", assistant: "scripted" }),
     ),
-    http.get(toRoute("/workspace/documents/formats"), () => HttpResponse.json([".md", ".pdf"])),
-    http.get(toRoute("/workspace/documents"), ({ request }) => {
+    http.get(toRoute("/workspace/rag/formats"), () => HttpResponse.json([".md", ".pdf"])),
+    http.get(toRoute("/workspace/rag"), ({ request }) => {
       const project = new URL(request.url).searchParams.get("project") ?? null;
       const items = documents.filter((document) => document.project === project);
       return HttpResponse.json<Page<Document>>({ items, next: null });
     }),
-    http.post(toRoute("/workspace/documents"), async ({ request }) => {
+    http.post(toRoute("/workspace/rag"), async ({ request }) => {
       const form = await request.formData();
       const file = form.get("file");
       const project = form.get("project");
@@ -260,9 +260,9 @@ function documentHandlers(documents: Document[]): RequestHandler[] {
       documents.push(document);
       return HttpResponse.json<Document>(document, { status: 201 });
     }),
-    http.delete(toRoute("/workspace/documents/:documentId"), ({ params }) => {
+    http.delete(toRoute("/workspace/rag/:documentId"), ({ params }) => {
       const index = documents.findIndex((item) => item.id === params.documentId);
-      if (index < 0) return toErrorResponse(404, "not_found", "Document not found");
+      if (index < 0) return toErrorResponse(404, "rag_document_not_found", "Document not found");
       documents.splice(index, 1);
       return new HttpResponse(null, { status: 204 });
     }),
