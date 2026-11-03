@@ -171,4 +171,13 @@ describe("Blocks", () => {
     rerender(<Blocks running={false} blocks={[open]} />);
     expect(screen.queryByText("Thinking")).not.toBeInTheDocument();
   });
+
+  it("gives the document tools friendly names and reads the new problem codes", () => {
+    const notText: ToolProblem = { code: "not_text", path: null, message: "x", suggestions: [] };
+    const read = tool("t1", "cut", notText);
+    if (read.kind !== "tool") throw new Error("expected a tool block");
+    render(<Blocks running={false} blocks={[{ ...read, tool: "read_document" }]} />);
+    expect(screen.getByText("Read a document")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("no readable text");
+  });
 });

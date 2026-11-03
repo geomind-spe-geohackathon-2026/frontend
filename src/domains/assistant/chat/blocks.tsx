@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import {
   toFailureText,
+  toToolName,
   toPretty,
   toRequestText,
   toBudgetStop,
@@ -46,11 +47,6 @@ function CopyButton({ text }: { text: string }) {
       <Copy aria-hidden="true" className="size-3.5" />
     </Button>
   );
-}
-
-function toToolName(tool: string): string {
-  const words = tool.replaceAll("_", " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function ToolCard({ block }: { block: ToolBlock }) {

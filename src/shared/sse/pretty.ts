@@ -98,8 +98,30 @@ function fromQuotedMessage(summary: string): string | null {
   return typeof value === "string" ? value : null;
 }
 
+const problemTexts: Record<string, string> = {
+  files_unavailable:
+    "The project's documents could not be reached just now. Try again in a moment.",
+  not_text: "This document has no readable text, so the assistant cannot read it.",
+  budget: "The run used up its budget before this step.",
+};
+
+const toolLabels: Record<string, string> = {
+  list_files: "Listed the project documents",
+  read_document: "Read a document",
+};
+
+/** A tool's name for reading: a friendly label for known tools, else the name in plain words. */
+export function toToolName(tool: string): string {
+  const label = toolLabels[tool];
+  if (label !== undefined) return label;
+  const words = tool.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 function toProblemText(problem: ToolProblem): string {
   if (problem.code === "no_case") return noCaseText;
+  const known = problemTexts[problem.code];
+  if (known !== undefined) return known;
   if (problem.code === "case_incomplete") {
     const missing = problem.suggestions.length > 0 ? problem.suggestions : [problem.path ?? ""];
     const listed = missing.filter((entry) => entry !== "").join(", ");
