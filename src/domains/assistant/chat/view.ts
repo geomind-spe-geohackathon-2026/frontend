@@ -1,6 +1,6 @@
 import type { RunStatus } from "@/shared/api/types";
 import { toBestValue } from "@/shared/sse/pretty";
-import type { RunEvent, RunRequest, Usage } from "@/shared/sse/types";
+import type { RunEvent, RunRequest, ToolProblem, Usage } from "@/shared/sse/types";
 import { applyChanges } from "./patch";
 
 export type Block =
@@ -15,6 +15,7 @@ export type Block =
       summary: string;
       duration: number | null;
       error: string | null;
+      problem: ToolProblem | null;
     }
   | { kind: "request"; id: string; agent: string; request: RunRequest; resolved: boolean }
   | {
@@ -168,13 +169,14 @@ function finishTool(view: View, event: RunEvent & { type: "tool.finished" }): Vi
     ),
     blocks: view.blocks.map((block) => {
       if (block.kind !== "tool" || block.id !== event.call_id) return block;
-      const failed = event.error !== undefined;
+      const failed = event.error !== undefined || event.problem !== undefined;
       return {
         ...block,
         state: failed ? "failed" : "done",
         summary: event.output_summary,
         duration: event.duration,
-        error: event.error ?? null,
+        error: event.error ?? event.problem?.message ?? null,
+        problem: event.problem ?? null,
       };
     }),
   };
@@ -226,6 +228,7 @@ function reduce(view: View, event: RunEvent): View {
         summary: "",
         duration: null,
         error: null,
+        problem: null,
       });
     case "tool.finished":
       return finishTool(view, event);

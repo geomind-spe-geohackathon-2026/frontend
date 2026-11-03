@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Blocks } from "./blocks";
+import type { ToolProblem } from "@/shared/sse/types";
 import type { Block } from "./view";
 
 function text(id: string, value: string): Block {
@@ -25,7 +26,7 @@ function liveText(value: string): Block {
   };
 }
 
-function tool(id: string, error: string | null): Block {
+function tool(id: string, error: string | null, problem: ToolProblem | null = null): Block {
   return {
     kind: "tool",
     id,
@@ -36,10 +37,41 @@ function tool(id: string, error: string | null): Block {
     summary: "",
     duration: 0,
     error,
+    problem,
   };
 }
 
+const incomplete: ToolProblem = {
+  code: "case_incomplete",
+  path: "demand",
+  message: "case is incomplete",
+  suggestions: ["demand.heating.profile", "economics.discount_rate"],
+};
+
+const failedEnd: Block = {
+  kind: "end",
+  id: "end",
+  agent: "coordinator",
+  status: "failed",
+  message: "tool failed",
+  reason: "error",
+  studies: [],
+};
+
 describe("Blocks", () => {
+  it("says which case values are missing when a tool failed with case_incomplete", () => {
+    render(<Blocks running={false} blocks={[tool("t1", "cut text", incomplete)]} />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "The project's case is missing values: demand.heating.profile, economics.discount_rate.",
+    );
+  });
+
+  it("ends a failed run with the readable problem of its last tool", () => {
+    const noCase: ToolProblem = { code: "no_case", path: null, message: "x", suggestions: [] };
+    render(<Blocks running={false} blocks={[tool("t1", "cut", noCase), failedEnd]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("case is not complete yet");
+  });
+
   it("shows a failure the run ended on, outside the closed steps", () => {
     render(<Blocks running={false} blocks={[tool("t1", "No such file")]} />);
     expect(screen.getByRole("status")).toHaveTextContent("No such file");
@@ -79,6 +111,7 @@ describe("Blocks", () => {
       summary: "{'plants': ['a', 'b']}",
       duration: 0.2,
       error: null,
+      problem: null,
     };
     const { container } = render(<Blocks running={false} blocks={[tool]} />);
     expect(container.querySelector("details")).not.toHaveAttribute("open");
@@ -104,6 +137,7 @@ describe("Blocks", () => {
       state: "failed",
       summary: "",
       duration: 0.2,
+      problem: null,
       error: "size.doublets.range is missing",
     };
     const note = text("b0", 'design loop: {"round": 1}');

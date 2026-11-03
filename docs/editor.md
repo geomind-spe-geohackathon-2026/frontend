@@ -27,7 +27,7 @@ Status: done, next, or blocked (with what it waits for).
 | E8 | Agent edits: the plant already reloads when a run ends (`useRunView` refreshes the project). The editor now says when someone else, such as the agent, saved a plant version, with Show history. Still to do: outline the changed modules on the canvas. | partly done |
 | E9 | Run mode: while a study runs the plant is read-only (inert, with a notice); after it ends a strip shows each module's key result (capacity, share used) from the newest result, and a click selects the module. Numbers drawn on the canvas nodes wait for E6. | done |
 | E10 | Stream values on connections (flow, temperature) after a run. | blocked: results have no per-connection values; on the list for Sahand to ask gemini |
-| E11 | Readable chat endings for the stop codes `no_case` and `case_incomplete` in `toEndText` (`assistant/chat/blocks.tsx`). | blocked: the backend passes the codes through first |
+| E11 | Readable chat endings for the stop codes `no_case` and `case_incomplete`: `tool.finished` carries `problem` (contract version 50), shown by `toFailureText` and at the end of a failed run. | done |
 | E12 | Report diagram: lines between Treatment and Heating still cross; choose port order by where the other end of each line sits (`shared/plant/flowsheet-layout.ts`). | next |
 | E13 | Phones: the editor shows the canvas read-only with the chat; editing stays on desktop. | next |
 

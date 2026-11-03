@@ -1,3 +1,5 @@
+import type { ToolProblem } from "./types";
+
 const words: Record<string, string> = { None: "null", True: "true", False: "false" };
 
 function readQuoted(text: string, start: number): { end: number; value: string } {
@@ -73,6 +75,8 @@ const noCaseMessage = "the problem state has no case";
 const noCaseText =
   "The project's case is not complete yet, so the assistant cannot use it. Fill in the missing values on the Case page, then ask again.";
 
+const incompleteText = "The project's case is missing values";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -94,8 +98,21 @@ function fromQuotedMessage(summary: string): string | null {
   return typeof value === "string" ? value : null;
 }
 
-/** Returns the message of a failed tool, read from a dict when the tool returned one. */
-export function toFailureText(error: string): string {
+function toProblemText(problem: ToolProblem): string {
+  if (problem.code === "no_case") return noCaseText;
+  if (problem.code === "case_incomplete") {
+    const missing = problem.suggestions.length > 0 ? problem.suggestions : [problem.path ?? ""];
+    const listed = missing.filter((entry) => entry !== "").join(", ");
+    return listed === ""
+      ? `${incompleteText}.`
+      : `${incompleteText}: ${listed}. Fill them in on the Case page, then ask again.`;
+  }
+  return problem.path === null ? problem.message : `${problem.message} (${problem.path})`;
+}
+
+/** Returns the message of a failed tool: from its problem code when it has one, else read from the error text. */
+export function toFailureText(error: string, problem: ToolProblem | null = null): string {
+  if (problem !== null) return toProblemText(problem);
   const message = fromQuotedMessage(error) ?? error;
   return message.includes(noCaseMessage) ? noCaseText : message;
 }
