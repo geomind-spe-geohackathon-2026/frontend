@@ -131,6 +131,17 @@ function toProblem(value: unknown): ToolProblem | null {
   };
 }
 
+function toStepStarted(fields: Fields): RunEventBody {
+  const type = "step.started";
+  const body: RunEventBody = {
+    type,
+    index: requireNumber(fields, "index", type),
+    model: requireString(fields, "model", type),
+  };
+  const size = fields.context_window;
+  return typeof size === "number" && size > 0 ? { ...body, context_window: size } : body;
+}
+
 function toToolStarted(fields: Fields): RunEventBody {
   const type = "tool.started";
   const body: RunEventBody = {
@@ -163,11 +174,7 @@ function toStepBody(type: string, fields: Fields): RunEventBody | null {
         loop: optionalString(fields, "loop"),
       };
     case "step.started":
-      return {
-        type,
-        index: requireNumber(fields, "index", type),
-        model: requireString(fields, "model", type),
-      };
+      return toStepStarted(fields);
     case "text.delta":
       return toDelta(fields);
     case "tool.started":

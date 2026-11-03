@@ -85,7 +85,7 @@ export function ChatStatus({ projectId, chatId, runId, view, run }: Props) {
     <>
       <UsageRing
         context={view.context}
-        window={null}
+        window={view.window}
         usage={view.usage}
         cost={toTotalCost(runs.data, view, runId)}
         onOpenLog={() => {

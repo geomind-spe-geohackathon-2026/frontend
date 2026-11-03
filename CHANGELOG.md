@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.19 (2026-11-03)
+
+- Chat usage ring fills with how much of the model's context the last call used, as soon as the server sends `context_window` on `step.started` (asked of the backend); the window shows the share in percent too. Older servers: the ring stays empty as before.
+
 ## 1.1.18 (2026-11-03)
 
 - Chat box: a small ring like Claude's replaces the cost text and log icon. It opens what the chat used (context of the last model call, tokens of the last run, cost so far) and a button to the chat's log. The ring fills once the server sends the model's context window size.

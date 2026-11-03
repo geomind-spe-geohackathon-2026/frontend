@@ -19,6 +19,17 @@ const recorded = toEvents(toRecording(0, "run-1", "example question", "approved"
 const stored = recorded.filter((event) => event.type !== "text.delta");
 
 describe("applyEvent", () => {
+  it("keeps the context window and how full the last call left it", () => {
+    const origin = { sequence: null, agent: "lead", parent: null };
+    const usage = { input_tokens: 32000, output_tokens: 100, cost: 0.01 };
+    const view = fold([
+      { ...origin, type: "step.started", index: 0, model: "m", context_window: 128000 },
+      { ...origin, type: "step.finished", index: 0, usage, text: "" },
+    ]);
+    expect(view.window).toBe(128000);
+    expect(view.context).toBe(32000);
+  });
+
   it("shows the same view live and after a reload replayed from the stored events", () => {
     expect(toShape(fold(stored))).toEqual(toShape(fold(recorded)));
   });

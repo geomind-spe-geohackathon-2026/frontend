@@ -48,6 +48,7 @@ export type View = {
   openSteps: Record<string, string>;
   usage: Usage;
   context: number;
+  window: number | null;
   request: RunRequest | null;
   problem: ProblemState;
   problemStale: boolean;
@@ -63,6 +64,7 @@ export const emptyView: View = {
   openSteps: {},
   usage: { input_tokens: 0, output_tokens: 0, cost: 0 },
   context: 0,
+  window: null,
   request: null,
   problem: { version: 0, document: null },
   problemStale: false,
@@ -124,7 +126,8 @@ function startStep(view: View, event: RunEvent & { type: "step.started" }): View
   const block: Block = { kind: "text", id, agent: event.agent, text: "", open: true, settled: 0 };
   const next = addBlock(view, block);
   const key = toStepKey(event.agent, event.index);
-  return { ...next, openSteps: { ...next.openSteps, [key]: id } };
+  const window = event.context_window ?? view.window;
+  return { ...next, openSteps: { ...next.openSteps, [key]: id }, window };
 }
 
 function finishStep(view: View, event: RunEvent & { type: "step.finished" }): View {
