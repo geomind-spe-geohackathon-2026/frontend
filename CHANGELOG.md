@@ -2,7 +2,7 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
-## Unreleased (on dev; ships with backend 1.1.2 and the geomind release)
+## 1.1.14 (2026-11-03)
 
 - Knowledge page (sidebar, no longer "soon"): geomind's shared memory. Values with their source and status, search, Add value (id from the item when empty; source with a page or a link), CSV catalogue import (added, replaced, refused), delete; Past designs open in a window. While the server's geomind has no memory module (`available: false`) the page reads only.
 - Connectors page: MCP servers for the agents. Add connector (name of small letters, digits, _ and -; URL; transport; token or key, never shown again), status dot, tools window (read only or asks approval), Check, On, Remove.
