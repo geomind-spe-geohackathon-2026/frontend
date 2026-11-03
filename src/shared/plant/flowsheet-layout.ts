@@ -21,6 +21,8 @@ export const sheetNodeHeight = 40;
 const groupGap = 20;
 const wrappedOrder = ["subsurface", "treatment", "grids", "heating", "cooling", "other"];
 const jogGap = 6;
+const jogMargin = 3;
+const largeLane = 1e6;
 const trackGap = 9;
 const gutterPadding = 14;
 const groupGraphOptions = {
@@ -196,16 +198,53 @@ function toPortMap(boxes: Box[], yOf: (box: Box) => number): Map<string, SheetPo
   );
 }
 
+function isUpperPort(id: string): boolean {
+  return id.endsWith("SOUTH");
+}
+
+function toSpan(link: Link, xOf: (id: string) => number): [number, number] {
+  const [left = 0, right = 0] = [xOf(link.source), xOf(link.target)].sort((a, b) => a - b);
+  return [left, right];
+}
+
+function isOver(upper: Link, lower: Link, xOf: (id: string) => number): boolean {
+  const [left, right] = toSpan(lower, xOf);
+  const isInside = (id: string) => xOf(id) > left && xOf(id) < right;
+  const hits = [upper.source, upper.target].filter(isInside).some(isUpperPort);
+  const [leftOfUpper, rightOfUpper] = toSpan(upper, xOf);
+  const isInUpper = (id: string) => xOf(id) > leftOfUpper && xOf(id) < rightOfUpper;
+  const pressed = [lower.source, lower.target].filter(isInUpper).some((id) => !isUpperPort(id));
+  return hits || pressed;
+}
+
+function isFree(tracks: Map<Link, number>, link: Link, track: number, xOf: (id: string) => number) {
+  const [left, right] = toSpan(link, xOf);
+  return [...tracks].every(([other, used]) => {
+    const [otherLeft, otherRight] = toSpan(other, xOf);
+    return used !== track || otherRight + trackGap < left || right + trackGap < otherLeft;
+  });
+}
+
 function toTracks(links: Link[], xOf: (id: string) => number): Map<Link, number> {
-  const ends: number[] = [];
+  const ranks = new Map(links.map((link) => [link, 0]));
+  const rankOf = (link: Link) => ranks.get(link) ?? 0;
+  links.forEach(() => {
+    for (const upper of links) {
+      for (const lower of links) {
+        if (upper !== lower && isOver(upper, lower, xOf) && !isOver(lower, upper, xOf)) {
+          ranks.set(lower, Math.max(rankOf(lower), rankOf(upper) + 1));
+        }
+      }
+    }
+  });
   const tracks = new Map<Link, number>();
-  const span = (link: Link) => [xOf(link.source), xOf(link.target)].sort((a, b) => a - b);
-  const sorted = [...links].sort((first, second) => (span(first)[0] ?? 0) - (span(second)[0] ?? 0));
+  const sorted = [...links].sort(
+    (first, second) =>
+      rankOf(first) - rankOf(second) || toSpan(first, xOf)[0] - toSpan(second, xOf)[0],
+  );
   for (const link of sorted) {
-    const [left = 0, right = 0] = span(link);
-    const free = ends.findIndex((end) => end + trackGap < left);
-    const track = free === -1 ? ends.length : free;
-    ends[track] = right;
+    let track = rankOf(link);
+    while (!isFree(tracks, link, track, xOf)) track += 1;
     tracks.set(link, track);
   }
   return tracks;
@@ -227,10 +266,40 @@ function toGutterLine(link: Link, ports: Map<string, SheetPoint>, y: number): Sh
   return { stream: link.stream, points, arrow: false };
 }
 
-function toJogX(link: Link, index: number, ports: Map<string, SheetPoint>, boxes: Box[]): number {
+function toGapOf(link: Link, ports: Map<string, SheetPoint>, boxes: Box[]): number {
   const left = Math.min(ports.get(link.source)?.x ?? 0, ports.get(link.target)?.x ?? 0);
   const box = boxes.find((item) => left >= item.x && left <= item.x + item.width);
-  return (box?.x ?? 0) + (box?.width ?? 0) + groupGap / 2 + (index % 4) * jogGap - jogGap;
+  return (box?.x ?? 0) + (box?.width ?? 0);
+}
+
+function toFall(link: Link, ports: Map<string, SheetPoint>): number {
+  return (ports.get(link.target)?.y ?? 0) - (ports.get(link.source)?.y ?? 0);
+}
+
+function toLaneOrder(links: Link[], ports: Map<string, SheetPoint>): Link[] {
+  const startOf = (link: Link) => ports.get(link.source)?.y ?? 0;
+  const toLane = (link: Link) => {
+    const fall = toFall(link, ports);
+    return fall >= 0 ? -startOf(link) : startOf(link) + largeLane;
+  };
+  return [...links].sort((first, second) => toLane(first) - toLane(second));
+}
+
+function toJogs(links: Link[], ports: Map<string, SheetPoint>, boxes: Box[]): Map<Link, number> {
+  const gaps = new Map<number, Link[]>();
+  for (const link of links) {
+    const gap = toGapOf(link, ports, boxes);
+    gaps.set(gap, [...(gaps.get(gap) ?? []), link]);
+  }
+  const jogs = new Map<Link, number>();
+  for (const [gap, inGap] of gaps) {
+    const step = Math.min(jogGap, (groupGap - 2 * jogMargin) / Math.max(1, inGap.length - 1));
+    const start = gap + groupGap / 2 - (step * (inGap.length - 1)) / 2;
+    toLaneOrder(inGap, ports).forEach((link, index) => {
+      jogs.set(link, start + index * step);
+    });
+  }
+  return jogs;
 }
 
 function toInnerLines(boxes: Box[], yOf: (box: Box) => number, plan: Plan): SheetLine[] {
@@ -278,10 +347,11 @@ function toPicture(
   const yOf = (box: Box) => (box.y === 0 ? 0 : first + gutter);
   const ports = toPortMap(boxes, yOf);
   const beside = plan.links.filter((link) => link.beside);
+  const jogs = toJogs(beside, ports, boxes);
   const lines = [
     ...toInnerLines(boxes, yOf, plan),
-    ...beside.flatMap((link, index) => {
-      const line = toBesideLine(link, ports, toJogX(link, index, ports, boxes));
+    ...beside.flatMap((link) => {
+      const line = toBesideLine(link, ports, jogs.get(link) ?? 0);
       return line === null ? [] : [line];
     }),
     ...crossing.flatMap((link) => {

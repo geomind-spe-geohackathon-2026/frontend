@@ -105,6 +105,16 @@ describe("the process diagram of a report", () => {
     expectTidy(await toSheetPicture(toSimpleSheet(modules, connections), simpleSheetLimit));
   });
 
+  it("gives every line between two groups its own lane", async () => {
+    const picture = await toSheetPicture(toFullSheet(modules, connections), Infinity);
+    const lanes = picture.lines
+      .filter((line) => line.points.length === 4 && line.points[1]?.x === line.points[2]?.x)
+      .filter((line) => (line.points[0]?.x ?? 0) < (line.points[1]?.x ?? 0))
+      .map((line) => line.points[1]?.x);
+    expect(lanes.length).toBeGreaterThan(0);
+    expect(new Set(lanes).size).toBe(lanes.length);
+  });
+
   it("reads at 8 pt in the PDF and 11 px on the page", async () => {
     const svg = await toFlowsheetSvg(modules, connections);
     const smallest = Math.min(...toFontSizes(svg));
