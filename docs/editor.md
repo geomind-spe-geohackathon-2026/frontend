@@ -22,8 +22,8 @@ Status: done, next, or blocked (with what it waits for).
 | E3 | Chat dock: the newest chat, or the one named by `?chat=`, a chat picker and New chat. A new chat stays in the dock and does not leave the editor. | done |
 | E4 | Results drawer: one tab per result and Compare, opened and closed from the toolbar; the open panels are in the address (`?panels=chat,results`). | done |
 | E5 | Editor as the project's start page: Overview has Open editor. | done |
-| E6 | Embedded plant: `PlantPage` takes an `embedded` option that drops its page title and fills the height, so the canvas gets all the room. Touches `design/plant/page.tsx`, owned by the UX thread: agree first. | next |
-| E7 | Right panel tabs, Chat and Inspect: the module inspector moves from the plant into the right panel when a module is selected. Needs E6. | next |
+| E6 | Embedded plant: `PlantPage` takes `embed` (context in `design/plant/embed.ts`); embedded, it drops its page title and keeps only the actions row, so the canvas gets more room. Agreed with the UX thread. | done |
+| E7 | Right panel tabs, Chat and Inspect: the module inspector is portalled into the Inspect tab; selecting a module (on the canvas, in the result strip, or by `?module=`) opens it. When the side panel is closed, the inspector stays under the canvas as on the Plant page. It is read-only while the plant is locked. | done |
 | E8 | Agent edits: the plant already reloads when a run ends (`useRunView` refreshes the project). The editor now says when someone else, such as the agent, saved a plant version, with Show history. Still to do: outline the changed modules on the canvas. | partly done |
 | E9 | Run mode: while a study runs the plant is read-only (inert, with a notice); after it ends a strip shows each module's key result (capacity, share used) from the newest result, and a click selects the module. Numbers drawn on the canvas nodes wait for E6. | done |
 | E10 | Stream values on connections (flow, temperature) after a run. | blocked: results have no per-connection values; on the list for Sahand to ask gemini |

@@ -1,12 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PlantPage } from "@/domains/design/plant/page";
 import { useRequiredParam } from "@/shared/layout/params";
-import { ChatDock } from "./chat-dock";
 import { ModuleResults } from "./module-results";
 import { PlantChangeNotice } from "./plant-change-notice";
-import { PlantLock } from "./plant-lock";
+import { PlantLock, useInert } from "./plant-lock";
 import { ResultsDrawer } from "./results-drawer";
 import { RunBar } from "./run-bar";
+import { SidePanel } from "./side-panel";
 import { useActiveStudy } from "./use-active-study";
 import { useWideScreen } from "./use-wide-screen";
 
@@ -39,6 +40,7 @@ function useEditorParams() {
     );
   };
   return {
+    selected: params.get("module"),
     chatId: params.get(chatKey),
     panels,
     setChat: (chatId: string) => {
@@ -61,12 +63,32 @@ function toLockMessage(isRunning: boolean): string {
   return "Read-only on a phone. Edit the plant on a larger screen, or ask in the chat.";
 }
 
+function useSideTab(selected: string | null) {
+  const [tab, setTab] = useState("chat");
+  const previous = useRef<string | null>(null);
+  useEffect(() => {
+    if (selected !== null && selected !== previous.current) setTab("inspect");
+    previous.current = selected;
+  }, [selected]);
+  return [tab, setTab] as const;
+}
+
+function useInspector(selected: string | null, isLocked: boolean) {
+  const [element, setElement] = useState<HTMLElement | null>(null);
+  const [tab, setTab] = useSideTab(selected);
+  useInert(element, isLocked);
+  return { element, setElement, tab, setTab };
+}
+
 /** The Editor: plant, chat dock and results drawer on one screen, with the study toolbar on top. */
 export function EditorPage() {
   const projectId = useRequiredParam("projectId");
-  const { chatId, panels, setChat, setPanels, showHistory, selectModule } = useEditorParams();
+  const { selected, chatId, panels, setChat, setPanels, showHistory, selectModule } =
+    useEditorParams();
   const isRunning = useActiveStudy(projectId);
   const isWide = useWideScreen();
+  const isLocked = isRunning || !isWide;
+  const inspector = useInspector(selected, isLocked);
   return (
     <div className="flex min-h-[560px] flex-col gap-3 min-[1000px]:h-[calc(100dvh-86px)]">
       <RunBar
@@ -87,16 +109,23 @@ export function EditorPage() {
       {isRunning ? null : <ModuleResults projectId={projectId} onModule={selectModule} />}
       <div className="flex min-h-0 flex-1 gap-3 max-[1000px]:flex-col">
         <section aria-label="Plant" className="@container min-w-0 flex-1 overflow-auto">
-          <PlantLock isLocked={isRunning || !isWide} message={toLockMessage(isRunning)}>
-            <PlantPage />
+          <PlantLock isLocked={isLocked} message={toLockMessage(isRunning)}>
+            <PlantPage embed={{ inspector: panels.chat ? inspector.element : null }} />
           </PlantLock>
         </section>
         {panels.chat ? (
           <aside
-            aria-label="Chat dock"
+            aria-label="Side panel"
             className="w-[360px] shrink-0 overflow-auto rounded-card border border-border bg-surface p-3 max-[1000px]:w-auto"
           >
-            <ChatDock projectId={projectId} chatId={chatId} onChat={setChat} />
+            <SidePanel
+              projectId={projectId}
+              chatId={chatId}
+              onChat={setChat}
+              tab={inspector.tab}
+              onTab={inspector.setTab}
+              onInspector={inspector.setElement}
+            />
           </aside>
         ) : null}
       </div>

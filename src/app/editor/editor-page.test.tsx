@@ -43,7 +43,7 @@ describe("Editor page", () => {
       await within(plant).findByRole("button", { name: "Start from template" }, slow),
     ).toBeVisible();
     expect(screen.getByRole("toolbar", { name: "Editor" })).toBeVisible();
-    const dock = screen.getByRole("complementary", { name: "Chat dock" });
+    const dock = screen.getByRole("complementary", { name: "Side panel" });
     expect(await within(dock).findByRole("button", { name: "New chat" }, slow)).toBeVisible();
   });
 
@@ -56,7 +56,7 @@ describe("Editor page", () => {
     expect(await within(drawer).findByRole("tab", { name: "Compare" }, slow)).toBeVisible();
     expect(router.state.location.search).toContain("results");
     await userEvent.click(within(toolbar).getByRole("button", { name: "Chat" }));
-    expect(screen.queryByRole("complementary", { name: "Chat dock" })).toBeNull();
+    expect(screen.queryByRole("complementary", { name: "Side panel" })).toBeNull();
   });
 
   it("opens the New study dialog from Run study", async () => {
@@ -147,12 +147,26 @@ describe("Editor page", () => {
     try {
       renderApp({ path: editor });
       expect(await screen.findByText(/Read-only on a phone/, {}, slow)).toBeVisible();
-      expect(screen.getByRole("complementary", { name: "Chat dock" })).toBeVisible();
+      expect(screen.getByRole("complementary", { name: "Side panel" })).toBeVisible();
     } finally {
       Object.defineProperty(window, "matchMedia", {
         writable: true,
         value: () => ({ matches: true }),
       });
     }
+  });
+
+  it("shows the selected module's inspector in the side panel, not under the canvas", async () => {
+    renderApp({ path: `${editor}?module=hx` });
+    const side = await screen.findByRole("complementary", { name: "Side panel" }, slow);
+    expect(
+      await within(side).findByRole("tab", { name: "Inspect", selected: true }, slow),
+    ).toBeVisible();
+    expect(await within(side).findByRole("region", { name: "Parameters" }, slow)).toBeVisible();
+    const plant = screen.getByRole("region", { name: "Plant" });
+    expect(within(plant).queryByRole("region", { name: "Parameters" })).toBeNull();
+    expect(within(plant).queryByRole("heading", { name: "2 · Plant" })).toBeNull();
+    await userEvent.click(within(side).getByRole("tab", { name: "Chat" }));
+    expect(await within(side).findByRole("button", { name: "New chat" }, slow)).toBeVisible();
   });
 });

@@ -28,6 +28,7 @@ import type { ParameterDraft } from "./parameters-panel";
 import { TemplatesDialog } from "./templates-dialog";
 import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
 import type { SaveFlowsheetInput } from "./types";
+import { PlantEmbedContext, usePlantEmbed, type PlantEmbed } from "./embed";
 import { usePlantActions } from "./use-plant-actions";
 import { useAutoLayout, usePlantGraph, type PlantGraph } from "./use-auto-layout";
 import { usePlantEditor } from "./use-plant-editor";
@@ -257,13 +258,20 @@ function PlantTabs({ tab, onTab, onRestore, ...flowsheet }: TabsProps) {
 }
 
 function PlantHeader({ error, ...actions }: ActionsProps & { error: unknown }) {
+  const embed = usePlantEmbed();
   return (
     <>
-      <PageHeader
-        title="2 · Plant"
-        description="The modules of the plant and how they are connected."
-        actions={<PlantActions {...actions} />}
-      />
+      {embed === null ? (
+        <PageHeader
+          title="2 · Plant"
+          description="The modules of the plant and how they are connected."
+          actions={<PlantActions {...actions} />}
+        />
+      ) : (
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <PlantActions {...actions} />
+        </div>
+      )}
       {error instanceof ApiError ? (
         <p role="alert" className="mb-3 text-bad">
           {error.code}: {error.message}
@@ -388,8 +396,16 @@ function EmptyPlant({ projectId }: { projectId: string }) {
   );
 }
 
-/** The 2 · Plant page: a flowsheet editor on gemini's plant document, with validation, versions and templates. */
-export function PlantPage() {
+/** The 2 · Plant page: a flowsheet editor on gemini's plant document, with validation, versions and templates. Given an embed, it drops its title and shows the inspector there. */
+export function PlantPage({ embed = null }: { embed?: PlantEmbed | null }) {
+  return (
+    <PlantEmbedContext.Provider value={embed}>
+      <PlantContent />
+    </PlantEmbedContext.Provider>
+  );
+}
+
+function PlantContent() {
   const projectId = useRequiredParam("projectId");
   const saved = useQuery(flowsheetQuery(projectId));
   const palette = useQuery(paletteQuery());

@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+import { usePlantEmbed } from "./embed";
 import { PlantRanges } from "./plant-ranges";
 import { Card, CardBody } from "@/shared/ui/card";
 import { Canvas, type Issues } from "./canvas";
@@ -70,13 +72,41 @@ function Inspector(props: FlowsheetProps & { moduleId: string; type: string }) {
   );
 }
 
+function InspectorCard(props: FlowsheetProps) {
+  const current = props.graph.modules.find((module) => module.id === props.selected);
+  return (
+    <Card>
+      <CardBody className="flex flex-col gap-4">
+        {current === undefined ? (
+          <>
+            <p className="text-muted">Select a module to edit it.</p>
+            <PlantRanges
+              projectId={props.projectId}
+              version={props.saved.version}
+              structureDirty={props.editor.dirty}
+            />
+          </>
+        ) : (
+          <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
+        )}
+      </CardBody>
+    </Card>
+  );
+}
+
+const ownColumns = "@min-[1080px]:grid-cols-[180px_minmax(0,1fr)_300px]";
+
 /** The flowsheet tab: palette, canvas with problems below it, and the inspector of the selected module. */
 export function FlowsheetTab(props: FlowsheetProps) {
   const { palette, editor, actions, selected, graph } = props;
   const { modules, connections } = graph;
-  const current = modules.find((module) => module.id === selected);
+  const embed = usePlantEmbed();
+  const inspector = <InspectorCard {...props} />;
+  const target = embed === null ? null : embed.inspector;
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 @min-[640px]:grid-cols-[170px_minmax(0,1fr)] @min-[1080px]:grid-cols-[180px_minmax(0,1fr)_300px]">
+    <div
+      className={`grid grid-cols-[minmax(0,1fr)] gap-3.5 @min-[640px]:grid-cols-[170px_minmax(0,1fr)] ${target === null ? ownColumns : ""}`}
+    >
       <Card>
         <CardBody>
           <PalettePanel
@@ -110,22 +140,7 @@ export function FlowsheetTab(props: FlowsheetProps) {
           onSelect={props.onSelect}
         />
       </div>
-      <Card>
-        <CardBody className="flex flex-col gap-4">
-          {current === undefined ? (
-            <>
-              <p className="text-muted">Select a module to edit it.</p>
-              <PlantRanges
-                projectId={props.projectId}
-                version={props.saved.version}
-                structureDirty={props.editor.dirty}
-              />
-            </>
-          ) : (
-            <Inspector key={current.id} {...props} moduleId={current.id} type={current.type} />
-          )}
-        </CardBody>
-      </Card>
+      {target === null ? inspector : createPortal(inspector, target)}
     </div>
   );
 }
