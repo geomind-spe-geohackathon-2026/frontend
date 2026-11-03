@@ -9,6 +9,7 @@ import { ProjectSidebar } from "./sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { TopBar } from "./top-bar";
+import { Notice } from "@/shared/ui/notice";
 
 /** Level 3 of the shell: collapsible project sidebar, top bar with breadcrumb and run pill, and the page. */
 export function ProjectLayout() {
@@ -35,7 +36,7 @@ export function ProjectLayout() {
               {project.error.message}
             </p>
           ) : (
-            <p className="text-muted">Loading project</p>
+            <Notice status="loading" what="project" />
           )}
         </main>
       </>

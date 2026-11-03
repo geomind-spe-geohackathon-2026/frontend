@@ -11,6 +11,7 @@ import { plantSearchQuery, useSavePlantRanges } from "./api";
 import { ParameterRange, toRanges, type RangeEdit } from "./parameter-range";
 import type { PlantSearch } from "@/shared/api/types";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Notice } from "@/shared/ui/notice";
 
 type Props = { projectId: string; version: number; structureDirty: boolean };
 type Entry = PlantSearch["search"][string];
@@ -222,7 +223,7 @@ function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) 
 /** The values and search ranges of the plant itself, such as the number of doublets, which no module holds. */
 export function PlantRanges(props: Props) {
   const search = useQuery(plantSearchQuery(props.projectId));
-  if (search.isPending) return <p className="text-muted">Loading the plant…</p>;
+  if (search.isPending) return <Notice status="loading" what="the plant" />;
   if (search.isError) {
     return <LoadError error={search.error} what="plant" onRetry={() => void search.refetch()} />;
   }

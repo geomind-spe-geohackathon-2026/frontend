@@ -511,9 +511,7 @@ export function CasePage() {
     return (
       <>
         {header}
-        <p className="text-muted" role="status">
-          Loading the case…
-        </p>
+        <Notice status="loading" what="the case" />
       </>
     );
   }

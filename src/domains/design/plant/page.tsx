@@ -31,6 +31,7 @@ import type { SaveFlowsheetInput } from "./types";
 import { usePlantActions } from "./use-plant-actions";
 import { useAutoLayout, usePlantGraph, type PlantGraph } from "./use-auto-layout";
 import { usePlantEditor } from "./use-plant-editor";
+import { Notice } from "@/shared/ui/notice";
 
 type Editor = ReturnType<typeof usePlantEditor>;
 
@@ -427,9 +428,7 @@ export function PlantPage() {
     return (
       <>
         {header}
-        <p className="text-muted" role="status">
-          Loading the plant…
-        </p>
+        <Notice status="loading" what="the plant" />
       </>
     );
   }

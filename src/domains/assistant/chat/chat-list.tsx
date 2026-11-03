@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Notice } from "@/shared/ui/notice";
 
 const ChatDialog = lazy(() =>
   import("./chat-actions").then((module) => ({ default: module.ChatDialog })),
@@ -115,7 +116,7 @@ export function ChatList({ projectId, activeChatId }: Props) {
       <Button variant="default" asChild className="w-full justify-center">
         <Link to={`/projects/${projectId}/assistant/chat?new`}>+ New chat</Link>
       </Button>
-      {chats.isPending ? <p className="text-muted">Loading chats</p> : null}
+      {chats.isPending ? <Notice status="loading" what="chats" /> : null}
       {chats.isError ? <ErrorNotice error={chats.error} what="The chats" /> : null}
       {chats.data?.length === 0 ? <p className="text-muted">No chats yet.</p> : null}
       <ul className="space-y-1">

@@ -19,6 +19,7 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
+import { Notice } from "@/shared/ui/notice";
 
 function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const update = useUpdateUser();
@@ -111,7 +112,7 @@ export function UsersPage() {
   return (
     <div className="mx-auto flex w-[min(900px,100%)] flex-col">
       <PageHeader title="Users" actions={<AddUserDialog />} />
-      {users.isPending ? <p role="status">Loading users</p> : null}
+      {users.isPending ? <Notice status="loading" what="users" /> : null}
       {users.isError ? (
         <p role="alert">
           {hasCode(users.error, "forbidden")

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { projectsQuery, useImportProject } from "./api";
 import { NewProjectDialog } from "./new-project-dialog";
 import { ProjectCard } from "./project-card";
+import { Notice } from "@/shared/ui/notice";
 
 function ImportButton() {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ export function ProjectsPage() {
           </>
         }
       />
-      {projects.isPending ? <p role="status">Loading projects</p> : null}
+      {projects.isPending ? <Notice status="loading" what="projects" /> : null}
       {projects.isError ? <p role="alert">{projects.error.message}</p> : null}
       {projects.isSuccess && items.length === 0 ? (
         <p>{search === "" ? "No projects yet. Create the first one." : "No project matches."}</p>

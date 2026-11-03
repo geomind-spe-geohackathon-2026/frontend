@@ -15,13 +15,14 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
+import { Notice } from "@/shared/ui/notice";
 
 type Props = { projectId: string; current: number; onRestore: (number: number) => void };
 
 /** The table of saved plant versions with a Restore button that loads a version into the editor. */
 export function HistoryPanel({ projectId, current, onRestore }: Props) {
   const versions = useQuery(plantVersionsQuery(projectId));
-  if (versions.isPending) return <p className="text-muted">Loading the history…</p>;
+  if (versions.isPending) return <Notice status="loading" what="the history" />;
   if (versions.isError) {
     return (
       <LoadError

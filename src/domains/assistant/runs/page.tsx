@@ -21,6 +21,7 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
+import { Notice } from "@/shared/ui/notice";
 
 function Totals({ projectId }: { projectId: string }) {
   const usage = useQuery(usageQuery(projectId));
@@ -132,7 +133,7 @@ export function RunsPage() {
         description="Every answer the assistant gave in this project, with tokens and cost."
         actions={<Totals projectId={projectId} />}
       />
-      {runs.isPending ? <p className="text-muted">Loading runs</p> : null}
+      {runs.isPending ? <Notice status="loading" what="runs" /> : null}
       {runs.isError ? <ErrorNotice error={runs.error} what="The runs" /> : null}
       {runs.isSuccess && items.length === 0 ? (
         <p className="text-muted">No runs yet. Ask the assistant in a chat to start one.</p>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useChangePassword } from "./api";
+import { Notice } from "@/shared/ui/notice";
 
 function Profile({ user }: { user: User }) {
   return (
@@ -96,7 +97,7 @@ export function AccountPage() {
   return (
     <div className="mx-auto flex w-[min(600px,100%)] flex-col gap-3.5">
       <PageHeader title="Account" />
-      {me.isPending ? <p role="status">Loading your profile</p> : null}
+      {me.isPending ? <Notice status="loading" what="your profile" /> : null}
       {me.isError ? <p role="alert">{me.error.message}</p> : null}
       {me.data === undefined ? null : <Profile user={me.data} />}
       <PasswordForm />

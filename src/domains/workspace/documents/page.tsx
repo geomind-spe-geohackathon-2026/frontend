@@ -27,6 +27,7 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
+import { Notice } from "@/shared/ui/notice";
 
 const searchableText: Record<Document["searchable"], string> = {
   pending: "indexing",
@@ -206,7 +207,7 @@ export function DocumentsPage() {
       {formats.data === undefined ? null : (
         <p className="mb-3 text-[12.5px] text-muted">Supported: {formats.data.join(", ")}</p>
       )}
-      {documents.isPending ? <p role="status">Loading documents</p> : null}
+      {documents.isPending ? <Notice status="loading" what="documents" /> : null}
       {documents.isError ? <p role="alert">{documents.error.message}</p> : null}
       {documents.isSuccess && items.length === 0 ? (
         <p>No documents yet. Upload a file for the assistant to search.</p>

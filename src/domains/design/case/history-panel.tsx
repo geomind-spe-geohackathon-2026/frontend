@@ -13,11 +13,12 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
+import { Notice } from "@/shared/ui/notice";
 
 /** The table of saved case versions, newest first. */
 export function HistoryPanel({ projectId, current }: { projectId: string; current: number }) {
   const versions = useQuery(caseVersionsQuery(projectId));
-  if (versions.isPending) return <p className="text-muted">Loading the history…</p>;
+  if (versions.isPending) return <Notice status="loading" what="the history" />;
   if (versions.isError) {
     return (
       <LoadError

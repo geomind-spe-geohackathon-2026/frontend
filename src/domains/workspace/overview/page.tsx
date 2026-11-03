@@ -9,6 +9,7 @@ import { ActivityList } from "./activity-list";
 import { AskBox } from "./ask-box";
 import { RecentChats } from "./recent-chats";
 import { Stepper } from "./stepper";
+import { Notice } from "@/shared/ui/notice";
 
 /** The project overview: the assistant first, then the five design steps, recent chats and activity. */
 export function OverviewPage() {
@@ -23,7 +24,7 @@ export function OverviewPage() {
     <div className="flex flex-col gap-4">
       <PageHeader title="Overview" />
       <AskBox projectId={projectId} />
-      {overview.isPending ? <p role="status">Loading the overview</p> : null}
+      {overview.isPending ? <Notice status="loading" what="the overview" /> : null}
       {overview.isError ? <p role="alert">{overview.error.message}</p> : null}
       {overview.data === undefined ? null : (
         <>

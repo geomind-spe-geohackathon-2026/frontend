@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useDeleteProject, useExportProject, useRenameProject, useSetBudget } from "./api";
 import { startDownload } from "./download";
+import { Notice } from "@/shared/ui/notice";
 
 function RenameForm({ project }: { project: Project }) {
   const rename = useRenameProject(project.id);
@@ -204,7 +205,7 @@ export function SettingsPage() {
   return (
     <div className="flex w-[min(600px,100%)] flex-col gap-3.5">
       <PageHeader title="Project settings" />
-      {project.isPending ? <p role="status">Loading the project</p> : null}
+      {project.isPending ? <Notice status="loading" what="the project" /> : null}
       {project.isError ? <p role="alert">{project.error.message}</p> : null}
       {project.data === undefined ? null : (
         <Card>

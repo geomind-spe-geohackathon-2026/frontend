@@ -7,6 +7,7 @@ import { templatesQuery } from "./api";
 import { toInlineParts } from "./rst";
 import { toWords } from "@/shared/plant/spec";
 import type { Template } from "@/shared/api/types";
+import { Notice } from "@/shared/ui/notice";
 
 type Props = {
   open: boolean;
@@ -92,7 +93,7 @@ export function TemplatesDialog({ open, pending, replaces, onPick, onClose }: Pr
             The template becomes a new version; the current plant stays in the history.
           </p>
         ) : null}
-        {templates.isPending ? <p className="text-muted">Loading the templates…</p> : null}
+        {templates.isPending ? <Notice status="loading" what="the templates" /> : null}
         {templates.isError ? <LoadError error={templates.error} what="templates" /> : null}
         <ul
           ref={list}

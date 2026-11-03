@@ -14,6 +14,7 @@ import { downloadLog, runLogQuery } from "./api";
 import { StepDetail } from "./step-detail";
 import { toStepTokens, toTotals } from "./totals";
 import { TotalsTable } from "./totals-table";
+import { Notice } from "@/shared/ui/notice";
 
 type StepListProps = { steps: LogStep[]; selected: number; onSelect: (position: number) => void };
 
@@ -111,7 +112,7 @@ export function RunLogPage() {
         {log.isError ? (
           <ErrorNotice error={log.error} what="The run log" />
         ) : (
-          <p className="text-muted">Loading the log</p>
+          <Notice status="loading" what="the log" />
         )}
       </>
     );

@@ -7,10 +7,11 @@ import { chatsQuery } from "@/shared/sse/chats";
 import { messagesQuery } from "./api";
 import { ChatList } from "./chat-list";
 import { ChatWorkspace } from "./workspace";
+import { Notice } from "@/shared/ui/notice";
 
 function ChatBody({ projectId, chatId }: { projectId: string; chatId: string }) {
   const messages = useQuery(messagesQuery(projectId, chatId));
-  if (messages.isPending) return <p className="text-muted">Loading messages</p>;
+  if (messages.isPending) return <Notice status="loading" what="messages" />;
   if (messages.isError) return <ErrorNotice error={messages.error} what="The chat" />;
   const runId = messages.data.findLast((message) => message.run !== null)?.run ?? null;
   return (

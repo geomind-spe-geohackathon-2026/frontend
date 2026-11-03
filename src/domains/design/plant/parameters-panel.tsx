@@ -17,6 +17,7 @@ import {
 import { toRanges, type RangeEdit } from "./parameter-range";
 import { ParameterRow } from "./parameter-row";
 import type { Parameters } from "@/shared/api/types";
+import { Notice } from "@/shared/ui/notice";
 
 export type ParameterDraft = {
   module: string;
@@ -104,7 +105,7 @@ type GroupProps = Omit<RowsProps, "data"> & { projectId: string; path: string };
 
 function GroupRows({ projectId, path, ...rows }: GroupProps) {
   const child = useQuery(parametersQuery(projectId, path));
-  if (child.isPending) return <p className="text-muted">Loading the parameters…</p>;
+  if (child.isPending) return <Notice status="loading" what="the parameters" />;
   if (child.isError) {
     return <LoadError error={child.error} what="parameters" onRetry={() => void child.refetch()} />;
   }
@@ -227,7 +228,7 @@ function ParameterEditor(props: EditorProps) {
 /** The parameters of one module, each with its value, unit and range; saving makes a new plant version. */
 export function ParametersPanel(props: Props) {
   const parameters = useQuery(parametersQuery(props.projectId, props.moduleId));
-  if (parameters.isPending) return <p className="text-muted">Loading the parameters…</p>;
+  if (parameters.isPending) return <Notice status="loading" what="the parameters" />;
   if (parameters.isError) {
     const code = parameters.error instanceof ApiError ? parameters.error.code : "";
     if (code === "module_not_found") {
