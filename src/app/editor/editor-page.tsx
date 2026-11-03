@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { PlantPage } from "@/domains/design/plant/page";
 import { useRequiredParam } from "@/shared/layout/params";
 import { ChatDock } from "./chat-dock";
+import { PlantChangeNotice } from "./plant-change-notice";
 import { ResultsDrawer } from "./results-drawer";
 import { RunBar } from "./run-bar";
 
@@ -42,13 +43,16 @@ function useEditorParams() {
     setPanels: (next: { chat: boolean; results: boolean }) => {
       update(panelsKey, toPanelsValue(next));
     },
+    showHistory: () => {
+      update("tab", "history");
+    },
   };
 }
 
 /** The Editor: plant, chat dock and results drawer on one screen, with the study toolbar on top. */
 export function EditorPage() {
   const projectId = useRequiredParam("projectId");
-  const { chatId, panels, setChat, setPanels } = useEditorParams();
+  const { chatId, panels, setChat, setPanels, showHistory } = useEditorParams();
   return (
     <div className="flex min-h-[560px] flex-col gap-3 min-[1000px]:h-[calc(100dvh-86px)]">
       <RunBar
@@ -65,6 +69,7 @@ export function EditorPage() {
           setPanels({ ...panels, results: true });
         }}
       />
+      <PlantChangeNotice projectId={projectId} onHistory={showHistory} />
       <div className="flex min-h-0 flex-1 gap-3 max-[1000px]:flex-col">
         <section aria-label="Plant" className="@container min-w-0 flex-1 overflow-auto">
           <PlantPage />
