@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.6 (2026-11-03)
+
+- Charts use shadcn Charts (Recharts): the time series on the Case page has a tooltip with the date and value; the Compare scatter has round tick values, spread bars and a label on every design. Progress bars are shadcn Progress. The days-covered strip stays a small SVG (no chart library draws a calendar grid).
+
 ## 1.1.5 (2026-11-03)
 
 - The Plant module palette is shadcn Command: type to filter, arrow keys and Enter to add, or drag onto the canvas as before. Sub-plants are their own group at the end.

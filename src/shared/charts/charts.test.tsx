@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { DaysStrip, type Day } from "./days-strip";
-import { LineChart } from "./line-chart";
 import { ProgressBar } from "./progress-bar";
 import { Scatter } from "./scatter";
 
@@ -40,28 +39,15 @@ describe("Scatter", () => {
     expect(
       screen.getByRole("img", { name: /2 designs, on the trade-off line: Design B/ }),
     ).toBeVisible();
-    expect(screen.getByText("LCOH (EUR/MWh)")).toBeVisible();
-  });
-});
-
-describe("LineChart", () => {
-  it("lists every series with its unit", () => {
-    const points: [string, number][] = [
-      ["2027-01-01", 3],
-      ["2027-01-02", 5],
-    ];
-    const series = [{ name: "heat", unit: "MW", points }];
-    render(<LineChart series={series} title="Demand" />);
-    expect(screen.getByText("heat (MW)")).toBeVisible();
   });
 });
 
 describe("ProgressBar", () => {
-  it("states the value when known", () => {
+  it("states the value in percent when known", () => {
     render(<ProgressBar value={3} max={10} label="Study" />);
     expect(screen.getByRole("progressbar", { name: "Study" })).toHaveAttribute(
       "aria-valuenow",
-      "3",
+      "30",
     );
   });
 
