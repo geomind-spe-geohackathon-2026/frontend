@@ -11,6 +11,7 @@ import { Canvas, type Issues } from "./canvas";
 import { ModuleInspector } from "./module-inspector";
 import { ParametersPanel, type ParameterDraft } from "./parameters-panel";
 import { ProblemsPanel } from "./problems-panel";
+import { useSuggestedPorts } from "./use-suggested-ports";
 import { modulesOfProblem } from "@/shared/plant/spec";
 import type { Flowsheet, Palette } from "@/shared/api/types";
 import type { PlantGraph } from "./use-auto-layout";
@@ -109,6 +110,7 @@ function ModuleDialog(props: FlowsheetProps) {
 export function FlowsheetTab(props: FlowsheetProps) {
   const { palette, editor, actions, selected, graph } = props;
   const { modules, connections } = graph;
+  const { suggested, onDragPort } = useSuggestedPorts(props.projectId);
   return (
     <div className="flex min-w-0 flex-col gap-3.5">
       <Canvas
@@ -125,6 +127,8 @@ export function FlowsheetTab(props: FlowsheetProps) {
         onRemoveModule={actions.remove}
         onRemoveConnection={actions.removeConnection}
         onDropModule={actions.add}
+        suggested={suggested}
+        onDragPort={onDragPort}
       />
       <ProblemsPanel
         problems={editor.problems}

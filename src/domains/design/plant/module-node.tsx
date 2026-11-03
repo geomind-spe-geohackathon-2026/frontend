@@ -10,6 +10,7 @@ export type ModuleNodeData = {
   category: string;
   ports: PortKinds;
   issue: "none" | "missing" | "invalid";
+  suggested: Map<string, "exact" | "loose">;
 };
 
 export type ModuleFlowNode = Node<ModuleNodeData, "module">;
@@ -21,16 +22,24 @@ const issueClass = {
   invalid: "border-bad",
 };
 
+const suggestRings = {
+  exact: "0 0 0 3px var(--ok)",
+  loose: "0 0 0 3px color-mix(in srgb, var(--warn) 80%, transparent)",
+};
+
 function PortRow({
   name,
   stream,
   side,
+  match,
 }: {
   name: string;
   stream: string | null;
   side: "in" | "out";
+  match: "exact" | "loose" | undefined;
 }) {
-  const label = stream === null ? name : `${name} (${stream})`;
+  const base = stream === null ? name : `${name} (${stream})`;
+  const label = match === undefined ? base : `${base}, fits (${match})`;
   return (
     <li
       className={cn(
@@ -45,7 +54,12 @@ function PortRow({
         position={side === "in" ? Position.Left : Position.Right}
         aria-label={`${side === "in" ? "Inlet" : "Outlet"} ${label}`}
         title={label}
-        style={{ background: toStreamColor(stream), width: 11, height: 11 }}
+        style={{
+          background: toStreamColor(stream),
+          width: 11,
+          height: 11,
+          boxShadow: match === undefined ? undefined : suggestRings[match],
+        }}
       />
       {name}
     </li>
@@ -78,12 +92,24 @@ export function ModuleNode({ data, selected }: NodeProps<ModuleFlowNode>) {
       <div className="flex justify-between gap-3">
         <ul className="m-0 min-w-0 list-none p-0">
           {[...data.ports.inlets].map(([name, stream]) => (
-            <PortRow key={name} name={name} stream={stream} side="in" />
+            <PortRow
+              key={name}
+              name={name}
+              stream={stream}
+              side="in"
+              match={data.suggested.get(name)}
+            />
           ))}
         </ul>
         <ul className="m-0 min-w-0 list-none p-0">
           {[...data.ports.outlets].map(([name, stream]) => (
-            <PortRow key={name} name={name} stream={stream} side="out" />
+            <PortRow
+              key={name}
+              name={name}
+              stream={stream}
+              side="out"
+              match={data.suggested.get(name)}
+            />
           ))}
         </ul>
       </div>

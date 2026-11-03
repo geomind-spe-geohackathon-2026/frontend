@@ -64,6 +64,18 @@ type Route = {
 };
 type ConnectorPath = { connector_id: string };
 
+/** One port that fits the dragged port, best first; exact and loose list the matching stream fields. */
+export type PortSuggestion = {
+  port: string;
+  match: "exact" | "loose";
+  exact: string[];
+  loose: string[];
+  closes_loop: boolean;
+};
+
+/** Compatible ports for one port of the project's saved plant (gemini 0.6 and later). */
+export type PortSuggestions = { port: string; suggestions: PortSuggestion[] };
+
 /** Routes the backend has not published yet (Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
 export type PendingPaths = {
   "/workspace/mcp": Omit<Route, "get" | "post"> & {
@@ -76,6 +88,9 @@ export type PendingPaths = {
   };
   "/workspace/mcp/{connector_id}/check": Omit<Route, "post"> & {
     post: Act<Connector, ConnectorPath>;
+  };
+  "/plant/flowsheet/suggest": Omit<Route, "get"> & {
+    get: Read<PortSuggestions, { project: string; port: string; limit?: number }>;
   };
   "/workspace/rag/{document_id}/file": Omit<Route, "get"> & {
     get: {

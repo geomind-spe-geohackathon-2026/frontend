@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.21 (2026-11-03)
+
+- Plant: while a pipe is drawn from a port, the ports that fit it get a ring (green for an exact match, amber for a loose one), from backend 1.1.5's `GET /plant/flowsheet/suggest`. Until the server runs gemini 0.6 it answers 501 and nothing is marked; unsaved modules are not suggested.
+
 ## 1.1.20 (2026-11-03)
 
 - Chat box: the log button is back next to the usage ring instead of inside its window; the ring's window only shows usage.

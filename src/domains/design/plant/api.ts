@@ -20,6 +20,8 @@ export const plantKeys = {
   palette: () => ["plant", "palette"] as const,
   templates: () => ["plant", "templates"] as const,
   ports: () => ["plant", "ports"] as const,
+  suggest: (projectId: string, port: string) =>
+    [...plantKeys.all(projectId), "suggest", port] as const,
   validation: (projectId: string, spec: PlantSpec) =>
     [...plantKeys.all(projectId), "validation", spec] as const,
 };
@@ -175,3 +177,18 @@ export function useSaveParameters(projectId: string) {
     },
   });
 }
+
+/** Query options for the ports that fit one port of the saved plant; servers on gemini before 0.6 answer 501 and nothing is suggested. */
+export const plantSuggestQuery = (projectId: string, port: string) =>
+  queryOptions({
+    queryKey: plantKeys.suggest(projectId, port),
+    queryFn: async ({ signal }) =>
+      toData(
+        await api.GET("/plant/flowsheet/suggest", {
+          params: { query: { project: projectId, port, limit: 20 } },
+          signal,
+        }),
+      ),
+    retry: false,
+    staleTime: 60_000,
+  });

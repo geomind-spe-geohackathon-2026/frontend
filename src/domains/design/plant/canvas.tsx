@@ -45,6 +45,11 @@ const framePrefix = "frame:";
 
 export type Issues = Map<string, "missing" | "invalid">;
 
+/** Ports that fit the port being dragged, by module id then port name. */
+export type Suggested = Map<string, Map<string, "exact" | "loose">>;
+
+const noSuggestions = new Map<string, "exact" | "loose">();
+
 type Props = {
   graph: PlantGraph;
   layout: Layout;
@@ -59,6 +64,8 @@ type Props = {
   onRemoveModule: (id: string) => void;
   onRemoveConnection: (index: number) => void;
   onDropModule: (type: string, x: number, y: number) => void;
+  suggested: Suggested;
+  onDragPort: (port: string | null) => void;
 };
 
 function toModuleNodes(props: Props): ModuleFlowNode[] {
@@ -76,6 +83,7 @@ function toModuleNodes(props: Props): ModuleFlowNode[] {
       category: props.palette.find((item) => item.type === module.type)?.category ?? "",
       ports: ports.get(module.id) ?? empty,
       issue: props.issues.get(module.id) ?? "none",
+      suggested: props.suggested.get(module.id) ?? noSuggestions,
     },
   }));
 }
@@ -249,6 +257,16 @@ function toFlowHandlers(props: Props) {
     },
     onNodeDragStop: (_: unknown, node: ModuleFlowNode | GroupFlowNode) => {
       props.onMoved(node.id, node.position.x, node.position.y);
+    },
+    onConnectStart: (_: unknown, start: { nodeId: string | null; handleId: string | null }) => {
+      props.onDragPort(
+        start.nodeId === null || start.handleId === null
+          ? null
+          : `${start.nodeId}.${start.handleId}`,
+      );
+    },
+    onConnectEnd: () => {
+      props.onDragPort(null);
     },
     onConnect: (connection: Connection) => {
       props.onConnect(
