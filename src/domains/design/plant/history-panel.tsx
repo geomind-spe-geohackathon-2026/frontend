@@ -3,6 +3,7 @@ import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { tableCardClass } from "@/shared/ui/table-card";
 import { Badge } from "@/components/ui/badge";
 import { plantVersionsQuery } from "./api";
 import type { Version } from "@/shared/api/types";
@@ -33,7 +34,7 @@ export function HistoryPanel({ projectId, current, onRestore }: Props) {
     );
   }
   return (
-    <Card>
+    <Card className={tableCardClass}>
       <Table className="w-full border-collapse">
         <TableCaption className="sr-only">Saved versions of the plant</TableCaption>
         <TableHeader>

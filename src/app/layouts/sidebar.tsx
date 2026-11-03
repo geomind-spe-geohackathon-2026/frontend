@@ -105,7 +105,7 @@ function DisabledItem({ item }: { item: NavItem }) {
 
 function ProjectHeader({ project }: Props) {
   return (
-    <SidebarHeader className="h-[50px] justify-center border-b border-sidebar-border py-0">
+    <SidebarHeader className="h-14 justify-center border-b border-sidebar-border py-0">
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild size="lg" tooltip="Switch project" className="h-10">

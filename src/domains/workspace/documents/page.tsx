@@ -28,6 +28,8 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
+import { tableCardClass } from "@/shared/ui/table-card";
+import { Card } from "@/components/ui/card";
 
 const searchableText: Record<Document["searchable"], string> = {
   pending: "indexing",
@@ -140,52 +142,54 @@ function DocumentsTable({
   onDelete: (document: Document) => void;
 }) {
   return (
-    <Table className="w-full text-left">
-      <TableCaption className="sr-only">Documents</TableCaption>
-      <TableHeader className="text-muted">
-        <TableRow>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Name
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Size
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Searchable
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Added
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2">
-            <span className="sr-only">Action</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {documents.map((document) => (
-          <TableRow key={document.id} className="border-t border-border">
-            <TableCell className="px-3 py-2">{document.name}</TableCell>
-            <TableCell className="px-3 py-2">{toSizeLabel(document.size)}</TableCell>
-            <TableCell className="px-3 py-2">
-              <Badge variant={searchableTone[document.searchable]}>
-                {searchableText[document.searchable]}
-              </Badge>
-            </TableCell>
-            <TableCell className="px-3 py-2">{toDateLabel(document.created)}</TableCell>
-            <TableCell className="px-3 py-2 text-right">
-              <Button
-                aria-label={`Delete ${document.name}`}
-                onClick={() => {
-                  onDelete(document);
-                }}
-              >
-                Delete
-              </Button>
-            </TableCell>
+    <Card className={tableCardClass}>
+      <Table className="w-full text-left">
+        <TableCaption className="sr-only">Documents</TableCaption>
+        <TableHeader className="text-muted">
+          <TableRow>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Name
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Size
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Searchable
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Added
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2">
+              <span className="sr-only">Action</span>
+            </TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {documents.map((document) => (
+            <TableRow key={document.id} className="border-t border-border">
+              <TableCell className="px-3 py-2">{document.name}</TableCell>
+              <TableCell className="px-3 py-2">{toSizeLabel(document.size)}</TableCell>
+              <TableCell className="px-3 py-2">
+                <Badge variant={searchableTone[document.searchable]}>
+                  {searchableText[document.searchable]}
+                </Badge>
+              </TableCell>
+              <TableCell className="px-3 py-2">{toDateLabel(document.created)}</TableCell>
+              <TableCell className="px-3 py-2 text-right">
+                <Button
+                  aria-label={`Delete ${document.name}`}
+                  onClick={() => {
+                    onDelete(document);
+                  }}
+                >
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }
 

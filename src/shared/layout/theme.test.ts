@@ -15,14 +15,14 @@ describe("theme before first paint", () => {
   });
 
   it("applies the remembered theme from an inline script in the page head", () => {
-    window.localStorage.setItem("geomind.theme", "light");
-    runInThisContext(toBootScript());
-    expect(document.documentElement).toHaveAttribute("data-theme", "light");
-  });
-
-  it("is dark when no theme was chosen", () => {
+    window.localStorage.setItem("geomind.theme", "dark");
     runInThisContext(toBootScript());
     expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+  });
+
+  it("is light when no theme was chosen", () => {
+    runInThisContext(toBootScript());
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 
   it("leaves a chosen system theme to the operating system", () => {

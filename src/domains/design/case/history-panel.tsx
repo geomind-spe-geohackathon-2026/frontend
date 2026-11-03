@@ -14,6 +14,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
+import { tableCardClass } from "@/shared/ui/table-card";
 
 /** The table of saved case versions, newest first. */
 export function HistoryPanel({ projectId, current }: { projectId: string; current: number }) {
@@ -29,7 +30,7 @@ export function HistoryPanel({ projectId, current }: { projectId: string; curren
     );
   }
   return (
-    <Card>
+    <Card className={tableCardClass}>
       <Table className="w-full border-collapse">
         <TableCaption className="sr-only">Saved versions of the case</TableCaption>
         <TableHeader>

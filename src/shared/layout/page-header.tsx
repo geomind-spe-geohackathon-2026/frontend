@@ -5,11 +5,11 @@ type Props = { title: string; description?: string; actions?: ReactNode };
 /** The page title row: the one h1 of a page, an optional description and action buttons. */
 export function PageHeader({ title, description, actions }: Props) {
   return (
-    <div className="mb-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
       <div>
-        <h1>{title}</h1>
+        <h1 className="tracking-tight">{title}</h1>
         {description === undefined ? null : (
-          <p className="mt-0.5 max-w-[70ch] text-muted">{description}</p>
+          <p className="mt-1 max-w-[70ch] text-sm text-muted-foreground">{description}</p>
         )}
       </div>
       {actions === undefined ? null : (

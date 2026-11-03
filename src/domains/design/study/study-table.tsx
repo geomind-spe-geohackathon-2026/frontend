@@ -9,6 +9,7 @@ import {
   TableHead,
   TableCaption,
 } from "@/components/ui/table";
+import { tableCardClass } from "@/shared/ui/table-card";
 
 type Props = {
   studies: Study[];
@@ -23,7 +24,7 @@ const columns = ["Study", "Kind", "Started by", "Progress", "Status", "Result", 
 /** The table of studies, one row each. */
 export function StudyTable({ studies, projectId, busy, onStart, onCancel }: Props) {
   return (
-    <Card>
+    <Card className={tableCardClass}>
       <Table className="[&_td]:p-2.5 [&_td]:whitespace-normal [&_th]:p-2.5">
         <TableCaption className="sr-only">Studies of this project</TableCaption>
         <TableHeader>

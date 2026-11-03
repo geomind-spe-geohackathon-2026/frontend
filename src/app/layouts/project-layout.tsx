@@ -58,7 +58,7 @@ export function ProjectLayout() {
         >
           <RunPill projectId={projectId} />
         </TopBar>
-        <div className="min-w-0 flex-1 p-[18px]">
+        <div className="min-w-0 flex-1 p-4 md:p-6 lg:px-8">
           <Outlet />
         </div>
       </SidebarInset>

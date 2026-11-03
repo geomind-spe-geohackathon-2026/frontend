@@ -10,7 +10,7 @@ export function HomeLayout() {
   return (
     <>
       <TopBar crumbs={toHomeCrumbs(location.pathname)} />
-      <main className="mx-auto flex w-full max-w-[1040px] flex-col gap-4 p-[22px]">
+      <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-6 p-4 md:p-6 lg:px-8">
         {notice === null ? null : (
           <p
             role="status"

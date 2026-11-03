@@ -20,6 +20,8 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
+import { tableCardClass } from "@/shared/ui/table-card";
+import { Card } from "@/components/ui/card";
 
 function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const update = useUpdateUser();
@@ -73,33 +75,35 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
 
 function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefined }) {
   return (
-    <Table className="w-full text-left">
-      <TableCaption className="sr-only">Users</TableCaption>
-      <TableHeader className="text-muted">
-        <TableRow>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Name
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Email
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Role
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            Status
-          </TableHead>
-          <TableHead scope="col" className="px-3 py-2 font-medium">
-            <span className="sr-only">Action</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {users.map((user) => (
-          <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
-        ))}
-      </TableBody>
-    </Table>
+    <Card className={tableCardClass}>
+      <Table className="w-full text-left">
+        <TableCaption className="sr-only">Users</TableCaption>
+        <TableHeader className="text-muted">
+          <TableRow>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Name
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Email
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Role
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              Status
+            </TableHead>
+            <TableHead scope="col" className="px-3 py-2 font-medium">
+              <span className="sr-only">Action</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }
 

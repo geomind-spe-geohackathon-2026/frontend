@@ -22,6 +22,8 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
+import { tableCardClass } from "@/shared/ui/table-card";
+import { Card } from "@/components/ui/card";
 
 function Totals({ projectId }: { projectId: string }) {
   const usage = useQuery(usageQuery(projectId));
@@ -94,27 +96,29 @@ function RunsTable({
   titles: Map<string, string>;
 }) {
   return (
-    <Table className="w-full border-collapse text-left">
-      <TableCaption className="sr-only">Runs of this project, newest first</TableCaption>
-      <TableHeader>
-        <TableRow className="text-muted">
-          {["Run", "Chat", "Status", "Tokens", "Cost", "Started"].map((name) => (
-            <TableHead
-              key={name}
-              scope="col"
-              className="border-b border-border px-3 py-2 font-medium"
-            >
-              {name}
-            </TableHead>
+    <Card className={tableCardClass}>
+      <Table className="w-full border-collapse text-left">
+        <TableCaption className="sr-only">Runs of this project, newest first</TableCaption>
+        <TableHeader>
+          <TableRow className="text-muted">
+            {["Run", "Chat", "Status", "Tokens", "Cost", "Started"].map((name) => (
+              <TableHead
+                key={name}
+                scope="col"
+                className="border-b border-border px-3 py-2 font-medium"
+              >
+                {name}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((run) => (
+            <RunRow key={run.id} projectId={projectId} run={run} title={titles.get(run.chat)} />
           ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((run) => (
-          <RunRow key={run.id} projectId={projectId} run={run} title={titles.get(run.chat)} />
-        ))}
-      </TableBody>
-    </Table>
+        </TableBody>
+      </Table>
+    </Card>
   );
 }
 

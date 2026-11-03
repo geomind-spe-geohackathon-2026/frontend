@@ -2,6 +2,12 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.8 (2026-11-03)
+
+- The look is the official shadcn/ui theme: white pages, neutral greys, blue primary, Inter font, shadcn radius and card spacing. Light is the default theme; dark and system stay in the user menu.
+- Page titles are bigger with the description under them; pages have more room around them; the top bar and sidebar header are taller.
+- Tables of runs, studies, documents, users, history and run totals sit in cards with a tinted header row.
+
 ## 1.1.7 (2026-11-03)
 
 - Every page and panel shows loading the same way (shadcn Spinner with the same text).

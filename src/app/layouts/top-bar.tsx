@@ -56,7 +56,7 @@ function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
 /** The top bar of every signed-in page: brand (or a sidebar trigger), breadcrumb, optional pills, user menu. */
 export function TopBar({ crumbs, start, children }: Props) {
   return (
-    <header className="flex min-h-[50px] flex-wrap items-center gap-2.5 border-b border-border bg-surface px-4 py-2">
+    <header className="flex min-h-14 flex-wrap items-center gap-2.5 border-b border-border bg-background px-4 py-2 lg:px-6">
       {start ?? <Brand />}
       <Crumbs crumbs={crumbs} />
       <div className="flex-1" />
