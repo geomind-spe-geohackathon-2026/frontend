@@ -3,7 +3,7 @@ import type { LlmCall, LogMessage, LogStep, ToolCall } from "@/shared/sse/runlog
 import { Card, CardBody, CardHeader } from "@/shared/ui/card";
 import { Chip } from "@/shared/ui/chip";
 import { fromRoute, toRouteLabel } from "@/shared/sse/route";
-import { toFailureText, toPretty as toPrettyText } from "@/shared/sse/pretty";
+import { toFailureText, toPretty as toPrettyText, toToolName } from "@/shared/sse/pretty";
 import { toPretty, toSplit } from "./split";
 
 function toAnswer(answer: string): string {
@@ -71,7 +71,7 @@ function ToolCard({ call }: { call: ToolCall }) {
   return (
     <Card>
       <CardHeader>
-        <h2>Tool call · {call.tool}</h2>
+        <h2>Tool call · {toToolName(call.tool)}</h2>
         <span className="flex items-center gap-2">
           <Quantity value={call.duration} unit="s" />
           <Chip tone={failed ? "bad" : "ok"}>{failed ? "failed" : "ok"}</Chip>

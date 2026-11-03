@@ -37,6 +37,11 @@ export const routes: RouteObject[] = [
             Component: ProjectLayout,
             children: [
               { index: true, element: <Navigate to="overview" replace /> },
+              {
+                path: "design/editor",
+                lazy: () =>
+                  import("./editor/editor-page").then((m) => ({ Component: m.EditorPage })),
+              },
               ...collect((domain) => domain.project),
             ],
           },

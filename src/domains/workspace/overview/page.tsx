@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { projectQuery } from "@/shared/api/projects";
 import { useRequiredParam } from "@/shared/layout/params";
 import { PageHeader } from "@/shared/layout/page-header";
+import { Button } from "@/shared/ui/button";
 import { resultsQuery } from "@/shared/api/results";
 import { overviewQuery } from "./api";
 import { toStaleSteps } from "./stale";
@@ -21,7 +23,14 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Overview" />
+      <PageHeader
+        title="Overview"
+        actions={
+          <Button variant="primary" asChild>
+            <Link to={`/projects/${projectId}/design/editor`}>Open editor</Link>
+          </Button>
+        }
+      />
       <AskBox projectId={projectId} />
       {overview.isPending ? <p role="status">Loading the overview</p> : null}
       {overview.isError ? <p role="alert">{overview.error.message}</p> : null}

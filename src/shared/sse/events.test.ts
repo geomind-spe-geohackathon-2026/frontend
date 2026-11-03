@@ -82,6 +82,15 @@ describe("fromEvent", () => {
     expect(fromEvent("tool.finished", data, "4")).toMatchObject({ error: "boom" });
   });
 
+  it("reads the problem of a failed tool and drops a malformed one", () => {
+    const problem = { code: "no_case", path: null, message: "no case", suggestions: [] };
+    const base = { ...origin, index: 0, call_id: "c1", output_summary: "", duration: 0.1 };
+    const read = fromEvent("tool.finished", JSON.stringify({ ...base, error: "x", problem }), "5");
+    expect(read).toMatchObject({ problem });
+    const bad = fromEvent("tool.finished", JSON.stringify({ ...base, problem: { code: 1 } }), "6");
+    expect(bad).not.toHaveProperty("problem");
+  });
+
   it("ignores an event name it does not know and an empty message", () => {
     expect(fromEvent("something.else", JSON.stringify(origin), "1")).toBeNull();
     expect(fromEvent("", "", "")).toBeNull();

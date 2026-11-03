@@ -67,7 +67,7 @@ describe("run log page", () => {
     renderApp({ path: `${base}/example-run-1` });
     const steps = await screen.findByRole("navigation", { name: "Steps" });
     await userEvent.setup().click(within(steps).getByRole("button", { name: /designer · step 1/ }));
-    expect(await screen.findByRole("heading", { name: "Tool call · size_plant" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Tool call · Size plant" })).toBeVisible();
     expect(screen.getByRole("region", { name: "Input" })).toHaveTextContent("example");
     expect(screen.getByRole("region", { name: "Output" })).toHaveTextContent("size_plant finished");
   });

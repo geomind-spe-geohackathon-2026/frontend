@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import {
   toFailureText,
+  toToolName,
   toPretty,
   toRequestText,
   toBudgetStop,
@@ -48,11 +49,6 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function toToolName(tool: string): string {
-  const words = tool.replaceAll("_", " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
 function ToolCard({ block }: { block: ToolBlock }) {
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
   return (
@@ -63,7 +59,9 @@ function ToolCard({ block }: { block: ToolBlock }) {
         <span
           className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}
         >
-          {block.error === null ? toSummary(block.summary) : toFailureText(block.error)}
+          {block.error === null
+            ? toSummary(block.summary)
+            : toFailureText(block.error, block.problem)}
         </span>
         {block.duration === null ? null : <Quantity value={block.duration} unit="s" />}
       </summary>
@@ -81,14 +79,24 @@ function ToolCard({ block }: { block: ToolBlock }) {
         >
           {toPretty(block.summary)}
         </pre>
-        {block.error === null ? null : <p className="text-bad">{toFailureText(block.error)}</p>}
+        {block.error === null ? null : (
+          <p className="text-bad">{toFailureText(block.error, block.problem)}</p>
+        )}
       </div>
     </details>
   );
 }
 
-function toEndText(block: EndBlock): string {
+const stopTexts: Record<string, string> = {
+  no_alternatives: "Stopped: no plant family could be designed for this case.",
+  no_verified: "Stopped: designs were found, but none passed verification.",
+};
+
+function toEndText(block: EndBlock, problem: string | null): string {
   const { status, message, reason } = block;
+  const known = stopTexts[reason];
+  if (known !== undefined) return known;
+  if (status === "failed" && problem !== null) return problem;
   if (status === "cancelled" || message === null) return `Run ${status}`;
   const budget = toBudgetStop(message);
   if (budget !== null) return budget;
@@ -115,10 +123,18 @@ function RecordedStudies({ studies }: { studies: RecordedStudy[] }) {
   );
 }
 
+function toLastProblem(blocks: Block[]): string | null {
+  const last = blocks.filter((block) => block.kind === "tool" && block.tool !== finishTool).at(-1);
+  if (last?.kind !== "tool" || last.problem === null) return null;
+  return toFailureText(last.error ?? "", last.problem);
+}
+
 function toLastFailure(blocks: Block[]): string | null {
   const tools = blocks.filter((block) => block.kind === "tool" && block.tool !== finishTool);
   const last = tools.at(-1);
-  return last?.kind === "tool" && last.error !== null ? toFailureText(last.error) : null;
+  return last?.kind === "tool" && last.error !== null
+    ? toFailureText(last.error, last.problem)
+    : null;
 }
 
 function isHiddenText(text: string): boolean {
@@ -227,7 +243,7 @@ export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean 
       {stopped ? (
         <>
           <p role="status" className="text-bad">
-            {toEndText(end)}
+            {toEndText(end, toLastProblem(blocks))}
           </p>
           <RecordedStudies studies={end.studies} />
         </>

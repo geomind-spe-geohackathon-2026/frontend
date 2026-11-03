@@ -12,6 +12,14 @@ export type RunRequest = {
   options?: RequestOption[];
 };
 
+/** Why a tool failed, when it returned a code: no_case, case_incomplete, and others. */
+export type ToolProblem = {
+  code: string;
+  path: string | null;
+  message: string;
+  suggestions: string[];
+};
+
 export type StateOperation = "add" | "replace" | "remove";
 
 export type StateChange = { op: StateOperation; path: string; value?: unknown };
@@ -30,6 +38,7 @@ export type RunEventBody =
       output_summary: string;
       duration: number;
       error?: string;
+      problem?: ToolProblem;
     }
   | { type: "step.finished"; index: number; usage: Usage; text: string }
   | { type: "state.changed"; version: number; changes: StateChange[] }

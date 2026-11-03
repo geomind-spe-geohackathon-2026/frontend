@@ -6,6 +6,7 @@ import type {
   RunRequest,
   StateChange,
   StateOperation,
+  ToolProblem,
   Usage,
 } from "./types";
 
@@ -110,8 +111,24 @@ function toToolFinished(fields: Fields): RunEventBody {
     duration: requireNumber(fields, "duration", type),
   };
   const error = fields.error;
-  if (error === undefined || error === null) return body;
-  return { ...body, error: typeof error === "string" ? error : JSON.stringify(error) };
+  const problem = toProblem(fields.problem);
+  const withProblem = problem === null ? body : { ...body, problem };
+  if (error === undefined || error === null) return withProblem;
+  return { ...withProblem, error: typeof error === "string" ? error : JSON.stringify(error) };
+}
+
+function toProblem(value: unknown): ToolProblem | null {
+  if (!isFields(value)) return null;
+  const { code, path, message, suggestions } = value;
+  if (typeof code !== "string" || typeof message !== "string") return null;
+  return {
+    code,
+    path: typeof path === "string" ? path : null,
+    message,
+    suggestions: Array.isArray(suggestions)
+      ? suggestions.filter((entry): entry is string => typeof entry === "string")
+      : [],
+  };
 }
 
 function toDelta(fields: Fields): RunEventBody {

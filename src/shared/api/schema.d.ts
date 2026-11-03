@@ -2243,6 +2243,8 @@ export interface components {
             missing: components["schemas"]["Missing"][];
             /** Name */
             name: string;
+            /** Plant Pinned */
+            plant_pinned: boolean;
             /** Plant Version */
             plant_version: number | null;
             progress: components["schemas"]["StudyProgress"];
@@ -2270,6 +2272,8 @@ export interface components {
             kind: string;
             /** Name */
             name: string;
+            /** Plant Version */
+            plant_version?: number | null;
             /**
              * Project
              * Format: uuid
