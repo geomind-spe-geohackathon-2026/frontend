@@ -1,7 +1,14 @@
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { Card } from "@/components/ui/card";
 import { StudyRow } from "./study-row";
 import type { Study } from "@/shared/api/types";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCaption,
+} from "@/components/ui/table";
 
 type Props = {
   studies: Study[];
@@ -17,32 +24,30 @@ const columns = ["Study", "Kind", "Started by", "Progress", "Status", "Result", 
 export function StudyTable({ studies, projectId, busy, onStart, onCancel }: Props) {
   return (
     <Card>
-      <TableScroll label="Studies">
-        <table className="w-full border-collapse text-left [&_td]:p-2.5 [&_th]:p-2.5">
-          <caption className="sr-only">Studies of this project</caption>
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th key={column} scope="col" className="text-[12.5px] font-medium text-muted">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {studies.map((study) => (
-              <StudyRow
-                key={study.id}
-                study={study}
-                projectId={projectId}
-                busy={busy}
-                onStart={onStart}
-                onCancel={onCancel}
-              />
+      <Table className="[&_td]:p-2.5 [&_td]:whitespace-normal [&_th]:p-2.5">
+        <TableCaption className="sr-only">Studies of this project</TableCaption>
+        <TableHeader>
+          <TableRow>
+            {columns.map((column) => (
+              <TableHead key={column} scope="col" className="text-[12.5px] font-medium text-muted">
+                {column}
+              </TableHead>
             ))}
-          </tbody>
-        </table>
-      </TableScroll>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {studies.map((study) => (
+            <StudyRow
+              key={study.id}
+              study={study}
+              projectId={projectId}
+              busy={busy}
+              onStart={onStart}
+              onCancel={onCancel}
+            />
+          ))}
+        </TableBody>
+      </Table>
     </Card>
   );
 }

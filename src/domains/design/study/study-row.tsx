@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Missing } from "@/shared/quantity/missing";
 import { toProgress } from "./progress";
 import type { Study, StudyStatus } from "@/shared/api/types";
+import { TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 type Props = {
   study: Study;
@@ -91,22 +92,22 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
 export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
   const active = study.status === "queued" || study.status === "running";
   return (
-    <tr>
-      <th scope="row" className="text-left font-medium">
+    <TableRow>
+      <TableHead scope="row" className="text-left font-medium">
         {study.name}
-      </th>
-      <td>{kindLabels[study.kind] ?? study.kind}</td>
-      <td>{study.started_by.name}</td>
-      <td>
+      </TableHead>
+      <TableCell>{kindLabels[study.kind] ?? study.kind}</TableCell>
+      <TableCell>{study.started_by.name}</TableCell>
+      <TableCell>
         <ProgressCell study={study} />
-      </td>
-      <td>
+      </TableCell>
+      <TableCell>
         <Badge variant={tones[study.status]}>{study.status}</Badge>
-      </td>
-      <td>
+      </TableCell>
+      <TableCell>
         <OutcomeCell study={study} projectId={projectId} />
-      </td>
-      <td>
+      </TableCell>
+      <TableCell>
         {study.status === "blocked" ? (
           <Button
             disabled={busy}
@@ -128,7 +129,7 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
             Cancel {study.name}
           </Button>
         ) : null}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

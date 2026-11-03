@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { Card, CardContent, CardAction, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/types";
 import { toCheckTitle, toModuleName } from "./names";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 type Tone = "ok" | "bad" | "off";
 
@@ -41,25 +49,25 @@ function toDate(worst: string | null): string {
 
 function Row({ constraint }: { constraint: Constraint }) {
   return (
-    <tr>
-      <th scope="row" className="text-left font-medium">
+    <TableRow>
+      <TableHead scope="row" className="text-left font-medium">
         {toCheckTitle(constraint.title)}
         {constraint.module === null ? null : (
           <Badge variant="off" className="ml-1.5">
             {toModuleName(constraint.module)}
           </Badge>
         )}
-      </th>
-      <td>
+      </TableHead>
+      <TableCell>
         <Badge variant={tones[constraint.status]}>{words[constraint.status]}</Badge>
-      </td>
-      <td className="tabular-nums">{toValue(constraint)}</td>
-      <td className="text-muted tabular-nums">{constraint.limit}</td>
-      <td className={`tabular-nums ${constraint.near ? "text-warn" : "text-muted"}`}>
+      </TableCell>
+      <TableCell className="tabular-nums">{toValue(constraint)}</TableCell>
+      <TableCell className="text-muted tabular-nums">{constraint.limit}</TableCell>
+      <TableCell className={`tabular-nums ${constraint.near ? "text-warn" : "text-muted"}`}>
         {toMargin(constraint)}
-      </td>
-      <td className="text-muted tabular-nums">{toDate(constraint.worst)}</td>
-    </tr>
+      </TableCell>
+      <TableCell className="text-muted tabular-nums">{toDate(constraint.worst)}</TableCell>
+    </TableRow>
   );
 }
 
@@ -103,31 +111,33 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
           <p className="text-muted">No constraint checks in this result.</p>
         ) : null}
         {rows.length === 0 ? null : (
-          <TableScroll label="Constraint checks">
-            <table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
-              <caption className="sr-only">Constraint checks of {result.name}</caption>
-              <thead>
-                <tr>
-                  <th scope="col" className="text-[12.5px] font-medium text-muted">
-                    Check
-                  </th>
-                  <th scope="col" className="text-[12.5px] font-medium text-muted">
-                    Status
-                  </th>
-                  {["Value", "Limit", "Margin", "Worst day"].map((name) => (
-                    <th key={name} scope="col" className="text-[12.5px] font-medium text-muted">
-                      {name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((constraint) => (
-                  <Row key={constraint.name} constraint={constraint} />
+          <Table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
+            <TableCaption className="sr-only">Constraint checks of {result.name}</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead scope="col" className="text-[12.5px] font-medium text-muted">
+                  Check
+                </TableHead>
+                <TableHead scope="col" className="text-[12.5px] font-medium text-muted">
+                  Status
+                </TableHead>
+                {["Value", "Limit", "Margin", "Worst day"].map((name) => (
+                  <TableHead
+                    key={name}
+                    scope="col"
+                    className="text-[12.5px] font-medium text-muted"
+                  >
+                    {name}
+                  </TableHead>
                 ))}
-              </tbody>
-            </table>
-          </TableScroll>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((constraint) => (
+                <Row key={constraint.name} constraint={constraint} />
+              ))}
+            </TableBody>
+          </Table>
         )}
         <MoreChecks
           shown={rows.length}

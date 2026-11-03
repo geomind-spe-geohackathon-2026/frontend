@@ -1,4 +1,3 @@
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { hasCode } from "@/shared/api/errors";
 import { meQuery } from "@/shared/api/me";
@@ -11,6 +10,15 @@ import { toast } from "sonner";
 import { AddUserDialog } from "./add-user-dialog";
 import { useUpdateUser, usersQuery } from "./api";
 import { RoleSelect } from "./role-select";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const update = useUpdateUser();
@@ -27,10 +35,10 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   }
 
   return (
-    <tr className="border-t border-border">
-      <td className="px-3 py-2">{user.name}</td>
-      <td className="px-3 py-2">{user.email}</td>
-      <td className="px-3 py-2">
+    <TableRow className="border-t border-border">
+      <TableCell className="px-3 py-2">{user.name}</TableCell>
+      <TableCell className="px-3 py-2">{user.email}</TableCell>
+      <TableCell className="px-3 py-2">
         <RoleSelect
           label={`Role of ${user.name}`}
           value={user.role}
@@ -39,11 +47,11 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
             handleChange({ role }, `${user.name} is now ${role}`);
           }}
         />
-      </td>
-      <td className="px-3 py-2">
+      </TableCell>
+      <TableCell className="px-3 py-2">
         <Badge variant={user.active ? "ok" : "off"}>{user.active ? "active" : "inactive"}</Badge>
-      </td>
-      <td className="px-3 py-2 text-right">
+      </TableCell>
+      <TableCell className="px-3 py-2 text-right">
         {isSelf ? null : (
           <Button
             disabled={update.isPending}
@@ -57,42 +65,40 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
             {user.active ? "Deactivate" : "Activate"}
           </Button>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
 function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefined }) {
   return (
-    <TableScroll label="Users" className="rounded-card border border-border bg-surface">
-      <table className="w-full text-left">
-        <caption className="sr-only">Users</caption>
-        <thead className="text-muted">
-          <tr>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Name
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Email
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Role
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Status
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              <span className="sr-only">Action</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
-          ))}
-        </tbody>
-      </table>
-    </TableScroll>
+    <Table className="w-full text-left">
+      <TableCaption className="sr-only">Users</TableCaption>
+      <TableHeader className="text-muted">
+        <TableRow>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Name
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Email
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Role
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Status
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            <span className="sr-only">Action</span>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {users.map((user) => (
+          <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 

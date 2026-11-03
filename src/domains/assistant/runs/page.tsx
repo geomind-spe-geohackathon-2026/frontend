@@ -1,4 +1,3 @@
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
@@ -13,6 +12,15 @@ import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import type { Run } from "@/shared/api/types";
 import { runsQuery, usageQuery } from "./api";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 function Totals({ projectId }: { projectId: string }) {
   const usage = useQuery(usageQuery(projectId));
@@ -43,35 +51,35 @@ function RunRow({
 }) {
   const navigate = useNavigate();
   return (
-    <tr
+    <TableRow
       className="cursor-pointer border-b border-border last:border-b-0 hover:bg-sunken"
       onClick={() => {
         void navigate(`/projects/${projectId}/assistant/runs/${run.id}`);
       }}
     >
-      <td className="px-3 py-2">
+      <TableCell className="px-3 py-2">
         <Link className="text-accent" to={`/projects/${projectId}/assistant/runs/${run.id}`}>
           {toShortId(run.id)}
         </Link>
-      </td>
-      <td className="px-3 py-2">{title ?? run.chat}</td>
-      <td className="px-3 py-2">
+      </TableCell>
+      <TableCell className="px-3 py-2">{title ?? run.chat}</TableCell>
+      <TableCell className="px-3 py-2">
         <RunStatusChip status={run.status} />
-      </td>
-      <td className="px-3 py-2">
+      </TableCell>
+      <TableCell className="px-3 py-2">
         <Quantity
           value={run.usage.input_tokens + run.usage.output_tokens}
           unit=""
           fractionDigits={0}
         />
-      </td>
-      <td className="px-3 py-2">
+      </TableCell>
+      <TableCell className="px-3 py-2">
         <Quantity value={run.usage.cost} unit="USD" fractionDigits={3} />
-      </td>
-      <td className="px-3 py-2">
+      </TableCell>
+      <TableCell className="px-3 py-2">
         {run.started === null ? "not started" : toDateTimeLabel(run.started)}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -85,25 +93,27 @@ function RunsTable({
   titles: Map<string, string>;
 }) {
   return (
-    <TableScroll label="Runs" className="rounded-card border border-border bg-surface">
-      <table className="w-full border-collapse text-left">
-        <caption className="sr-only">Runs of this project, newest first</caption>
-        <thead>
-          <tr className="text-muted">
-            {["Run", "Chat", "Status", "Tokens", "Cost", "Started"].map((name) => (
-              <th key={name} scope="col" className="border-b border-border px-3 py-2 font-medium">
-                {name}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((run) => (
-            <RunRow key={run.id} projectId={projectId} run={run} title={titles.get(run.chat)} />
+    <Table className="w-full border-collapse text-left">
+      <TableCaption className="sr-only">Runs of this project, newest first</TableCaption>
+      <TableHeader>
+        <TableRow className="text-muted">
+          {["Run", "Chat", "Status", "Tokens", "Cost", "Started"].map((name) => (
+            <TableHead
+              key={name}
+              scope="col"
+              className="border-b border-border px-3 py-2 font-medium"
+            >
+              {name}
+            </TableHead>
           ))}
-        </tbody>
-      </table>
-    </TableScroll>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.map((run) => (
+          <RunRow key={run.id} projectId={projectId} run={run} title={titles.get(run.chat)} />
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 

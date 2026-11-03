@@ -1,4 +1,3 @@
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { useQuery } from "@tanstack/react-query";
 import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
@@ -7,6 +6,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { plantVersionsQuery } from "./api";
 import type { Version } from "@/shared/api/types";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 type Props = { projectId: string; current: number; onRestore: (number: number) => void };
 
@@ -25,40 +33,38 @@ export function HistoryPanel({ projectId, current, onRestore }: Props) {
   }
   return (
     <Card>
-      <TableScroll label="Saved versions">
-        <table className="w-full border-collapse">
-          <caption className="sr-only">Saved versions of the plant</caption>
-          <thead>
-            <tr className="text-left text-muted">
-              <th scope="col" className="p-2.5">
-                Version
-              </th>
-              <th scope="col" className="p-2.5">
-                Note
-              </th>
-              <th scope="col" className="p-2.5">
-                Saved by
-              </th>
-              <th scope="col" className="p-2.5">
-                Saved
-              </th>
-              <th scope="col" className="p-2.5">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {versions.data.map((version) => (
-              <VersionRow
-                key={version.number}
-                version={version}
-                current={current}
-                onRestore={onRestore}
-              />
-            ))}
-          </tbody>
-        </table>
-      </TableScroll>
+      <Table className="w-full border-collapse">
+        <TableCaption className="sr-only">Saved versions of the plant</TableCaption>
+        <TableHeader>
+          <TableRow className="text-left text-muted">
+            <TableHead scope="col" className="p-2.5">
+              Version
+            </TableHead>
+            <TableHead scope="col" className="p-2.5">
+              Note
+            </TableHead>
+            <TableHead scope="col" className="p-2.5">
+              Saved by
+            </TableHead>
+            <TableHead scope="col" className="p-2.5">
+              Saved
+            </TableHead>
+            <TableHead scope="col" className="p-2.5">
+              <span className="sr-only">Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {versions.data.map((version) => (
+            <VersionRow
+              key={version.number}
+              version={version}
+              current={current}
+              onRestore={onRestore}
+            />
+          ))}
+        </TableBody>
+      </Table>
     </Card>
   );
 }
@@ -73,12 +79,12 @@ function VersionRow({
   onRestore: (number: number) => void;
 }) {
   return (
-    <tr className="border-t border-border">
-      <td className="p-2.5 tabular-nums">v{version.number}</td>
-      <td className="p-2.5">{version.note}</td>
-      <td className="p-2.5">{version.author.name}</td>
-      <td className="p-2.5 tabular-nums">{toDisplayTime(version.created)}</td>
-      <td className="p-2.5">
+    <TableRow className="border-t border-border">
+      <TableCell className="p-2.5 tabular-nums">v{version.number}</TableCell>
+      <TableCell className="p-2.5">{version.note}</TableCell>
+      <TableCell className="p-2.5">{version.author.name}</TableCell>
+      <TableCell className="p-2.5 tabular-nums">{toDisplayTime(version.created)}</TableCell>
+      <TableCell className="p-2.5">
         {version.number === current ? (
           <Badge variant="ok">current</Badge>
         ) : (
@@ -91,7 +97,7 @@ function VersionRow({
             Restore
           </Button>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

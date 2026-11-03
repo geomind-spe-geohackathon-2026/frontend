@@ -2,6 +2,14 @@ import { Link } from "react-router-dom";
 import { humanise } from "@/shared/quantity/figure";
 import { Badge } from "@/components/ui/badge";
 import { toAlternatives, type Alternative } from "./alternatives";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 const verdictTones: Record<string, "ok" | "warn" | "bad" | "info" | "off"> = {
   verified: "ok",
@@ -14,28 +22,28 @@ const verdictTones: Record<string, "ok" | "warn" | "bad" | "info" | "off"> = {
 
 function Row({ item, projectId }: { item: Alternative; projectId: string }) {
   return (
-    <tr className={item.isRecommended ? "bg-accent-soft" : undefined}>
-      <td className="py-1 pr-2 tabular-nums text-muted">{item.rank ?? ""}</td>
-      <td className="py-1 pr-2 font-medium">
+    <TableRow className={item.isRecommended ? "bg-accent-soft" : undefined}>
+      <TableCell className="py-1 pr-2 tabular-nums text-muted">{item.rank ?? ""}</TableCell>
+      <TableCell className="py-1 pr-2 font-medium">
         {humanise(item.family)}
         {item.isRecommended ? (
           <Badge variant="ok" className="ml-1.5">
             Recommended
           </Badge>
         ) : null}
-      </td>
-      <td className="py-1 pr-2">
+      </TableCell>
+      <TableCell className="py-1 pr-2">
         <Badge variant={verdictTones[item.verdict] ?? "off"}>{item.verdict}</Badge>
-      </td>
-      <td className="py-1 text-muted">
+      </TableCell>
+      <TableCell className="py-1 text-muted">
         {item.reason}
         {item.result === null ? null : (
           <Link to={`/projects/${projectId}/design/results`} className="ml-1 underline">
             Result
           </Link>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -58,21 +66,21 @@ export function AlternativesTable({
       {alternatives.by === null ? null : (
         <p className="mb-1.5 text-[12.5px] text-muted">Ranked by {humanise(alternatives.by)}</p>
       )}
-      <table className="w-full text-[12.5px]">
-        <thead className="text-left text-muted">
-          <tr>
-            <th className="pr-2 font-normal">#</th>
-            <th className="pr-2 font-normal">Family</th>
-            <th className="pr-2 font-normal">Verdict</th>
-            <th className="font-normal">Why</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="w-full text-[12.5px]">
+        <TableHeader className="text-left text-muted">
+          <TableRow>
+            <TableHead className="pr-2 font-normal">#</TableHead>
+            <TableHead className="pr-2 font-normal">Family</TableHead>
+            <TableHead className="pr-2 font-normal">Verdict</TableHead>
+            <TableHead className="font-normal">Why</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {alternatives.items.map((item) => (
             <Row key={item.family} item={item} projectId={projectId} />
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </section>
   );
 }

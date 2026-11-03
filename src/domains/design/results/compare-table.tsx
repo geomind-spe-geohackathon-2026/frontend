@@ -1,9 +1,17 @@
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Badge } from "@/components/ui/badge";
 import type { Kpi, Result, ResultComparison } from "@/shared/api/types";
 import { findKpi, toBestId, toChecksText } from "./compare";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 type Props = { comparison: ResultComparison; x: Kpi; y: Kpi; pareto: string[] };
 
@@ -34,51 +42,49 @@ const headClass = "text-[12.5px] font-medium text-muted";
 export function CompareTable({ comparison, x, y, pareto }: Props) {
   const best = toBestId(comparison.items, y.name);
   return (
-    <TableScroll label="Compared designs">
-      <table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
-        <caption className="sr-only">Compared designs</caption>
-        <thead>
-          <tr>
-            {["Design", x.title, y.title, "Investment", "Doublets", "Depth", "Checks", ""].map(
-              (name) => (
-                <th key={name} scope="col" className={headClass}>
-                  {name}
-                </th>
-              ),
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {comparison.items.map((item) => (
-            <tr key={item.id} className={item.id === best ? "bg-accent-soft" : ""}>
-              <th scope="row" className="text-left font-medium">
-                {item.name}
-              </th>
-              <td>
-                <Cell kpi={findKpi(item, x.name)} />
-              </td>
-              <td>
-                <Cell kpi={findKpi(item, y.name)} />
-              </td>
-              <td>
-                <Cell kpi={findKpi(item, "capex")} />
-              </td>
-              <td>{item.doublets ?? "-"}</td>
-              <td>{toDepth(item)}</td>
-              <td>
-                <Checks item={item} />
-              </td>
-              <td>
-                {pareto.includes(item.id) ? (
-                  <Badge variant="ok" title="No other design here is better on both figures.">
-                    on the trade-off line
-                  </Badge>
-                ) : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </TableScroll>
+    <Table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
+      <TableCaption className="sr-only">Compared designs</TableCaption>
+      <TableHeader>
+        <TableRow>
+          {["Design", x.title, y.title, "Investment", "Doublets", "Depth", "Checks", ""].map(
+            (name) => (
+              <TableHead key={name} scope="col" className={headClass}>
+                {name}
+              </TableHead>
+            ),
+          )}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {comparison.items.map((item) => (
+          <TableRow key={item.id} className={item.id === best ? "bg-accent-soft" : ""}>
+            <TableHead scope="row" className="text-left font-medium">
+              {item.name}
+            </TableHead>
+            <TableCell>
+              <Cell kpi={findKpi(item, x.name)} />
+            </TableCell>
+            <TableCell>
+              <Cell kpi={findKpi(item, y.name)} />
+            </TableCell>
+            <TableCell>
+              <Cell kpi={findKpi(item, "capex")} />
+            </TableCell>
+            <TableCell>{item.doublets ?? "-"}</TableCell>
+            <TableCell>{toDepth(item)}</TableCell>
+            <TableCell>
+              <Checks item={item} />
+            </TableCell>
+            <TableCell>
+              {pareto.includes(item.id) ? (
+                <Badge variant="ok" title="No other design here is better on both figures.">
+                  on the trade-off line
+                </Badge>
+              ) : null}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

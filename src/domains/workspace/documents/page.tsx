@@ -1,4 +1,3 @@
-import { TableScroll } from "@/shared/ui/table-scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { toFieldMessage } from "@/shared/api/errors";
 import { useRef, useState, type ChangeEvent } from "react";
@@ -19,6 +18,15 @@ import { toast } from "sonner";
 import { documentFormatsQuery, documentsQuery, useDeleteDocument, useUploadDocument } from "./api";
 import { toSizeLabel } from "./format";
 import type { Document } from "@/shared/api/types";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 const searchableText: Record<Document["searchable"], string> = {
   pending: "indexing",
@@ -131,54 +139,52 @@ function DocumentsTable({
   onDelete: (document: Document) => void;
 }) {
   return (
-    <TableScroll label="Documents" className="rounded-card border border-border bg-surface">
-      <table className="w-full text-left">
-        <caption className="sr-only">Documents</caption>
-        <thead className="text-muted">
-          <tr>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Name
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Size
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Searchable
-            </th>
-            <th scope="col" className="px-3 py-2 font-medium">
-              Added
-            </th>
-            <th scope="col" className="px-3 py-2">
-              <span className="sr-only">Action</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {documents.map((document) => (
-            <tr key={document.id} className="border-t border-border">
-              <td className="px-3 py-2">{document.name}</td>
-              <td className="px-3 py-2">{toSizeLabel(document.size)}</td>
-              <td className="px-3 py-2">
-                <Badge variant={searchableTone[document.searchable]}>
-                  {searchableText[document.searchable]}
-                </Badge>
-              </td>
-              <td className="px-3 py-2">{toDateLabel(document.created)}</td>
-              <td className="px-3 py-2 text-right">
-                <Button
-                  aria-label={`Delete ${document.name}`}
-                  onClick={() => {
-                    onDelete(document);
-                  }}
-                >
-                  Delete
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </TableScroll>
+    <Table className="w-full text-left">
+      <TableCaption className="sr-only">Documents</TableCaption>
+      <TableHeader className="text-muted">
+        <TableRow>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Name
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Size
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Searchable
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2 font-medium">
+            Added
+          </TableHead>
+          <TableHead scope="col" className="px-3 py-2">
+            <span className="sr-only">Action</span>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {documents.map((document) => (
+          <TableRow key={document.id} className="border-t border-border">
+            <TableCell className="px-3 py-2">{document.name}</TableCell>
+            <TableCell className="px-3 py-2">{toSizeLabel(document.size)}</TableCell>
+            <TableCell className="px-3 py-2">
+              <Badge variant={searchableTone[document.searchable]}>
+                {searchableText[document.searchable]}
+              </Badge>
+            </TableCell>
+            <TableCell className="px-3 py-2">{toDateLabel(document.created)}</TableCell>
+            <TableCell className="px-3 py-2 text-right">
+              <Button
+                aria-label={`Delete ${document.name}`}
+                onClick={() => {
+                  onDelete(document);
+                }}
+              >
+                Delete
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 

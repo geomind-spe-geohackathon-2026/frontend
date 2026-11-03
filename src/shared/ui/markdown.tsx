@@ -1,6 +1,6 @@
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { TableScroll } from "./table-scroll";
+import { Table, TableCell, TableHead } from "@/components/ui/table";
 import { fromSvgUrl, ThemedImage } from "./themed-image";
 
 const plugins = [remarkGfm];
@@ -15,12 +15,12 @@ const components = {
     <pre className="max-w-full overflow-x-auto rounded-control bg-sunken p-2">{children}</pre>
   ),
   table: ({ children }: { children?: React.ReactNode }) => (
-    <TableScroll label="Table" className="rounded-control border border-border">
-      <table className="w-max min-w-full border-collapse text-left text-sm">{children}</table>
-    </TableScroll>
+    <div className="rounded-control border border-border">
+      <Table className="w-max min-w-full">{children}</Table>
+    </div>
   ),
   th: ({ children }: { children?: React.ReactNode }) => (
-    <th className="border-b border-border bg-sunken px-2 py-1 font-semibold">{children}</th>
+    <TableHead className="h-auto bg-sunken px-2 py-1 font-semibold">{children}</TableHead>
   ),
   img: ({ src, alt }: { src?: string | Blob | undefined; alt?: string | undefined }) => {
     const svg = typeof src === "string" ? fromSvgUrl(src) : null;
@@ -28,7 +28,7 @@ const components = {
     return typeof src === "string" ? <img src={src} alt={alt ?? ""} /> : null;
   },
   td: ({ children }: { children?: React.ReactNode }) => (
-    <td className="border-b border-border px-2 py-1 align-top">{children}</td>
+    <TableCell className="border-b px-2 py-1 align-top whitespace-normal">{children}</TableCell>
   ),
 };
 

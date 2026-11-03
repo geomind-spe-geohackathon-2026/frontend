@@ -2,7 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
-## 1.2.0 (2026-11-03)
+## 1.1.2 (2026-11-03)
+
+- Every table (runs, studies, documents, users, history, results, chat alternatives, Markdown) uses shadcn Table; the hand-written scroll wrapper is gone.
+
+## 1.1.1 (2026-11-03)
 
 - Project sidebar is shadcn Sidebar: it collapses to icons (button left of the breadcrumb, or Ctrl/Cmd+B) with tooltips, and opens as a side sheet on phones. The project name and Switch project sit at its top.
 - Breadcrumb is shadcn Breadcrumb.
