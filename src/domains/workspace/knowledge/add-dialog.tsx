@@ -22,6 +22,7 @@ type FieldSpec = { name: string; label: string; type?: string; required?: boolea
 
 const fields: FieldSpec[] = [
   { name: "item", label: "Item", required: true },
+  { name: "id", label: "Id (letters, digits, dashes)" },
   { name: "value", label: "Value", required: true },
   { name: "unit", label: "Unit" },
   { name: "title", label: "Source title", required: true },
@@ -45,11 +46,20 @@ function toNumberOr(value: string | null): number | string | null {
   return Number.isFinite(number) ? number : value;
 }
 
+function toSlug(words: string): string {
+  return words
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function toEntry(form: FormData): KnowledgeCreate {
   const year = Number(text(form, "year"));
   const priceYear = text(form, "price_year");
+  const item = text(form, "item") ?? "";
   return {
-    item: text(form, "item") ?? "",
+    id: text(form, "id") ?? toSlug(item),
+    item,
     value: toNumberOr(text(form, "value")) ?? "",
     unit: text(form, "unit"),
     title: text(form, "title") ?? "",
@@ -114,7 +124,8 @@ export function AddKnowledgeButton() {
         <DialogHeader>
           <DialogTitle>Add value</DialogTitle>
           <DialogDescription>
-            A cited value the agents may use. Give its source with a page or a link.
+            A cited value the agents may use. Give its source with a page or a link; money also
+            needs its price year and currency. The id comes from the item when left empty.
           </DialogDescription>
         </DialogHeader>
         <form

@@ -1,15 +1,7 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
+import { connectorKeys } from "@/shared/api/connectors";
 import type { ConnectorCreate, ConnectorUpdate } from "@/shared/api/pending";
-
-export const connectorKeys = { all: ["connectors"] as const };
-
-/** Query options for every connector of the workspace. */
-export const connectorsQuery = () =>
-  queryOptions({
-    queryKey: connectorKeys.all,
-    queryFn: async ({ signal }) => toData(await api.GET("/workspace/connectors", { signal })),
-  });
 
 function useRefresh() {
   const queryClient = useQueryClient();

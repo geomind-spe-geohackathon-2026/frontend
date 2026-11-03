@@ -21,6 +21,7 @@ import { AddKnowledgeButton } from "./add-dialog";
 import {
   isKnowledge,
   knowledgeQuery,
+  knowledgeSettingsQuery,
   useDeleteKnowledge,
   useImportKnowledge,
   type Section,
@@ -90,7 +91,7 @@ function ExperienceDialog({
         className="max-h-[calc(100svh-4rem)] sm:max-w-2xl"
       >
         <DialogHeader>
-          <DialogTitle>{entry?.summary}</DialogTitle>
+          <DialogTitle>{entry?.id}</DialogTitle>
         </DialogHeader>
         <pre className="min-h-0 overflow-auto rounded-md bg-sunken p-3 text-[12.5px]">
           {JSON.stringify(entry, null, 2)}
@@ -114,7 +115,9 @@ function ImportBox() {
           if (file === undefined) return;
           load.mutate(file, {
             onSuccess: (result) => {
-              toast(`${String(result.added)} added, ${String(result.skipped)} skipped`);
+              toast(
+                `${String(result.added)} added, ${String(result.replaced)} replaced, ${String(result.errors.length)} refused`,
+              );
             },
           });
         }}
@@ -128,7 +131,7 @@ function ImportBox() {
   );
 }
 
-function SectionBody({ section, q }: { section: Section; q: string }) {
+function SectionBody({ section, q, writable }: { section: Section; q: string; writable: boolean }) {
   const entries = useQuery(knowledgeQuery(section, q));
   const [deleting, setDeleting] = useState<KnowledgeEntry | null>(null);
   const [opened, setOpened] = useState<ExperienceEntry | null>(null);
@@ -141,7 +144,7 @@ function SectionBody({ section, q }: { section: Section; q: string }) {
   }
   return section === "knowledge" ? (
     <>
-      <KnowledgeTable entries={knowledge} onDelete={setDeleting} />
+      <KnowledgeTable entries={knowledge} onDelete={writable ? setDeleting : undefined} />
       <DeleteDialog
         entry={deleting}
         onClose={() => {
@@ -162,16 +165,31 @@ function SectionBody({ section, q }: { section: Section; q: string }) {
   );
 }
 
+function useWritable(): boolean {
+  const settings = useQuery(knowledgeSettingsQuery());
+  return settings.data?.available === true;
+}
+
+function NotAvailable() {
+  return (
+    <p role="status" className="text-muted-foreground">
+      The agents&apos; memory is not on this server yet: you can read the knowledge, not change it.
+    </p>
+  );
+}
+
 /** Knowledge: the agents' shared memory; cited values to search, add or import, and past designs to read. */
 export function KnowledgePage() {
   const [section, setSection] = useState<Section>("knowledge");
   const [q, setQ] = useState("");
+  const writable = useWritable();
+  const values = section === "knowledge";
   return (
     <div className="flex flex-col gap-3">
       <PageHeader
         title="Knowledge"
         description="What the agents know across projects: cited values (costs, properties) with their sources, and past designs that passed verification."
-        actions={section === "knowledge" ? <AddKnowledgeButton /> : undefined}
+        actions={values && writable ? <AddKnowledgeButton /> : undefined}
       />
       <div className="flex flex-wrap items-center gap-3">
         <Tabs
@@ -196,8 +214,9 @@ export function KnowledgePage() {
           }}
         />
       </div>
-      <SectionBody section={section} q={q} />
-      {section === "knowledge" ? <ImportBox /> : null}
+      {writable ? null : <NotAvailable />}
+      <SectionBody section={section} q={q} writable={writable} />
+      {values && writable ? <ImportBox /> : null}
     </div>
   );
 }

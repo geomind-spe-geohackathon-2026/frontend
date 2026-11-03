@@ -24,7 +24,8 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
 import { PendingNotice } from "@/shared/ui/pending-notice";
 import { AddConnectorButton } from "./add-dialog";
-import { connectorsQuery, useCheckConnector, useDeleteConnector, useUpdateConnector } from "./api";
+import { connectorsQuery } from "@/shared/api/connectors";
+import { useCheckConnector, useDeleteConnector, useUpdateConnector } from "./api";
 
 const statusDot: Record<Connector["status"], string> = {
   ok: "bg-ok",

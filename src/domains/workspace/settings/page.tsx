@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { useDeleteProject, useExportProject, useRenameProject, useSetBudget } from "./api";
 import { startDownload } from "./download";
+import { AgentTools } from "./agent-tools";
 import { Notice } from "@/shared/ui/notice";
 
 function RenameForm({ project }: { project: Project }) {
@@ -213,6 +214,7 @@ export function SettingsBody({ projectId }: { projectId: string }) {
     <div className="flex flex-col gap-5">
       <RenameForm key={project.data.updated} project={project.data} />
       <BudgetForm key={`budget-${project.data.updated}`} project={project.data} />
+      <AgentTools project={project.data} />
       <ExportRow project={project.data} />
       <DeleteRow project={project.data} />
     </div>

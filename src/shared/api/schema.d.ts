@@ -1887,6 +1887,10 @@ export interface components {
              * Format: date-time
              */
             updated: string;
+            /** Memory */
+            memory?: "on" | "off" | null;
+            /** Connectors */
+            connectors?: string[];
         };
         /** ProjectCreate */
         ProjectCreate: {
@@ -1894,12 +1898,20 @@ export interface components {
             case_from?: string | null;
             /** Name */
             name: string;
+            /** Memory */
+            memory?: "on" | "off" | null;
+            /** Connectors */
+            connectors?: string[] | null;
         };
         /** ProjectUpdate */
         ProjectUpdate: {
             budget?: components["schemas"]["Budget"] | null;
             /** Name */
             name?: string | null;
+            /** Memory */
+            memory?: "on" | "off" | null;
+            /** Connectors */
+            connectors?: string[] | null;
         };
         /** RangeEnds */
         RangeEnds: {

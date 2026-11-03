@@ -9,9 +9,9 @@ describe("connectors page", () => {
   it("lists a connector with its status and tools", async () => {
     const user = userEvent.setup();
     renderApp({ path });
-    expect(await screen.findByText("Example weather data")).toBeVisible();
+    expect(await screen.findByText("example-weather")).toBeVisible();
     expect(screen.getByText("connected")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Tools of Example weather data" }));
+    await user.click(screen.getByRole("button", { name: "Tools of example-weather" }));
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByText("hourly_temperature")).toBeVisible();
     expect(dialog.getByText("read only")).toBeVisible();
@@ -22,12 +22,12 @@ describe("connectors page", () => {
     renderApp({ path });
     await user.click(await screen.findByRole("button", { name: "Add connector" }));
     const dialog = within(await screen.findByRole("dialog", { name: "Add connector" }));
-    await user.type(dialog.getByLabelText("Name"), "Example database");
+    await user.type(dialog.getByLabelText("Name"), "example-database");
     await user.type(dialog.getByLabelText("Server URL"), "https://example.com/db");
     await user.selectOptions(dialog.getByLabelText("Sign-in"), "bearer");
     await user.type(dialog.getByLabelText("Token"), "example-token");
     await user.click(dialog.getByRole("button", { name: "Add" }));
-    expect(await screen.findByText("Example database")).toBeVisible();
+    expect(await screen.findByText("example-database")).toBeVisible();
   });
 
   it("turns a connector off and removes it", async () => {
@@ -37,7 +37,7 @@ describe("connectors page", () => {
     expect(on).toBeChecked();
     await user.click(on);
     expect(await screen.findByRole("checkbox", { name: "On" })).not.toBeChecked();
-    await user.click(screen.getByRole("button", { name: "Remove Example weather data" }));
+    await user.click(screen.getByRole("button", { name: "Remove example-weather" }));
     expect(await screen.findByText("No connectors yet.")).toBeVisible();
   });
 });

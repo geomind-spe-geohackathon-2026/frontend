@@ -62,7 +62,14 @@ function ConnectorFields() {
     <>
       <Field className="gap-1.5">
         <FieldLabel htmlFor="connector-name">Name</FieldLabel>
-        <Input id="connector-name" name="name" required />
+        <Input
+          id="connector-name"
+          name="name"
+          required
+          pattern="[a-z0-9_\-]{1,32}"
+          title="Small letters, digits, _ and -, at most 32"
+          placeholder="weather-data"
+        />
       </Field>
       <Field className="gap-1.5">
         <FieldLabel htmlFor="connector-url">Server URL</FieldLabel>

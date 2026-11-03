@@ -54,9 +54,7 @@ describe("knowledge page", () => {
     const user = userEvent.setup();
     renderApp({ path });
     await user.click(await screen.findByRole("tab", { name: "Past designs" }));
-    await user.click(
-      await screen.findByRole("button", { name: "Open Example doublet with heat pump" }),
-    );
+    await user.click(await screen.findByRole("button", { name: "Open example-doublet-heat-pump" }));
     expect(await screen.findByRole("dialog")).toHaveTextContent("lcoh");
   });
 
@@ -71,5 +69,24 @@ describe("knowledge page", () => {
     );
     renderApp({ path });
     expect(await screen.findByText("This server does not offer the knowledge yet.")).toBeVisible();
+  });
+
+  it("reads but does not change the knowledge while the server has no memory", async () => {
+    server.use(
+      http.get("*/api/v1/workspace/knowledge/settings", () =>
+        HttpResponse.json({
+          sections: ["knowledge", "experience"],
+          similarity: 0.8,
+          available: false,
+        }),
+      ),
+    );
+    renderApp({ path });
+    expect(await screen.findByText("Example drilling cost")).toBeVisible();
+    expect(await screen.findByText(/memory is not on this server yet/)).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Add value" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Delete Example drilling cost" }),
+    ).not.toBeInTheDocument();
   });
 });

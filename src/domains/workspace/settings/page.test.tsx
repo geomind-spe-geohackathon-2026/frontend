@@ -59,4 +59,16 @@ describe("project settings", () => {
     await user.click(screen.getByRole("button", { name: "Keep it" }));
     expect(screen.queryByText("This cannot be undone.")).not.toBeInTheDocument();
   });
+
+  it("turns the shared memory on and picks a connector", async () => {
+    const user = userEvent.setup();
+    renderApp({ path });
+    const memory = await screen.findByLabelText("Shared memory");
+    expect(memory).toHaveValue("");
+    await user.selectOptions(memory, "on");
+    expect(await screen.findByText("Memory on")).toBeVisible();
+    const connector = await screen.findByRole("checkbox", { name: "example-weather" });
+    await user.click(connector);
+    expect(await screen.findByRole("checkbox", { name: "example-weather" })).toBeChecked();
+  });
 });

@@ -37,6 +37,8 @@ const exampleProjects: Project[] = [
     chats: 3,
     runs: 5,
     budget: noBudget,
+    memory: null,
+    connectors: [],
   },
   {
     id: "example-project-2",
@@ -192,19 +194,21 @@ function projectHandlers(projects: Project[]): RequestHandler[] {
 
 function projectChangeHandlers(projects: Project[]): RequestHandler[] {
   return [
-    http.patch<{ projectId: string }, { name?: string; budget?: Project["budget"] }>(
-      toRoute("/workspace/projects/:projectId"),
-      async ({ params, request }) => {
-        const project = projects.find((item) => item.id === params.projectId);
-        if (project === undefined) {
-          return toErrorResponse(404, "project_not_found", "Project not found");
-        }
-        const { name, budget } = await request.json();
-        if (name !== undefined) project.name = name;
-        if (budget !== undefined) project.budget = budget;
-        return HttpResponse.json<Project>(project);
-      },
-    ),
+    http.patch<
+      { projectId: string },
+      { name?: string; budget?: Project["budget"]; memory?: "on" | "off"; connectors?: string[] }
+    >(toRoute("/workspace/projects/:projectId"), async ({ params, request }) => {
+      const project = projects.find((item) => item.id === params.projectId);
+      if (project === undefined) {
+        return toErrorResponse(404, "project_not_found", "Project not found");
+      }
+      const { name, budget, memory, connectors } = await request.json();
+      if (name !== undefined) project.name = name;
+      if (budget !== undefined) project.budget = budget;
+      if (memory !== undefined) project.memory = memory;
+      if (connectors !== undefined) project.connectors = connectors;
+      return HttpResponse.json<Project>(project);
+    }),
     http.delete(toRoute("/workspace/projects/:projectId"), ({ params }) => {
       const index = projects.findIndex((item) => item.id === params.projectId);
       if (index < 0) return toErrorResponse(404, "project_not_found", "Project not found");

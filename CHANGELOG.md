@@ -2,11 +2,12 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
-## Unreleased (on dev; ships when the backend has the routes)
+## Unreleased (on dev; ships with backend 1.1.2 and the geomind release)
 
-- Knowledge page (sidebar, no longer "soon"): the agents' shared memory. Values with their source and status, search, Add value (a source with a page or a link is required), CSV catalogue import, delete; Past designs open in a window.
-- Connectors page: MCP servers for the agents. Add connector (URL, transport, token or key, never shown again), status dot, tools window (read only or asks approval), Check, On, Remove.
-- The routes are typed by hand in `shared/api/pending.ts` until `schema.d.ts` is regenerated; a server without them shows "This server does not offer ... yet".
+- Knowledge page (sidebar, no longer "soon"): geomind's shared memory. Values with their source and status, search, Add value (id from the item when empty; source with a page or a link), CSV catalogue import (added, replaced, refused), delete; Past designs open in a window. While the server's geomind has no memory module (`available: false`) the page reads only.
+- Connectors page: MCP servers for the agents. Add connector (name of small letters, digits, _ and -; URL; transport; token or key, never shown again), status dot, tools window (read only or asks approval), Check, On, Remove.
+- Project settings: an Agents part with Shared memory (on or off) and the connectors the project's runs get. New project asks for Shared memory; nothing is chosen for you.
+- The routes are typed by hand in `shared/api/pending.ts` (and `memory`, `connectors` on the project in `schema.d.ts`) until the schema is regenerated from backend 1.1.2; a server without them shows "This server does not offer ... yet".
 
 ## 1.1.13 (2026-11-03)
 

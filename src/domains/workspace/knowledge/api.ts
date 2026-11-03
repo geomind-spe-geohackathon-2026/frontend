@@ -31,9 +31,17 @@ export const knowledgeQuery = (section: Section, q: string) =>
       ),
   });
 
+/** Query options for the memory settings: whether this server's geomind has the memory, and the similarity threshold. */
+export const knowledgeSettingsQuery = () =>
+  queryOptions({
+    queryKey: ["knowledge", "settings"] as const,
+    queryFn: async ({ signal }) =>
+      toData(await api.GET("/workspace/knowledge/settings", { signal })),
+  });
+
 /** Tells a knowledge entry from an experience entry. */
 export function isKnowledge(entry: KnowledgeEntry | ExperienceEntry): entry is KnowledgeEntry {
-  return "item" in entry;
+  return entry.section === "knowledge";
 }
 
 /** Mutation that adds one cited value to the knowledge. */

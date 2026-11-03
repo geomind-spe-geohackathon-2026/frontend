@@ -40,11 +40,11 @@ function Head({ names }: { names: string[] }) {
 }
 
 function Source({ entry }: { entry: KnowledgeEntry }) {
-  const where = entry.page === null ? null : `p. ${entry.page}`;
+  const where = entry.page === null || entry.page === undefined ? null : `p. ${entry.page}`;
   const text = [entry.publisher, String(entry.year), where].filter(Boolean).join(", ");
   return (
     <span className="flex flex-col">
-      {entry.link === null ? (
+      {entry.link === null || entry.link === undefined ? (
         <span>{entry.title}</span>
       ) : (
         <a href={entry.link} target="_blank" rel="noreferrer" className="text-accent">
@@ -57,8 +57,11 @@ function Source({ entry }: { entry: KnowledgeEntry }) {
 }
 
 function toValueLabel(entry: KnowledgeEntry): string {
-  const unit = entry.unit === null ? "" : ` ${entry.unit}`;
-  const year = entry.price_year === null ? "" : ` (${String(entry.price_year)})`;
+  const unit = entry.unit === null || entry.unit === undefined ? "" : ` ${entry.unit}`;
+  const year =
+    entry.price_year === null || entry.price_year === undefined
+      ? ""
+      : ` (${String(entry.price_year)})`;
   return `${String(entry.value)}${unit}${year}`;
 }
 
@@ -68,7 +71,7 @@ export function KnowledgeTable({
   onDelete,
 }: {
   entries: KnowledgeEntry[];
-  onDelete: (entry: KnowledgeEntry) => void;
+  onDelete: ((entry: KnowledgeEntry) => void) | undefined;
 }) {
   return (
     <Card className={tableCardClass}>
@@ -87,14 +90,16 @@ export function KnowledgeTable({
                 <Badge variant={statusTone[entry.status]}>{entry.status}</Badge>
               </TableCell>
               <TableCell className={`${cell} text-right`}>
-                <Button
-                  aria-label={`Delete ${entry.item}`}
-                  onClick={() => {
-                    onDelete(entry);
-                  }}
-                >
-                  Delete
-                </Button>
+                {onDelete === undefined ? null : (
+                  <Button
+                    aria-label={`Delete ${entry.item}`}
+                    onClick={() => {
+                      onDelete(entry);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}
@@ -102,6 +107,12 @@ export function KnowledgeTable({
       </Table>
     </Card>
   );
+}
+
+function toVerdict(verdict: unknown): string {
+  if (typeof verdict === "string") return verdict;
+  if (verdict === undefined || verdict === null) return "";
+  return JSON.stringify(verdict);
 }
 
 /** The experience as a table: past designs that passed verification, each opens in a window. */
@@ -120,12 +131,14 @@ export function ExperienceTable({
         <TableBody>
           {entries.map((entry) => (
             <TableRow key={entry.id} className="border-t border-border">
-              <TableCell className={`${cell} whitespace-normal`}>{entry.summary}</TableCell>
-              <TableCell className={cell}>{entry.verdict}</TableCell>
+              <TableCell className={`${cell} whitespace-normal`}>{entry.id}</TableCell>
+              <TableCell className={`${cell} whitespace-normal`}>
+                {toVerdict(entry.verdict)}
+              </TableCell>
               <TableCell className={cell}>{toDateLabel(entry.created)}</TableCell>
               <TableCell className={`${cell} text-right`}>
                 <Button
-                  aria-label={`Open ${entry.summary}`}
+                  aria-label={`Open ${entry.id}`}
                   onClick={() => {
                     onOpen(entry);
                   }}

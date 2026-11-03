@@ -34,6 +34,21 @@ export function useSetBudget(projectId: string) {
   });
 }
 
+/** Mutation that sets whether the project's runs use the shared memory, and which connectors they get. */
+export function useSetAgentTools(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { memory?: "on" | "off"; connectors?: string[] }) =>
+      toData(
+        await api.PATCH("/workspace/projects/{project_id}", {
+          params: { path: { project_id: projectId } },
+          body,
+        }),
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
+  });
+}
+
 /** Mutation that deletes the project and refreshes the project lists. */
 export function useDeleteProject(projectId: string) {
   const queryClient = useQueryClient();

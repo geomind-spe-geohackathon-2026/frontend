@@ -25,8 +25,11 @@ const exampleKnowledge: KnowledgeEntry[] = [
     currency: "EUR",
     status: "verified",
     note: null,
+    section: "knowledge",
+    project: null,
     created: "2026-01-10T09:00:00Z",
-    created_by: "seed",
+    updated: "2026-01-10T09:00:00Z",
+    created_by: { kind: "seed", id: null },
   },
   {
     id: "example-knowledge-2",
@@ -42,17 +45,23 @@ const exampleKnowledge: KnowledgeEntry[] = [
     currency: "EUR",
     status: "placeholder",
     note: "Example placeholder from the seeded catalogue",
+    section: "knowledge",
+    project: null,
     created: "2026-01-10T09:00:00Z",
-    created_by: "seed",
+    updated: "2026-01-10T09:00:00Z",
+    created_by: { kind: "seed", id: null },
   },
 ];
 
 const exampleExperience: ExperienceEntry[] = [
   {
-    id: "example-experience-1",
+    id: "example-doublet-heat-pump",
+    section: "experience",
+    project: null,
     created: "2026-01-11T10:00:00Z",
+    updated: "2026-01-11T10:00:00Z",
+    created_by: { kind: "agent", id: "run-1" },
     run: "run-1",
-    summary: "Example doublet with heat pump",
     verdict: "passed",
     features: { heating_peak: 5_000_000, depth: 2000 },
     kpis: { lcoh: 42 },
@@ -62,7 +71,7 @@ const exampleExperience: ExperienceEntry[] = [
 const exampleConnectors: Connector[] = [
   {
     id: "example-connector-1",
-    name: "Example weather data",
+    name: "example-weather",
     url: "https://example.com/mcp",
     transport: "http",
     auth: "bearer",
@@ -89,7 +98,6 @@ function matches(entry: KnowledgeEntry | ExperienceEntry, q: string): boolean {
 function knowledgeHandlers(): RequestHandler[] {
   let knowledge = structuredClone(exampleKnowledge);
   let experience = structuredClone(exampleExperience);
-  let next = 100;
   return [
     http.get(toRoute("/workspace/knowledge"), ({ request }) => {
       const url = new URL(request.url);
@@ -102,18 +110,28 @@ function knowledgeHandlers(): RequestHandler[] {
       if (body.link === null && body.page === null) {
         return toErrorResponse(422, "validation_error", "A source needs a page or a link");
       }
-      next += 1;
+      const now = new Date().toISOString();
+      const { project, ...fields } = body;
       const entry: KnowledgeEntry = {
-        ...body,
-        id: `example-knowledge-${String(next)}`,
-        created: new Date().toISOString(),
-        created_by: "Example Admin",
+        ...fields,
+        section: "knowledge",
+        project: project ?? null,
+        created: now,
+        updated: now,
+        created_by: { kind: "user", id: "example-user-admin" },
       };
       knowledge = [entry, ...knowledge];
       return HttpResponse.json(entry);
     }),
+    http.get(toRoute("/workspace/knowledge/settings"), () =>
+      HttpResponse.json({
+        sections: ["knowledge", "experience"],
+        similarity: 0.8,
+        available: true,
+      }),
+    ),
     http.post(toRoute("/workspace/knowledge/import"), () =>
-      HttpResponse.json({ added: 3, skipped: 1, errors: [] }),
+      HttpResponse.json({ added: 3, replaced: 1, errors: [] }),
     ),
     http.delete<{ section: string; entry_id: string }>(
       toRoute("/workspace/knowledge/:section/:entry_id"),

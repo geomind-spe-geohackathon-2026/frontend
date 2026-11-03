@@ -170,7 +170,15 @@ function useAfterCreate(files: File[], onClose: () => void) {
   };
 }
 
-function NameFields({ source, nameMissing }: { source: Source; nameMissing: boolean }) {
+function NameFields({
+  source,
+  nameMissing,
+  memoryMissing,
+}: {
+  source: Source;
+  nameMissing: boolean;
+  memoryMissing: boolean;
+}) {
   return (
     <>
       <Field className="gap-1.5">
@@ -179,6 +187,24 @@ function NameFields({ source, nameMissing }: { source: Source; nameMissing: bool
       </Field>
       {nameMissing ? <NameProblem /> : null}
       {source === "copy" ? <CopyPicker /> : null}
+      <Field className="gap-1.5">
+        <FieldLabel htmlFor="project-memory">Shared memory</FieldLabel>
+        <NativeSelect id="project-memory" name="memory" className="w-full">
+          <NativeSelectOption value="" />
+          <NativeSelectOption value="on">
+            On: agents use the knowledge and past designs
+          </NativeSelectOption>
+          <NativeSelectOption value="off">
+            Off: agents work from this project only
+          </NativeSelectOption>
+        </NativeSelect>
+        <FieldDescription>Keep it off for a competition or final run.</FieldDescription>
+      </Field>
+      {memoryMissing ? (
+        <p role="alert" className="text-bad">
+          Choose whether the agents use the shared memory.
+        </p>
+      ) : null}
       <Field className="gap-1.5">
         <FieldLabel htmlFor="project-goal">What do you want to work on? (optional)</FieldLabel>
         <Textarea
@@ -200,6 +226,7 @@ function NewProjectForm({ onClose }: { onClose: () => void }) {
   const importZip = useImportProject();
   const after = useAfterCreate(files, onClose);
   const [nameMissing, setNameMissing] = useState(false);
+  const [memoryMissing, setMemoryMissing] = useState(false);
   const error = create.error ?? importZip.error;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -209,16 +236,21 @@ function NewProjectForm({ onClose }: { onClose: () => void }) {
     const goal = form.get("goal");
     const file = form.get("file");
     const caseFrom = form.get("case_from");
+    const chosen = form.get("memory");
+    const memory: { memory?: "on" | "off" } =
+      chosen === "on" ? { memory: "on" } : chosen === "off" ? { memory: "off" } : {};
     const isBlank = source !== "zip" && typeof name === "string" && name.trim() === "";
+    const noMemory = source !== "zip" && memory.memory === undefined;
     setNameMissing(isBlank);
-    if (isBlank) return;
+    setMemoryMissing(noMemory);
+    if (isBlank || noMemory) return;
     const onSuccess = (project: { id: string }) =>
       void after.done(project, typeof goal === "string" ? goal : "");
     if (source === "empty" && typeof name === "string") {
-      create.mutate({ name: name.trim() }, { onSuccess });
+      create.mutate({ name: name.trim(), ...memory }, { onSuccess });
     }
     if (source === "copy" && typeof name === "string" && typeof caseFrom === "string") {
-      create.mutate({ name: name.trim(), case_from: caseFrom }, { onSuccess });
+      create.mutate({ name: name.trim(), case_from: caseFrom, ...memory }, { onSuccess });
     }
     if (source === "zip" && file instanceof File) {
       importZip.mutate(file, { onSuccess });
@@ -234,7 +266,7 @@ function NewProjectForm({ onClose }: { onClose: () => void }) {
           <Input id="project-zip" name="file" type="file" accept=".zip" required />
         </Field>
       ) : (
-        <NameFields source={source} nameMissing={nameMissing} />
+        <NameFields source={source} nameMissing={nameMissing} memoryMissing={memoryMissing} />
       )}
       <ContextFiles files={files} onChange={setFiles} />
       {error === null ? null : (

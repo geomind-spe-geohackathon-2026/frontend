@@ -64,6 +64,7 @@ describe("projects home", { timeout: 20_000 }, () => {
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: "+ New project" }));
     await user.type(await screen.findByLabelText("Name"), "Example new plant");
+    await user.selectOptions(screen.getByLabelText("Shared memory"), "off");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeVisible();
     expect(router.state.location.pathname).toBe("/projects/example-project-3/assistant/chat");
@@ -77,6 +78,7 @@ describe("projects home", { timeout: 20_000 }, () => {
     await user.type(await screen.findByLabelText("Name"), "   ");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByText("Enter a name for the project.")).toBeVisible();
+    expect(screen.getByText("Choose whether the agents use the shared memory.")).toBeVisible();
   });
 
   it("imports a project zip and opens its chat", async () => {
@@ -116,9 +118,12 @@ describe("projects home", { timeout: 20_000 }, () => {
       await screen.findByLabelText("Project to copy"),
       await screen.findByRole("option", { name: "Example district plant" }),
     );
+    await user.selectOptions(screen.getByLabelText("Shared memory"), "off");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByRole("heading", { level: 1, name: "Chat" })).toBeVisible();
-    expect(received).toEqual([{ name: "Example copy", case_from: "example-project-1" }]);
+    expect(received).toEqual([
+      { name: "Example copy", case_from: "example-project-1", memory: "off" },
+    ]);
     expect(router.state.location.pathname).toBe("/projects/example-project-3/assistant/chat");
   });
 
@@ -142,6 +147,7 @@ describe("projects home", { timeout: 20_000 }, () => {
       await screen.findByLabelText("Project to copy"),
       await screen.findByRole("option", { name: "Example campus plant" }),
     );
+    await user.selectOptions(screen.getByLabelText("Shared memory"), "off");
     await user.click(screen.getByRole("button", { name: "Create" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("That project has no problem");
   });
