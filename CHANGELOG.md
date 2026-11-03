@@ -2,7 +2,7 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
-## Unreleased (on dev; ships with the backend's shared documents)
+## 1.1.16 (2026-11-03)
 
 - Knowledge is now shared documents for the agents' search (RAG): papers, reports, standards and catalogues, the same table, upload and drop box as a project's Library, for every project. It no longer shows the agents' memory; that stays a project setting (Shared memory on or off).
 
