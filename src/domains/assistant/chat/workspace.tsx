@@ -62,10 +62,10 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
 
   return (
     <>
-      <div className="flex min-h-[calc(100vh-15rem)] min-w-0 flex-col gap-3">
+      <div className="flex h-[calc(100svh-9.5rem)] min-h-[420px] min-w-0 flex-col gap-3">
         <DemoNotice />
         <CaseNotice projectId={projectId} />
-        <div className="flex-1">
+        <div className="flex min-h-0 flex-1 flex-col">
           <Conversation messages={messages} liveRunId={runId} view={view} failure={failure} />
         </div>
         <SavedProfile projectId={projectId} chatId={chatId} view={view} />

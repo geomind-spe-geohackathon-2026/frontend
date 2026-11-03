@@ -29,6 +29,7 @@ export function fromCsv(text: string): Point[] {
 ```
 src/
   components/ui/   shadcn/ui components (new-york style), copied in as source
+  components/ai-elements/   AI Elements chat components (Vercel), copied in as source
   app/      router, layouts, providers, auth guard, error boundary
   domains/<domain>/<feature>/   pages, components, api.ts, hooks, tests
   shared/   ui, api, sse, forms, charts, quantity, layout

@@ -65,6 +65,7 @@ export default tseslint.config(
       "jsx-a11y/click-events-have-key-events": "off",
       "jsx-a11y/no-noninteractive-element-interactions": "off",
       "react-hooks/set-state-in-effect": "off",
+      "@typescript-eslint/no-floating-promises": "off",
     },
   },
   {

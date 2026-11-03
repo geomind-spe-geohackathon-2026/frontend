@@ -1,9 +1,19 @@
-import { useState, type SubmitEvent } from "react";
+import { useState, type KeyboardEvent, type SubmitEvent } from "react";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { useAttachments } from "@/shared/attach/use-attachments";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
+
+function submitOnEnter(event: KeyboardEvent<HTMLTextAreaElement>): void {
+  if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+  event.preventDefault();
+  event.currentTarget.form?.requestSubmit();
+}
 
 type Props = {
   projectId: string;
@@ -31,34 +41,42 @@ export function Composer({ projectId, sending, active, cancelling, onSend, onCan
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2" {...toDropProps(files.add)}>
       <AttachmentList items={files.items} onRemove={files.remove} />
-      <div className="flex gap-2">
-        <AttachButton onFiles={files.add} />
-        <Input
+      <InputGroup>
+        <InputGroupTextarea
           aria-label="Message"
           placeholder="Tell the assistant what you need"
+          rows={2}
+          className="max-h-48 min-h-14"
           value={text}
+          onKeyDown={submitOnEnter}
           onChange={(event) => {
             setText(event.target.value);
           }}
         />
-        <Button
-          type="submit"
-          variant="default"
-          disabled={sending || active || files.reading || text.trim() === ""}
-        >
-          Send
-        </Button>
-        {active ? (
-          <Button
-            disabled={cancelling}
-            onClick={() => {
-              onCancel();
-            }}
+        <InputGroupAddon align="block-end">
+          <AttachButton onFiles={files.add} />
+          <span className="flex-1" />
+          {active ? (
+            <InputGroupButton
+              size="sm"
+              disabled={cancelling}
+              onClick={() => {
+                onCancel();
+              }}
+            >
+              Cancel run
+            </InputGroupButton>
+          ) : null}
+          <InputGroupButton
+            type="submit"
+            size="sm"
+            variant="default"
+            disabled={sending || active || files.reading || text.trim() === ""}
           >
-            Cancel run
-          </Button>
-        ) : null}
-      </div>
+            Send
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
     </form>
   );
 }

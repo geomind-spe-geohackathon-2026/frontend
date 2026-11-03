@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.4 (2026-11-03)
+
+- Chat uses AI Elements (Conversation, Message): the conversation scrolls in its own box and follows new messages, with a button back to the newest one; the sent message sits on the right.
+- The message box is a shadcn Input Group with a growing text area: Enter sends, Shift+Enter starts a new line; attach, Cancel run and Send sit under it.
+
 ## 1.1.3 (2026-11-03)
 
 - Forms use shadcn Field and FieldLabel; every drop-down is shadcn Native Select (still a native select, so keyboard and phone pickers work as before).
