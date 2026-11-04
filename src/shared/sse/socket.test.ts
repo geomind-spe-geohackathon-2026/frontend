@@ -84,7 +84,7 @@ describe("streamSocket", () => {
     expect(JSON.parse(socket.sent[0] ?? "")).toEqual({ token: "token-1", after: 8 });
     expect(socket.url).not.toContain("token-1");
     socket.frame("usage", 9, usage);
-    socket.frame("text.delta", null, { index: 0, text: "سلام" });
+    socket.frame("text.delta", null, { index: 0, text: "\u0633\u0644\u0627\u0645" });
     socket.frame("run.finished", 10, finished);
     socket.close(1000);
     await expect(end).resolves.toMatchObject({ finished: true });

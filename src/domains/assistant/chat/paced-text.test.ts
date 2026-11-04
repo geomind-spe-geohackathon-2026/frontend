@@ -28,7 +28,14 @@ describe("toTickMs", () => {
 describe("toWordEnd", () => {
   it("never cuts a word", () => {
     expect(toWordEnd("one two three", 5, 0, true)).toBe(8);
-    expect(toWordEnd("سلام دنیا خوبی", 6, 0, true)).toBe(10);
+    expect(
+      toWordEnd(
+        "\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627 \u062e\u0648\u0628\u06cc",
+        6,
+        0,
+        true,
+      ),
+    ).toBe(10);
   });
 
   it("holds a word that may still grow, and shows it when the text ends", () => {

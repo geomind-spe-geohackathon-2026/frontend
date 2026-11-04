@@ -170,10 +170,15 @@ test("golden path", async ({ page }, info) => {
   }
 
   await page.getByRole("link", { name: "Project settings" }).click();
-  await page.getByLabel("Name").fill("پروژه نمونه");
+  await page
+    .getByLabel("Name")
+    .fill("\u067e\u0631\u0648\u0698\u0647 \u0646\u0645\u0648\u0646\u0647");
   await page.getByRole("button", { name: "Save name" }).click();
   await page.getByRole("link", { name: /^\d+ Report/ }).click();
-  const title = mode === "real" ? /پروژه نمونه/ : /Example report/;
+  const title =
+    mode === "real"
+      ? /\u067e\u0631\u0648\u0698\u0647 \u0646\u0645\u0648\u0646\u0647/
+      : /Example report/;
   await expect(page.getByRole("heading", { name: title })).toBeVisible();
   const persian = page.waitForEvent("download");
   await page.getByRole("button", { name: /PDF/ }).first().click();
@@ -194,7 +199,7 @@ test("a new empty project starts its problem", async ({ page }, info) => {
   const login = mode === "real" ? real : mock;
   await page.goto("/projects");
   await signIn(page, login.email, login.password);
-  await createEmpty(page, "پروژه خالی");
+  await createEmpty(page, "\u067e\u0631\u0648\u0698\u0647 \u062e\u0627\u0644\u06cc");
   await page.getByRole("link", { name: "1 Case" }).click();
   await page.getByRole("button", { name: "Start the case" }).click();
   await expect(page.getByText("Case v1")).toBeVisible();
