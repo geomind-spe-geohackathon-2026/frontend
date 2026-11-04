@@ -55,6 +55,7 @@ export type View = {
   problem: ProblemState;
   problemStale: boolean;
   studies: RecordedStudy[];
+  retry: string | null;
 };
 
 /** The view before any event: nothing has happened yet. */
@@ -72,6 +73,7 @@ export const emptyView: View = {
   problem: { version: 0, document: null },
   problemStale: false,
   studies: [],
+  retry: null,
 };
 
 function toStepKey(agent: string, index: number): string {
@@ -257,6 +259,8 @@ function reduce(view: View, event: RunEvent): View {
       return { ...view, usage: toUsage(event) };
     case "study.recorded":
       return { ...view, studies: [...view.studies, toRecordedStudy(event)] };
+    case "retry":
+      return { ...view, retry: toRetryText(event) };
     case "run.finished":
       return reduceFinished(view, event);
   }
@@ -312,10 +316,18 @@ function reduceFinished(view: View, event: RunEvent & { type: "run.finished" }):
   return { ...next, agents, status: event.status, suggestions: event.suggestions ?? [] };
 }
 
+function toRetryText(event: RunEvent & { type: "retry" }): string {
+  const status = event.status === null ? "" : ` (${String(event.status)})`;
+  const next = event.attempt === 0 ? "trying the next model" : "trying again";
+  const wait = event.delay > 0 ? ` in ${String(Math.round(event.delay))} s` : "";
+  return `The model provider is busy${status}; ${next}${wait}`;
+}
+
 /** Pure reducer of the live run view: the same events always give the same view, live or replayed. */
 export function applyEvent(view: View, event: RunEvent): View {
   const resolved = keepsRequest(event) ? view : resolveRequest(view);
-  return reduce(touchAgent(resolved, event), event);
+  const next = reduce(touchAgent(resolved, event), event);
+  return event.type === "retry" || next.retry === null ? next : { ...next, retry: null };
 }
 
 /** Replaces the problem state with a full copy from the server, unless the view already has a newer one. */

@@ -140,7 +140,7 @@ export function Conversation({
           return (
             <div key={message.id} className="space-y-3">
               <UserBubble projectId={projectId} message={message} />
-              {isLive ? <Blocks blocks={view.blocks} running={isActive(view)} /> : null}
+              {isLive ? <Blocks blocks={view.blocks} running={isActive(view)} retry={view.retry} /> : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (
                 <PastRun projectId={projectId} runId={message.run} />
               ) : null}

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.43 (2026-11-04)
+
+- QA-030: the chat reads the live `retry` event and shows beside the running step "The model provider is busy (429); trying again in 8 s" (or "trying the next model" for attempt 0) until the run's next event.
+
 ## 1.1.42 (2026-11-04)
 
 - QA-029: the API client answers a 429 by waiting its Retry-After (2 s when absent, at most 15 s) and trying again, up to 5 times, so a short rate limit no longer replaces the page with "Rate limit exceeded".

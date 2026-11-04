@@ -210,11 +210,24 @@ function toStateBody(type: string, fields: Fields): RunEventBody | null {
       return { type, ...toUsage(fields, type) };
     case "study.recorded":
       return toStudyRecorded(fields);
+    case "retry":
+      return toRetry(fields);
     case "run.finished":
       return toFinished(fields);
     default:
       return null;
   }
+}
+
+function toRetry(fields: Fields): RunEventBody {
+  const { attempt, model, delay, status } = fields;
+  return {
+    type: "retry",
+    attempt: typeof attempt === "number" ? attempt : 0,
+    model: typeof model === "string" ? model : "",
+    delay: typeof delay === "number" ? delay : 0,
+    status: typeof status === "number" ? status : null,
+  };
 }
 
 function toStudyRecorded(fields: Fields): RunEventBody | null {

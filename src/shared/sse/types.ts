@@ -53,6 +53,7 @@ export type RunEventBody =
   | ({ type: "request" } & RunRequest)
   | ({ type: "usage" } & Usage)
   | { type: "study.recorded"; call_id: string; study: string; method: string }
+  | { type: "retry"; attempt: number; model: string; delay: number; status: number | null }
   | {
       type: "run.finished";
       status: RunStatus;

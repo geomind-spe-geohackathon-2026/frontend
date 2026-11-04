@@ -219,7 +219,15 @@ function WorkLog({ work, label }: { work: Block[]; label: string }) {
 }
 
 /** A run as one quiet line of work that opens to its steps; only the answer and a stop stand out. */
-export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean }) {
+export function Blocks({
+  blocks,
+  running,
+  retry = null,
+}: {
+  blocks: Block[];
+  running: boolean;
+  retry?: string | null;
+}) {
   const last = running ? toLiveBlock(blocks) : toAnswer(blocks);
   const answer = last === null ? null : running ? toLiveText(last.text) : toAnswerText(last);
   const work = blocks.filter((block) => isWork(block) && block.id !== last?.id);
@@ -231,6 +239,7 @@ export function Blocks({ blocks, running }: { blocks: Block[]; running: boolean 
       {running ? (
         <p role="status" className="text-muted">
           {toLatest(blocks)}
+          {retry === null ? null : <span className="ml-2 text-warn">{retry}</span>}
         </p>
       ) : null}
       {work.length === 0 ? null : (
