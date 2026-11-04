@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.50 (2026-11-04)
+
+- QA-040: the plant values sent on save are typed (`[string, ValueUpdate][]`), so the 1.1.49 build compiles again.
+
 ## 1.1.49 (2026-11-04)
 
 - QA-040: the Plant page shows a plant-level entry with `options` (backend 1.1.39: `backup`, peak or none) as a select, marks it missing when unset, and saves the choice as `{"value": "<option>"}`; `PlantSearchRange.options` and a string `ValueUpdate.value` added to the API types by hand (contract of backend 1.1.39).

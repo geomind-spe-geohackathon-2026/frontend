@@ -15,6 +15,7 @@ import { Notice } from "@/shared/ui/notice";
 
 type Props = { projectId: string; version: number; structureDirty: boolean };
 type Entry = PlantSearch["search"][string];
+type ValueUpdate = { value: number | string; unit?: string | null };
 
 function toLabel(path: string): string {
   return labelOf(path.split(".").at(-1) ?? path, {});
@@ -170,7 +171,7 @@ function toValues(
   search: PlantSearch["search"],
 ) {
   return Object.fromEntries(
-    Object.entries(texts).flatMap(([path, text]) => {
+    Object.entries(texts).flatMap(([path, text]): [string, ValueUpdate][] => {
       if (text.trim() === "") return [];
       if (hasOptions(search[path])) return [[path, { value: text }]];
       const unit = units[path] ?? search[path]?.unit ?? null;
