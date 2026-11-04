@@ -111,6 +111,8 @@ const toolLabels: Record<string, string> = {
   rag_search: "Searched the files and Knowledge",
   rag_read: "Read a document",
   search_knowledge: "Searched the Knowledge",
+  list_mcp: "Listed the connectors",
+  save_mcp_table: "Saved a connector table to the case",
 };
 
 function toWords(name: string): string {

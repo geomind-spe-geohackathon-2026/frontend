@@ -10,7 +10,7 @@ const hints: Hint[] = [
     to: "design/case",
     label: "Open Case",
     icon: ClipboardList,
-    tools: ["accept_case", "save_profile"],
+    tools: ["accept_case", "save_profile", "set_case", "save_mcp_table"],
   },
   {
     to: "design/plant",
