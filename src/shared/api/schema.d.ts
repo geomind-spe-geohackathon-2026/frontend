@@ -1814,6 +1814,8 @@ export interface components {
             max: number | null;
             /** Min */
             min: number | null;
+            /** Options */
+            options?: string[] | null;
             /** Unit */
             unit: string | null;
             /** Units */
@@ -2467,7 +2469,7 @@ export interface components {
             /** Unit */
             unit?: string | null;
             /** Value */
-            value: number;
+            value: number | string;
         };
         /** Version */
         Version: {

@@ -21,7 +21,54 @@ function toLabel(path: string): string {
 }
 
 function toValueText(entry: Entry): string {
+  if (typeof entry.value === "string") return entry.value;
   return typeof entry.value === "number" ? String(entry.value) : "";
+}
+
+function hasOptions(entry: Entry | undefined): boolean {
+  return entry?.options !== undefined && entry.options !== null && entry.options.length > 0;
+}
+
+function OptionRow({
+  path,
+  entry,
+  value,
+  onValue,
+}: {
+  path: string;
+  entry: Entry;
+  value: string | undefined;
+  onValue: (name: string, text: string | null) => void;
+}) {
+  const label = toLabel(path);
+  const stored = toValueText(entry);
+  const id = `plant-${path}`;
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-[12.5px] font-medium">
+        {label}
+      </label>
+      <NativeSelect
+        id={id}
+        className="min-w-0"
+        value={value ?? stored}
+        onChange={(event) => {
+          const text = event.target.value;
+          onValue(path, text === stored ? null : text);
+        }}
+      >
+        {stored === "" ? <NativeSelectOption value="">Choose one</NativeSelectOption> : null}
+        {(entry.options ?? []).map((option) => (
+          <NativeSelectOption key={option} value={option}>
+            {option}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
+      {stored === "" && value === undefined ? (
+        <p className="text-[11.5px] text-warn">Missing: choose one, then save the plant.</p>
+      ) : null}
+    </div>
+  );
 }
 
 type UnitProps = {
@@ -124,8 +171,10 @@ function toValues(
 ) {
   return Object.fromEntries(
     Object.entries(texts).flatMap(([path, text]) => {
+      if (text.trim() === "") return [];
+      if (hasOptions(search[path])) return [[path, { value: text }]];
       const unit = units[path] ?? search[path]?.unit ?? null;
-      return text.trim() === "" ? [] : [[path, { value: Number(text), unit }]];
+      return [[path, { value: Number(text), unit }]];
     }),
   );
 }
@@ -180,7 +229,16 @@ function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) 
   return (
     <section aria-label="Plant" className="flex min-w-0 flex-col gap-3">
       <h2>Plant</h2>
-      {Object.entries(data).map(([path, entry]) => (
+      {Object.entries(data).map(([path, entry]) =>
+        hasOptions(entry) ? (
+          <OptionRow
+            key={path}
+            path={path}
+            entry={entry}
+            value={form.texts[path]}
+            onValue={form.onValue}
+          />
+        ) : (
         <Row
           key={path}
           path={path}
@@ -192,7 +250,8 @@ function PlantForm({ data, ...props }: Props & { data: PlantSearch["search"] }) 
           onUnit={form.onUnit}
           onEdit={form.onEdit}
         />
-      ))}
+        ),
+      )}
       {message === null ? null : (
         <p role="alert" className="text-bad">
           {message}

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.49 (2026-11-04)
+
+- QA-040: the Plant page shows a plant-level entry with `options` (backend 1.1.39: `backup`, peak or none) as a select, marks it missing when unset, and saves the choice as `{"value": "<option>"}`; `PlantSearchRange.options` and a string `ValueUpdate.value` added to the API types by hand (contract of backend 1.1.39).
+
 ## 1.1.48 (2026-11-04)
 
 - QA-036: a tool step's short summary reads "1 match" (not "1 matche"), and a count read from a cut-off summary shows as at least ("2+ files"), since the last entries are not in the text.
