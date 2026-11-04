@@ -1,3 +1,4 @@
+import { toRoundedText } from "@/shared/sse/pretty";
 import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -116,7 +117,7 @@ export function RequestCard({ request, pending, failure, onAnswer }: Props) {
     >
       <h2>{request.kind === "approval" ? "Approval needed" : "The assistant asks"}</h2>
       <div className="max-h-[50vh] overflow-y-auto pr-1 text-[13.5px] leading-6 whitespace-pre-line [overflow-wrap:anywhere]">
-        {request.message}
+        {toRoundedText(request.message)}
       </div>
       {request.kind === "approval" ? (
         <Approval pending={pending} onAnswer={onAnswer} />

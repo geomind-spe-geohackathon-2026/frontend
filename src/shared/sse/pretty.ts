@@ -183,10 +183,17 @@ export function toBudgetStop(message: string): string | null {
   return `Stopped: this project reached its budget of ${found[3] ?? ""}${unit} (spent ${String(spent)}${unit}). Raise the budget in project settings to continue.`;
 }
 
-/** Writes a permission question as what was asked for. */
+/** Rounds long decimals in a text (48.699029126213595 becomes 48.7), so a question reads well. */
+export function toRoundedText(text: string): string {
+  return text.replace(/\d+\.\d{5,}(e[+-]?\d+)?/gi, (number) =>
+    String(Number(Number(number).toPrecision(4))),
+  );
+}
+
+/** Writes a permission question as what was asked for; any other question as the question itself. */
 export function toRequestText(message: string): string {
   const found = /^Allow (\S+) \((\w+)\)\?$/.exec(message);
-  if (found === null) return `You answered: ${message}`;
+  if (found === null) return `You answered this question:\n${toRoundedText(message)}`;
   const tool = (found[1] ?? "").replaceAll("_", " ");
   const effect = found[2] === "write" ? "writes to the project" : found[2];
   return `You answered: ${tool} (${effect ?? ""})`;

@@ -193,7 +193,9 @@ function toDoneLabel(work: Block[]): string {
 const WorkItem = memo(function WorkItem({ block }: { block: Block }) {
   if (block.kind === "tool") return <ToolCard block={block} />;
   if (block.kind === "request") {
-    return <p className="text-[12px] text-muted">{toRequestText(block.request.message)}</p>;
+    return <p className="text-[12px] whitespace-pre-line text-muted [overflow-wrap:anywhere]">
+        {toRequestText(block.request.message)}
+      </p>;
   }
   if (block.kind !== "text") return null;
   return (

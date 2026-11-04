@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.36 (2026-11-04)
+
+- QA-005: an answered question in the chat work log keeps its line breaks and reads "You answered this question:"; long decimals in a question (here and on the open question card) are rounded to four significant digits.
+
 ## 1.1.35 (2026-11-04)
 
 - QA-001: in the chat, read_case on a project with no case yet shows as done with "No case yet: the assistant builds it from the project's files.", not a red failure asking the user to fill in the Case page.
