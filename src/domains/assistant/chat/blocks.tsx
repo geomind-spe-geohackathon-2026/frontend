@@ -102,7 +102,7 @@ function toEndText(block: EndBlock, problem: string | null): string {
   if (message.startsWith(interruptedStart)) return message;
   const budget = toBudgetStop(message);
   if (budget !== null) return budget;
-  return reason === internalStop ? internalFailure : `Run ${status}: ${message}`;
+  return reason === internalStop ? internalFailure : `Run ${status}: ${toFailureText(message)}`;
 }
 
 function RecordedStudies({ studies }: { studies: RecordedStudy[] }) {

@@ -129,6 +129,14 @@ export function toToolName(tool: string): string {
   return toWords(tool);
 }
 
+const longestFailure = 400;
+const schemaNote = /\s*The tool's input_schema:[\s\S]*$/;
+
+function toShortFailure(text: string): string {
+  const plain = text.replace(schemaNote, "");
+  return plain.length > longestFailure ? `${plain.slice(0, longestFailure).trimEnd()}…` : plain;
+}
+
 function toProblemText(problem: ToolProblem): string {
   if (problem.code === "no_case") return noCaseText;
   if (problem.code === "nested_stopped") return `A helper agent stopped: ${problem.message}`;
@@ -141,7 +149,8 @@ function toProblemText(problem: ToolProblem): string {
       ? `${incompleteText}.`
       : `${incompleteText}: ${listed}. Fill them in on the Case page, then ask again.`;
   }
-  return problem.path === null ? problem.message : `${problem.message} (${problem.path})`;
+  const message = toShortFailure(problem.message);
+  return problem.path === null ? message : `${message} (${problem.path})`;
 }
 
 /** Returns the message of a failed tool: from its problem code when it has one, else read from the error text. */
@@ -149,7 +158,7 @@ export function toFailureText(error: string, problem: ToolProblem | null = null)
   if (problem !== null) return toProblemText(problem);
   const text = typeof error === "string" ? error : "";
   const message = fromQuotedMessage(text) ?? text;
-  return message.includes(noCaseMessage) ? noCaseText : message;
+  return message.includes(noCaseMessage) ? noCaseText : toShortFailure(message);
 }
 
 function toSingular(words: string): string {

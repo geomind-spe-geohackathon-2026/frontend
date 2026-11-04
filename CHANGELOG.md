@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.52 (2026-11-05)
+
+- QA-051: a failure shown in the chat leaves out the tool's input_schema that geomind appends for the agent and is cut at 400 characters; the whole text stays in the step's Output.
+
 ## 1.1.51 (2026-11-05)
 
 - QA-053: once an agent's step has finished, the chat shows its whole text at once, so a text paced in word by word can no longer stop mid-word ("I have exhau") when the step ends on a tool call.
