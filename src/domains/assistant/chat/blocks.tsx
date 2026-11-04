@@ -246,7 +246,12 @@ export function Blocks({
         <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />
       )}
       {answer === null || last === null ? null : (
-        <PacedMarkdown key={last.id} text={answer} settled={last.settled} open={last.open} />
+        <PacedMarkdown
+          key={last.id}
+          text={answer}
+          settled={last.open ? last.settled : answer.length}
+          open={last.open}
+        />
       )}
       {!running && !stopped && failure !== null ? (
         <p role="status" className="text-bad">

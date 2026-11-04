@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.51 (2026-11-05)
+
+- QA-053: once an agent's step has finished, the chat shows its whole text at once, so a text paced in word by word can no longer stop mid-word ("I have exhau") when the step ends on a tool call.
+
 ## 1.1.50 (2026-11-04)
 
 - QA-040: the plant values sent on save are typed (`[string, ValueUpdate][]`), so the 1.1.49 build compiles again.
