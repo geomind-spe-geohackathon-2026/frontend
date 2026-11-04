@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.48 (2026-11-04)
+
+- QA-036: a tool step's short summary reads "1 match" (not "1 matche"), and a count read from a cut-off summary shows as at least ("2+ files"), since the last entries are not in the text.
+
 ## 1.1.47 (2026-11-04)
 
 - QA-038: an upload on the Case page (Upload CSV for a series, Upload JSON for a file field such as Economics) puts the uploaded file in that field of the draft, so the field keeps its series or file mode and one Save version stores the choice.

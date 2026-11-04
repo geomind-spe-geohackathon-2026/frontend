@@ -152,10 +152,16 @@ export function toFailureText(error: string, problem: ToolProblem | null = null)
   return message.includes(noCaseMessage) ? noCaseText : message;
 }
 
-function toCount(key: string, value: unknown): string | null {
+function toSingular(words: string): string {
+  if (/(ch|sh|x|ss)es$/.test(words)) return words.slice(0, -2);
+  return words.endsWith("s") ? words.slice(0, -1) : words;
+}
+
+function toCount(key: string, value: unknown, cut: boolean): string | null {
   const words = key.replaceAll("_", " ");
   if (Array.isArray(value)) {
-    const name = value.length === 1 && words.endsWith("s") ? words.slice(0, -1) : words;
+    if (cut) return `${String(value.length)}+ ${words}`;
+    const name = value.length === 1 ? toSingular(words) : words;
     return `${String(value.length)} ${name}`;
   }
   if (typeof value === "string" || typeof value === "number") {
@@ -166,11 +172,13 @@ function toCount(key: string, value: unknown): string | null {
 
 /** Writes a tool result as a few words: counts of its lists and its short values. */
 export function toSummary(summary: string): string {
-  const value = fromText(summary.trim());
-  if (Array.isArray(value)) return `${String(value.length)} items`;
-  if (value === undefined) return /^[[{(]/.test(summary.trim()) ? "See the details" : summary;
+  const text = summary.trim();
+  const value = fromText(text);
+  const cut = parse(text) === undefined && parse(toTokens(text)) === undefined;
+  if (Array.isArray(value)) return `${String(value.length)}${cut ? "+" : ""} items`;
+  if (value === undefined) return /^[[{(]/.test(text) ? "See the details" : summary;
   if (typeof value !== "object" || value === null) return summary;
-  const parts = Object.entries(value).flatMap(([key, item]) => toCount(key, item) ?? []);
+  const parts = Object.entries(value).flatMap(([key, item]) => toCount(key, item, cut) ?? []);
   return parts.length === 0 ? "See the details" : parts.slice(0, 3).join(", ");
 }
 
