@@ -1,6 +1,6 @@
 # Geomind frontend: agent guide
 
-React app for designing geothermal heating and cooling plants with an AI assistant. The flow and layout come from `../docs/ui-mockup.html`; the API from `../docs/contracts.md`.
+React app for designing geothermal heating and cooling plants with an AI assistant. The flow and layout come from `../backend/docs/app-build/ui-mockup.html`; the API from `../backend/docs/app-build/contracts.md`.
 
 ## Read both: `.claude/` for agents, `docs/` for people
 
