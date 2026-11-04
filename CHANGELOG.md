@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.42 (2026-11-04)
+
+- QA-029: the API client answers a 429 by waiting its Retry-After (2 s when absent, at most 15 s) and trying again, up to 5 times, so a short rate limit no longer replaces the page with "Rate limit exceeded".
+
 ## 1.1.41 (2026-11-04)
 
 - QA-028: the first request of a new project and its file chips are kept in localStorage (was sessionStorage, lost in another tab or a fresh browser context) until the message is sent, and the composer keeps the kept text in step with the user's edits.

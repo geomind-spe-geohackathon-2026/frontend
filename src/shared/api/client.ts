@@ -83,10 +83,37 @@ function createAuthFetch(baseUrl: string): (request: Request) => Promise<Respons
   }
 
   return async (request) => {
-    const response = await sendWithRefresh(request);
+    let response = await sendWithRefresh(request.clone());
+    for (let attempt = 1; response.status === 429 && attempt < rateLimitAttempts; attempt++) {
+      await waitFor(toRetryMs(response), request.signal);
+      response = await sendWithRefresh(request.clone());
+    }
     if (!response.ok) throw await fromResponse(response);
     return response;
   };
+}
+
+const rateLimitAttempts = 5;
+const longestWaitMs = 15_000;
+
+function toRetryMs(response: Response): number {
+  const seconds = Number(response.headers.get("Retry-After") ?? "");
+  const wait = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 2000;
+  return Math.min(wait, longestWaitMs);
+}
+
+function waitFor(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true },
+    );
+  });
 }
 
 /** Builds the typed /api/v1 client: bearer token, single-flight refresh on 401, ApiError on failure. */
