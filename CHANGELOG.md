@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.39 (2026-11-04)
+
+- QA-027: the run log page fetches the log again every 15 s while the run is queued, running or waiting, so its status, steps and tokens follow the run; it stops once the run ends.
+
 ## 1.1.38 (2026-11-04)
 
 - QA-022: an earlier run of a chat that ended without an answer (cancelled or failed) no longer vanishes: under its message the chat offers "Show its steps" (replayed from the run's events) and a link to Runs and logs.

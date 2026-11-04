@@ -1,7 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, type Query } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { pagedQuery } from "@/shared/api/pagination";
-import { fromLog } from "@/shared/sse/runlog";
+import { fromLog, type RunLog } from "@/shared/sse/runlog";
 
 export const runKeys = {
   all: (projectId: string) => ["projects", projectId, "runs"] as const,
@@ -31,10 +31,17 @@ export const usageQuery = (projectId: string) =>
       ),
   });
 
-/** Query options for the full log of one run. */
+const activeStatuses: readonly string[] = ["queued", "running", "waiting"];
+const activeRefetchMs = 15_000;
+
+/** Query options for the full log of one run, fetched again every 15 s while the run is active. */
 export const runLogQuery = (projectId: string, runId: string) =>
   queryOptions({
     queryKey: runKeys.log(projectId, runId),
+    refetchInterval: (query: Query<RunLog>) => {
+      const status = query.state.data?.run.status;
+      return status !== undefined && activeStatuses.includes(status) ? activeRefetchMs : false;
+    },
     queryFn: async ({ signal }) =>
       fromLog(
         toData(
