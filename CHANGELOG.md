@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.54 (2026-11-05)
+
+- QA-031: Auto-approve is stored per chat on the server (backend 1.1.50: GET/PUT `/assistant/chat/{chat_id}/auto-approve`), read when the chat opens and saved on toggle, so the worker approves with no tab open; the browser's old per-project setting is no longer used.
+
 ## 1.1.53 (2026-11-05)
 
 - QA-048: a blocked study's row reads "Waits for N values" (the paths open below it, each message as a tooltip) and links to Plant for `params.*` values and to Case for the rest, so the Study table fits the panel.

@@ -127,7 +127,13 @@ export type PortSuggestion = {
 export type PortSuggestions = { port: string; suggestions: PortSuggestion[] };
 
 /** Routes the backend has not published yet (Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
+export type AutoApprove = { auto_approve: boolean };
+
 export type PendingPaths = {
+  "/assistant/chat/{chat_id}/auto-approve": Omit<Route, "get" | "put"> & {
+    get: Read<AutoApprove, never, { chat_id: string }>;
+    put: Write<AutoApprove, AutoApprove, { chat_id: string }>;
+  };
   "/workspace/mcp": Omit<Route, "get" | "post"> & {
     get: Read<Connector[], never>;
     post: Write<Connector, ConnectorCreate>;

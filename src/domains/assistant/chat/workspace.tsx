@@ -88,7 +88,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   const { view, failure } = useRunView(projectId, chatId, runId);
   const run = useQuery({ ...runQuery(projectId, runId ?? ""), enabled: runId !== null });
   const { handleSend, send, pending } = useSendToChat(projectId, chatId);
-  const [auto, setAuto] = useAutoApprove(projectId);
+  const [auto, setAuto] = useAutoApprove(chatId);
   const files = useAttachments(projectId);
   const status = view.blocks.length === 0 && run.data !== undefined ? run.data.status : view.status;
   const active =

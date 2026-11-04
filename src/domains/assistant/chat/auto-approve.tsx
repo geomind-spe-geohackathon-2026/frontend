@@ -1,33 +1,47 @@
-import { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { api, toData } from "@/shared/api/client";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { InputGroupButton } from "@/components/ui/input-group";
 import type { RunRequest } from "@/shared/sse/types";
 
-function toKey(projectId: string): string {
-  return `geomind.auto-approve.${projectId}`;
+function toKey(chatId: string | null) {
+  return ["chats", chatId ?? "new", "auto-approve"] as const;
 }
 
-function readStored(projectId: string): boolean {
-  try {
-    return window.localStorage.getItem(toKey(projectId)) === "on";
-  } catch {
-    return false;
-  }
-}
-
-/** Whether this project's tool approvals are answered by the browser itself; remembered per project in this browser, off unless turned on. */
-export function useAutoApprove(projectId: string): [boolean, (on: boolean) => void] {
-  const [on, setOn] = useState(() => readStored(projectId));
+/** Whether the worker approves this chat's tool calls itself, stored per chat on the server; off for a chat not created yet. */
+export function useAutoApprove(chatId: string | null): [boolean, (on: boolean) => void] {
+  const queryClient = useQueryClient();
+  const stored = useQuery({
+    queryKey: toKey(chatId),
+    queryFn: async ({ signal }) =>
+      toData(
+        await api.GET("/assistant/chat/{chat_id}/auto-approve", {
+          params: { path: { chat_id: chatId ?? "" } },
+          signal,
+        }),
+      ),
+    enabled: chatId !== null,
+  });
+  const save = useMutation({
+    mutationFn: async (next: boolean) =>
+      toData(
+        await api.PUT("/assistant/chat/{chat_id}/auto-approve", {
+          params: { path: { chat_id: chatId ?? "" } },
+          body: { auto_approve: next },
+        }),
+      ),
+    onMutate: (next) => {
+      queryClient.setQueryData(toKey(chatId), { auto_approve: next });
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: toKey(chatId) }),
+  });
   const change = (next: boolean) => {
-    setOn(next);
-    try {
-      window.localStorage.setItem(toKey(projectId), next ? "on" : "off");
-    } catch {
-      return;
-    }
+    if (chatId === null) return;
+    save.mutate(next);
   };
-  return [on, change];
+  return [stored.data?.auto_approve ?? false, change];
 }
 
 /** Approves an approval request once, as soon as it shows, while auto-approve is on; questions still wait for the user. */
@@ -53,8 +67,8 @@ export function AutoApproveButton({
   onChange: (on: boolean) => void;
 }) {
   const title = on
-    ? "Auto-approve is on in this browser: tool calls run without asking while this chat is open here. With the tab closed, a run waits for your approval."
-    : "Ask before tool calls run. Auto-approve works only while this chat is open in this browser.";
+    ? "Auto-approve is on for this chat: tool calls run without asking, also with the tab closed. A run already waiting picks it up when it goes on."
+    : "Ask before tool calls run. Turn on to let this chat's runs approve tool calls by themselves.";
   return (
     <InputGroupButton
       size="sm"
