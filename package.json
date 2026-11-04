@@ -1,7 +1,7 @@
 {
   "name": "geomind-frontend",
   "private": true,
-  "version": "1.1.30",
+  "version": "1.1.31",
   "type": "module",
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",

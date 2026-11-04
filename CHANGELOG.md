@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.31 (2026-11-04)
+
+- Settings live in one `.env` (was `.env.production`): the Docker build checks for `.env`, `.dockerignore` lets it in, and `.env.example` lists every name (`VITE_API_URL`, `VITE_API_MODE`, `VITE_FEATURE_OPERATION`). On the server: rename `.env.production` to `.env` before the next build.
+
 ## 1.1.30 (2026-11-04)
 
 - Chat usage window: one row per agent session of the last run, each with its own context ring (latest call over that model's window, what is left), tokens in and out, cost and its tool calls (open a row to list them), and the run's totals on top. From `GET /assistant/runs/{id}/agents`, refreshed on step, tool and run events. Older servers (404) keep the plain usage view; old logs show "context n/a".
