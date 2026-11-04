@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.53 (2026-11-05)
+
+- QA-048: a blocked study's row reads "Waits for N values" (the paths open below it, each message as a tooltip) and links to Plant for `params.*` values and to Case for the rest, so the Study table fits the panel.
+
 ## 1.1.52 (2026-11-05)
 
 - QA-051: a failure shown in the chat leaves out the tool's input_schema that geomind appends for the agent and is cut at 400 characters; the whole text stays in the step's Output.

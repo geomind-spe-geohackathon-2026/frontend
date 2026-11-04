@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ProgressBar } from "@/shared/charts/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Missing } from "@/shared/quantity/missing";
 import { toProgress } from "./progress";
 import type { Study, StudyStatus } from "@/shared/api/types";
 import { TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -68,13 +67,30 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
   }
   if (study.status === "blocked") {
     return (
-      <div className="flex flex-col gap-1">
-        {study.missing.map((entry) => (
-          <Missing key={entry.path} blocks={`${entry.path}: ${entry.message}`} />
-        ))}
-        <Link to={`${base}/case`} className="text-accent">
-          Fill it in on Case
-        </Link>
+      <div className="flex min-w-0 flex-col gap-1">
+        <details>
+          <summary className="cursor-pointer text-warn">
+            Waits for {study.missing.length}{" "}
+            {study.missing.length === 1 ? "value" : "values"}
+          </summary>
+          <ul className="mt-1 list-none p-0 font-mono text-[12px] [overflow-wrap:anywhere]">
+            {study.missing.map((entry) => (
+              <li key={entry.path} title={entry.message}>
+                {entry.path}
+              </li>
+            ))}
+          </ul>
+        </details>
+        {study.missing.some((entry) => !entry.path.startsWith("params.")) ? (
+          <Link to={`${base}/case`} className="text-accent">
+            Fill them in on Case
+          </Link>
+        ) : null}
+        {study.missing.some((entry) => entry.path.startsWith("params.")) ? (
+          <Link to={`${base}/plant`} className="text-accent">
+            Fill them in on Plant
+          </Link>
+        ) : null}
       </div>
     );
   }
