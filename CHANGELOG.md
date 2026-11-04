@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.37 (2026-11-04)
+
+- QA-003: the time series chart draws its unit above the plot, so it no longer covers the top tick of the y-axis ("MW0").
+
 ## 1.1.36 (2026-11-04)
 
 - QA-005: an answered question in the chat work log keeps its line breaks and reads "You answered this question:"; long decimals in a question (here and on the open question card) are rounded to four significant digits.

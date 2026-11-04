@@ -79,7 +79,7 @@ function Plot({ rows, unit, title }: { rows: Row[]; unit: string; title: string 
       aria-label={`${title} in ${unit}, ${String(rows.length)} points`}
       className="aspect-auto h-[220px] w-full"
     >
-      <LineChart data={rows} margin={{ left: 4, right: 12, top: 10, bottom: 0 }}>
+      <LineChart data={rows} margin={{ left: 4, right: 12, top: 28, bottom: 0 }}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="time"
@@ -98,7 +98,7 @@ function Plot({ rows, unit, title }: { rows: Row[]; unit: string; title: string 
           tickLine={false}
           axisLine={false}
           width={48}
-          label={{ value: unit, position: "insideTopLeft", dy: -10, dx: 8 }}
+          label={{ value: unit, position: "insideTopLeft", dy: -26, dx: 8 }}
         />
         <ChartTooltip
           content={
