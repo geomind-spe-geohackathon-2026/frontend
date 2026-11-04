@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.47 (2026-11-04)
+
+- QA-038: an upload on the Case page (Upload CSV for a series, Upload JSON for a file field such as Economics) puts the uploaded file in that field of the draft, so the field keeps its series or file mode and one Save version stores the choice.
+
 ## 1.1.46 (2026-11-04)
 
 - QA-019: the run log's step list is wider (300 px), long agent names wrap inside the row and the token count keeps its place inside the card.

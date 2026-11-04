@@ -16,6 +16,16 @@ function withSection(content: CaseContent, section: string, value: unknown): Cas
   return Object.fromEntries(value === undefined ? others : [...others, [section, value]]);
 }
 
+function withPath(target: unknown, keys: string[], value: unknown): unknown {
+  const [key, ...rest] = keys;
+  if (key === undefined) return value;
+  const base: Record<string, unknown> =
+    typeof target === "object" && target !== null && !Array.isArray(target)
+      ? (target as Record<string, unknown>)
+      : {};
+  return { ...base, [key]: withPath(base[key], rest, value) };
+}
+
 function prefixed(section: string, problems: Problem[]): Problem[] {
   return problems.map((problem) => ({
     ...problem,
@@ -60,6 +70,13 @@ export function useCaseEditor(saved: Case) {
       sectionProblems: { ...previous.sectionProblems, [section]: sectionProblems },
     }));
   };
+  const place = (section: string, path: string, value: unknown) => {
+    setState((previous) => {
+      const content = previous.draft ?? saved.content;
+      const placed = withPath(content[section], path === "" ? [] : path.split("."), value);
+      return { ...previous, draft: withSection(content, section, placed) };
+    });
+  };
   const reset = () => {
     setState({ draft: null, sectionProblems: {} });
   };
@@ -77,6 +94,7 @@ export function useCaseEditor(saved: Case) {
     warnings,
     isChecking,
     edit,
+    place,
     reset,
   };
 }

@@ -314,10 +314,17 @@ function MissingCount({ missing, section }: { missing: MissingValue[]; section: 
   );
 }
 
-function useSeriesSource(projectId: string, saved: Case, time: unknown): SeriesSource {
+type Place = (section: string, path: string, value: unknown) => void;
+
+function useSeriesSource(
+  projectId: string,
+  saved: Case,
+  time: unknown,
+  place: Place,
+): (section: string) => SeriesSource {
   const upload = useUploadCaseFile(projectId);
   const picked = useRef(new Map<string, string>());
-  return {
+  return (section) => ({
     scope: `${projectId}-${String(saved.version)}`,
     files: saved.files.map((file) => file.name),
     time,
@@ -329,6 +336,8 @@ function useSeriesSource(projectId: string, saved: Case, time: unknown): SeriesS
         {
           onSuccess: () => {
             picked.current.set(field, name);
+            const path = name.endsWith(".csv") ? `${field}.file` : field;
+            place(section, path.split(".").slice(1).join("."), name);
           },
         },
       );
@@ -338,12 +347,12 @@ function useSeriesSource(projectId: string, saved: Case, time: unknown): SeriesS
       picked.current.delete(field);
       return name;
     },
-  };
+  });
 }
 
 function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab }: TabsProps) {
   const sections = caseSections(schema);
-  const series = useSeriesSource(projectId, saved, editor.content.time);
+  const series = useSeriesSource(projectId, saved, editor.content.time, editor.place);
   return (
     <Tabs value={tab} onValueChange={onTab}>
       <TabsList aria-label="Sections of the case">
@@ -365,7 +374,7 @@ function SectionTabs({ projectId, saved, schema, editor, tab, generation, onTab 
             prefix={section}
             missing={editor.missing.map((item) => item.path)}
             problems={editor.problems}
-            series={series}
+            series={series(section)}
             describeItem={toRequirementText}
             hints={FIELD_HINTS}
             hideRange
