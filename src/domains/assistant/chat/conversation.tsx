@@ -13,6 +13,7 @@ import type { ApiError } from "@/shared/api/errors";
 import type { Message as ChatMessage } from "@/shared/api/types";
 import { Blocks, finishTool } from "./blocks";
 import { MessageButtons } from "./message-actions";
+import { PastRun } from "./past-run";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { PacedMarkdown } from "./paced-markdown";
 import type { View } from "./view";
@@ -106,6 +107,11 @@ export function Conversation({
   failure,
 }: Props) {
   const [known] = useState(() => new Set(messages.map((message) => message.id)));
+  const answered = new Set(
+    messages.flatMap((message) =>
+      message.role === "assistant" && message.run !== null ? [message.run] : [],
+    ),
+  );
 
   if (messages.length === 0) {
     return <EmptyChat projectId={projectId} chatId={chatId} onSuggest={onSuggest} />;
@@ -135,6 +141,9 @@ export function Conversation({
             <div key={message.id} className="space-y-3">
               <UserBubble projectId={projectId} message={message} />
               {isLive ? <Blocks blocks={view.blocks} running={isActive(view)} /> : null}
+              {!isLive && message.run !== null && !answered.has(message.run) ? (
+                <PastRun projectId={projectId} runId={message.run} />
+              ) : null}
             </div>
           );
         })}

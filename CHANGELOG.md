@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.38 (2026-11-04)
+
+- QA-022: an earlier run of a chat that ended without an answer (cancelled or failed) no longer vanishes: under its message the chat offers "Show its steps" (replayed from the run's events) and a link to Runs and logs.
+
 ## 1.1.37 (2026-11-04)
 
 - QA-003: the time series chart draws its unit above the plot, so it no longer covers the top tick of the y-axis ("MW0").
