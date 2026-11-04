@@ -16,6 +16,8 @@ import {
 } from "@/shared/sse/pretty";
 import { fromPartialRoute, fromRoute } from "@/shared/sse/route";
 import { PacedMarkdown } from "./paced-markdown";
+import { BusyMark } from "./busy";
+import { toDepth, toLabel } from "./agents";
 import type { Block, RecordedStudy } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
@@ -185,6 +187,89 @@ function toLatest(blocks: Block[]): string {
   return last?.kind === "tool" ? toToolName(last.tool) : "Thinking";
 }
 
+const doingTexts: Record<string, string> = {
+  read_case: "Reading the case",
+  set_case: "Writing the case",
+  describe_case: "Looking up the case's fields",
+  ask_user: "Waiting for your answer",
+  ask_economics: "Asking you about the economics",
+  list_files: "Listing the project documents",
+  read_document: "Reading a document",
+  rag_search: "Searching the files and Knowledge",
+  rag_read: "Reading a document",
+  search_knowledge: "Searching the Knowledge",
+  list_mcp: "Listing the connectors",
+  save_mcp_table: "Saving a connector table to the case",
+  build_plant: "Building the plant",
+  read_plant: "Reading the plant",
+  patch_plant: "Changing the plant",
+  size_plant: "Sizing the plant",
+  run_simulation: "Running the simulation",
+  run_study: "Running a study",
+  set_ranges: "Setting the search ranges",
+  compare_runs: "Comparing the runs",
+  estimate_costs: "Estimating the costs",
+  write_report: "Writing the report",
+  calculate: "Calculating",
+  run_python: "Running Python code",
+  finish: "Handing over",
+};
+
+function readInput(input: unknown, key: string): string | null {
+  if (typeof input !== "object" || input === null || !(key in input)) return null;
+  const value: unknown = (input as Record<string, unknown>)[key];
+  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+}
+
+function toDoing(blocks: Block[], agent: string, agents: string[]): string {
+  const own = blocks.filter((block) => block.agent === agent);
+  const call = own.findLast((block) => block.kind === "tool" && block.state === "running");
+  if (call?.kind !== "tool") return "Thinking";
+  const { tool, input } = call;
+  const server = readInput(input, "server") ?? (tool.includes("__") ? tool.split("__")[0] ?? null : null);
+  if ((tool === "call_mcp" || tool === "read_mcp" || tool.includes("__")) && server !== null) {
+    return `Asking connector ${server}`;
+  }
+  if (tool === "web_search") {
+    const query = readInput(input, "query");
+    return query === null ? "Searching the web" : `Searching the web for ${query}`;
+  }
+  if (tool === "read_web_page") {
+    const url = readInput(input, "url");
+    return url === null ? "Reading a web page" : `Reading ${url}`;
+  }
+  if (agents.some((path) => toLabel(path).split(".").at(-1) === tool) || /_(lead|engineer)$/.test(tool)) {
+    return `Asking the ${toToolName(tool).toLowerCase()}`;
+  }
+  return doingTexts[tool] ?? toToolName(tool);
+}
+
+function DoingLine({ text }: { text: string }) {
+  return (
+    <span className="min-w-0 truncate" title={text}>
+      · {text}
+    </span>
+  );
+}
+
+function WorkingAgents({ blocks, agents }: { blocks: Block[]; agents: string[] }) {
+  return (
+    <ul className="space-y-0.5">
+      {agents.map((agent) => (
+        <li
+          key={agent}
+          className="flex min-w-0 items-center gap-1.5 text-muted"
+          style={{ paddingLeft: `${String(toDepth(agent) * 12)}px` }}
+        >
+          <BusyMark />
+          <span className="shrink-0 font-medium text-foreground">{toToolName(toLabel(agent))}</span>
+          <DoingLine text={toDoing(blocks, agent, agents)} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function toDoneLabel(work: Block[]): string {
   const steps = work.filter((block) => block.kind === "tool").length;
   const failed = toFailedCount(work);
@@ -223,10 +308,12 @@ export function Blocks({
   blocks,
   running,
   retry = null,
+  agents = [],
 }: {
   blocks: Block[];
   running: boolean;
   retry?: string | null;
+  agents?: string[];
 }) {
   const last = running ? toLiveBlock(blocks) : toAnswer(blocks);
   const answer = last === null ? null : running ? toLiveText(last.text) : toAnswerText(last);
@@ -237,10 +324,10 @@ export function Blocks({
   return (
     <div className="space-y-2.5">
       {running ? (
-        <p role="status" className="text-muted">
-          {toLatest(blocks)}
-          {retry === null ? null : <span className="ml-2 text-warn">{retry}</span>}
-        </p>
+        <div role="status" className="space-y-0.5 text-muted">
+          {agents.length === 0 ? <p>{toLatest(blocks)}</p> : <WorkingAgents blocks={blocks} agents={agents} />}
+          {retry === null ? null : <p className="text-warn">{retry}</p>}
+        </div>
       ) : null}
       {work.length === 0 ? null : (
         <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />

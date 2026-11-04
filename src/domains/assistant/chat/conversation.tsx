@@ -14,6 +14,7 @@ import type { Message as ChatMessage } from "@/shared/api/types";
 import { Blocks, finishTool } from "./blocks";
 import { MessageButtons } from "./message-actions";
 import { PastRun } from "./past-run";
+import { toWorkingAgents } from "./busy";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { PacedMarkdown } from "./paced-markdown";
 import type { View } from "./view";
@@ -140,7 +141,12 @@ export function Conversation({
           return (
             <div key={message.id} className="space-y-3">
               <UserBubble projectId={projectId} message={message} />
-              {isLive ? <Blocks blocks={view.blocks} running={isActive(view)} retry={view.retry} /> : null}
+              {isLive ? <Blocks
+                  blocks={view.blocks}
+                  running={isActive(view)}
+                  retry={view.retry}
+                  agents={toWorkingAgents(view)}
+                /> : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (
                 <PastRun projectId={projectId} runId={message.run} />
               ) : null}

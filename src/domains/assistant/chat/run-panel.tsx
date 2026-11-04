@@ -12,6 +12,7 @@ import { UsageLine } from "@/shared/sse/usage-line";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toDepth, toLabel } from "./agents";
 import { ProblemView } from "./problem";
+import { BusyMark, toWorkingAgents } from "./busy";
 import type { View } from "./view";
 
 type Props = { projectId: string; runId: string; view: View; run: Run | undefined };
@@ -44,11 +45,17 @@ function Elapsed({ run, active }: { run: Run; active: boolean }) {
 
 function AgentTree({ view }: { view: View }) {
   const agents = Object.values(view.agents);
+  const working = toWorkingAgents(view);
   if (agents.length === 0) return <p className="text-muted">No agent has started.</p>;
   return (
     <ul className="space-y-0.5 font-mono text-[12.5px]">
       {agents.map((agent) => (
-        <li key={agent.path} style={{ paddingLeft: `${String(toDepth(agent.path) * 12)}px` }}>
+        <li
+          key={agent.path}
+          className="flex items-center gap-1.5"
+          style={{ paddingLeft: `${String(toDepth(agent.path) * 12)}px` }}
+        >
+          {working.includes(agent.path) ? <BusyMark /> : <span className="size-3.5 shrink-0" />}
           {toLabel(agent.path)} <span className="text-muted">· {agent.state}</span>
         </li>
       ))}
