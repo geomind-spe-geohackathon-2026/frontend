@@ -169,6 +169,12 @@ function toBest(view: View, event: RunEvent & { type: "tool.finished" }): string
   return objective === null ? figure : `${objective} ${figure}`;
 }
 
+const noCaseYet = "No case yet: the assistant builds it from the project's files.";
+
+function isNoCaseYet(block: Block, event: RunEvent & { type: "tool.finished" }): boolean {
+  return block.kind === "tool" && block.tool === "read_case" && event.problem?.code === "no_case";
+}
+
 function finishTool(view: View, event: RunEvent & { type: "tool.finished" }): View {
   return {
     ...view,
@@ -177,6 +183,9 @@ function finishTool(view: View, event: RunEvent & { type: "tool.finished" }): Vi
     ),
     blocks: view.blocks.map((block) => {
       if (block.kind !== "tool" || block.id !== event.call_id) return block;
+      if (isNoCaseYet(block, event)) {
+        return { ...block, state: "done", summary: noCaseYet, duration: event.duration, error: null, problem: null };
+      }
       const failed = event.error !== undefined || event.problem !== undefined;
       return {
         ...block,

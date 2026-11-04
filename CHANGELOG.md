@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.35 (2026-11-04)
+
+- QA-001: in the chat, read_case on a project with no case yet shows as done with "No case yet: the assistant builds it from the project's files.", not a red failure asking the user to fill in the Case page.
+
 ## 1.1.34 (2026-11-04)
 
 - QA-008: Runs and logs no longer crashes ("n.includes is not a function") on a tool call whose `error` is `true`; the failure text comes from the call's output problem instead.
