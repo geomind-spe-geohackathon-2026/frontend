@@ -147,7 +147,8 @@ function toProblemText(problem: ToolProblem): string {
 /** Returns the message of a failed tool: from its problem code when it has one, else read from the error text. */
 export function toFailureText(error: string, problem: ToolProblem | null = null): string {
   if (problem !== null) return toProblemText(problem);
-  const message = fromQuotedMessage(error) ?? error;
+  const text = typeof error === "string" ? error : "";
+  const message = fromQuotedMessage(text) ?? text;
   return message.includes(noCaseMessage) ? noCaseText : message;
 }
 

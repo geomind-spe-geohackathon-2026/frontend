@@ -118,7 +118,8 @@ function toToolFinished(fields: Fields): RunEventBody {
   return { ...withProblem, error: typeof error === "string" ? error : JSON.stringify(error) };
 }
 
-function toProblem(value: unknown): ToolProblem | null {
+/** Reads a tool problem (code, path, message, suggestions) from a loose value, or null when it is not one. */
+export function toProblem(value: unknown): ToolProblem | null {
   if (!isFields(value)) return null;
   const { code, path, message, suggestions } = value;
   if (typeof code !== "string" || typeof message !== "string") return null;

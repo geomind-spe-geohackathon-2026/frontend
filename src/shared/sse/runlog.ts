@@ -24,7 +24,7 @@ export type ToolCall = {
   input: unknown;
   output: unknown;
   duration: number;
-  error?: string;
+  error?: string | boolean;
 };
 
 export type LogStep = {

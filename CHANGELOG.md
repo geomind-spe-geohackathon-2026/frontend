@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.34 (2026-11-04)
+
+- QA-008: Runs and logs no longer crashes ("n.includes is not a function") on a tool call whose `error` is `true`; the failure text comes from the call's output problem instead.
+
 ## 1.1.33 (2026-11-04)
 
 - B12: the coordinator's loop route shows as a short label ("Routed to the project loop") even without `agent`; extra fields like `task` and `preferences` are ignored, so raw route JSON no longer shows as the answer.

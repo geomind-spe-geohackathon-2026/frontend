@@ -3,6 +3,7 @@ import type { LlmCall, LogMessage, LogStep, ToolCall } from "@/shared/sse/runlog
 import { Card, CardAction, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { fromRoute, toRouteLabel } from "@/shared/sse/route";
+import { toProblem } from "@/shared/sse/events";
 import { toFailureText, toPretty as toPrettyText, toToolName } from "@/shared/sse/pretty";
 import { toPretty, toSplit } from "./split";
 
@@ -14,6 +15,15 @@ function toAnswer(answer: string): string {
 
 function toOutput(output: unknown): string {
   return typeof output === "string" ? toPrettyText(output) : toPretty(output);
+}
+
+function toCallFailure(call: ToolCall): string {
+  if (typeof call.error === "string" && call.error !== "") return toFailureText(call.error);
+  const output: unknown = call.output;
+  const fields = typeof output === "object" && output !== null ? (output as Record<string, unknown>) : null;
+  const problem = fields === null ? null : toProblem(fields.error);
+  if (problem !== null) return toFailureText("", problem);
+  return typeof output === "string" ? toFailureText(output) : "The tool call failed.";
 }
 
 function Messages({ messages }: { messages: LogMessage[] }) {
@@ -67,7 +77,7 @@ function LlmCard({ call, label }: { call: LlmCall; label: string }) {
 }
 
 function ToolCard({ call }: { call: ToolCall }) {
-  const failed = call.error !== undefined;
+  const failed = call.error !== undefined && call.error !== false;
   return (
     <Card>
       <CardHeader>
@@ -89,7 +99,7 @@ function ToolCard({ call }: { call: ToolCall }) {
           <pre className="overflow-x-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
             {toOutput(call.output)}
           </pre>
-          {failed ? <p className="text-bad">{toFailureText(call.error ?? "")}</p> : null}
+          {failed ? <p className="text-bad">{toCallFailure(call)}</p> : null}
         </section>
       </CardContent>
     </Card>
