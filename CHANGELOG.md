@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.33 (2026-11-04)
+
+- B12: the coordinator's loop route shows as a short label ("Routed to the project loop") even without `agent`; extra fields like `task` and `preferences` are ignored, so raw route JSON no longer shows as the answer.
+- B14: a next-step chip sends the files waiting under the message box with its message, like a typed message, and then clears them.
+
 ## 1.1.32 (2026-11-04)
 
 - geomind 0.4.24 tools read well in the run log: list_mcp ("Listed the connectors") and save_mcp_table ("Saved a connector table to the case"); after save_mcp_table or set_case the chat offers Open Case. The per-agent panel takes the run totals from the server, never summed in the browser.

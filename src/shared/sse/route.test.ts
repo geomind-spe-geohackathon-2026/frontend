@@ -9,6 +9,20 @@ describe("fromRoute", () => {
     expect(toRouteLabel(route)).toBe("Routed to code assistant, tool loop");
   });
 
+  it("reads a loop route without an agent and ignores extra fields", () => {
+    const route = fromRoute(
+      '{"kind": "loop", "loop": "project", "task": "Design the plant", "preferences": {}}',
+    );
+    expect(route).toEqual({ kind: "loop", loop: "project" });
+    if (route?.kind !== "loop") throw new Error("not a loop route");
+    expect(toRouteLabel(route)).toBe("Routed to the project loop");
+    expect(fromRoute('{"kind": "loop", "loop": "tool", "task": "x"}')).toEqual({
+      kind: "loop",
+      loop: "tool",
+      agent: "analysis_lead",
+    });
+  });
+
   it("reads a direct answer", () => {
     expect(fromRoute('{"kind": "answer", "answer": "Yes."}')).toEqual({
       kind: "answer",

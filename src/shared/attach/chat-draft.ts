@@ -41,6 +41,15 @@ export function readDraftFiles(projectId: string): string[] {
   }
 }
 
+/** Forgets the kept files of a project once they are sent. */
+export function clearDraftFiles(projectId: string): void {
+  try {
+    sessionStorage.removeItem(`${filesPrefix}${projectId}`);
+  } catch {
+    return;
+  }
+}
+
 /** Forgets the kept message and files of a project once it is sent. */
 export function clearDraft(projectId: string): void {
   try {

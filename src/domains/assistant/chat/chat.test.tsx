@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 import { toRoute } from "@/mocks/url";
+import { keepDraftFiles } from "@/shared/attach/chat-draft";
 import { renderApp } from "@/testing/render-app";
 import { server } from "@/testing/server";
 
@@ -126,6 +127,15 @@ describe("chat page", () => {
     expect(
       await screen.findByRole("button", { name: "Build the case from my files" }),
     ).toBeVisible();
+  });
+
+  it("sends the files waiting under the message box with a next step", async () => {
+    keepDraftFiles("example-project-1", ["wells.csv"]);
+    renderApp({ path: `${base}?new` });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Build the case from my files" }));
+    expect((await screen.findAllByText(/Attached files: wells\.csv/)).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Remove wells\.csv/ })).toBeNull();
   });
 
   it("starts a new chat from the first message", async () => {

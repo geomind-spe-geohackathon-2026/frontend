@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { readDraftFiles } from "./chat-draft";
+import { clearDraftFiles, readDraftFiles } from "./chat-draft";
 import { toReadDocument } from "./upload";
 
 export type Attachment = {
@@ -54,6 +54,7 @@ export function useAttachments(projectId: string) {
       setItems((current) => current.filter((item) => item.name !== name));
     },
     clear: () => {
+      clearDraftFiles(projectId);
       setItems([]);
     },
     reading: items.some((item) => item.state === "reading"),

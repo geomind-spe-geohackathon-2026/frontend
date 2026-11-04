@@ -11,6 +11,8 @@ import { ChatStatus } from "./chat-status";
 import { PanelHints } from "./panel-hints";
 import { AutoApproveButton, useApproveByItself, useAutoApprove } from "./auto-approve";
 import { useRunView } from "./use-run-view";
+import { toMessageWithFiles } from "@/shared/attach/upload";
+import { useAttachments } from "@/shared/attach/use-attachments";
 import type { View } from "./view";
 
 type Props = {
@@ -69,24 +71,29 @@ function useStop(projectId: string, runId: string | null, active: boolean) {
   return { stop, stopping, error: cancel.error };
 }
 
-/** The conversation of one chat and its message box, whose log window shares the live view of the last run. */
-export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
+function useSendToChat(projectId: string, chatId: string | null) {
   const navigate = useNavigate();
-  const { view, failure } = useRunView(projectId, chatId, runId);
-  const run = useQuery({ ...runQuery(projectId, runId ?? ""), enabled: runId !== null });
   const create = useCreateChat(projectId);
   const send = useSendMessage(projectId);
-  const [auto, setAuto] = useAutoApprove(projectId);
-  const status = view.blocks.length === 0 && run.data !== undefined ? run.data.status : view.status;
-  const active =
-    runId !== null && (status === "queued" || status === "running" || status === "waiting");
-  const stop = useStop(projectId, runId, active);
-
   async function handleSend(content: string): Promise<void> {
     const target = chatId ?? (await create.mutateAsync({})).id;
     await send.mutateAsync({ chatId: target, content });
     if (chatId === null) void navigate(`/projects/${projectId}/assistant/chat/${target}`);
   }
+  return { handleSend, send, pending: send.isPending || create.isPending };
+}
+
+/** The conversation of one chat and its message box, whose log window shares the live view of the last run. */
+export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
+  const { view, failure } = useRunView(projectId, chatId, runId);
+  const run = useQuery({ ...runQuery(projectId, runId ?? ""), enabled: runId !== null });
+  const { handleSend, send, pending } = useSendToChat(projectId, chatId);
+  const [auto, setAuto] = useAutoApprove(projectId);
+  const files = useAttachments(projectId);
+  const status = view.blocks.length === 0 && run.data !== undefined ? run.data.status : view.status;
+  const active =
+    runId !== null && (status === "queued" || status === "running" || status === "waiting");
+  const stop = useStop(projectId, runId, active);
 
   return (
     <div className="flex h-full min-h-[420px] min-w-0 flex-col gap-3">
@@ -97,7 +104,9 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
           projectId={projectId}
           chatId={chatId}
           onSuggest={(content) => {
-            if (!active) void handleSend(content);
+            if (active || files.reading) return;
+            void handleSend(toMessageWithFiles(content, files.names));
+            files.clear();
           }}
           messages={messages}
           liveRunId={runId}
@@ -113,13 +122,14 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
       {stop.error === null ? null : <SendFailure error={stop.error} />}
       <Composer
         projectId={projectId}
-        sending={send.isPending || create.isPending}
+        sending={pending}
         active={active}
         cancelling={stop.stopping}
         onSend={(content) => {
           void handleSend(content);
         }}
         onCancel={stop.stop}
+        files={files}
         status={
           <>
             <AutoApproveButton on={auto} onChange={setAuto} />

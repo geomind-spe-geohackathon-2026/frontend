@@ -4,7 +4,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { clearDraft, readDraft } from "@/shared/attach/chat-draft";
-import { useAttachments } from "@/shared/attach/use-attachments";
+import type { useAttachments } from "@/shared/attach/use-attachments";
 import {
   InputGroup,
   InputGroupAddon,
@@ -68,6 +68,7 @@ type Props = {
   cancelling: boolean;
   onSend: (content: string) => void;
   onCancel: () => void;
+  files: ReturnType<typeof useAttachments>;
   status?: ReactNode;
 };
 
@@ -79,10 +80,10 @@ export function Composer({
   cancelling,
   onSend,
   onCancel,
+  files,
   status,
 }: Props) {
   const [text, setText] = useState(() => readDraft(projectId));
-  const files = useAttachments(projectId);
 
   function handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
