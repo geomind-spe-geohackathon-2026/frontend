@@ -53,8 +53,8 @@ export function AutoApproveButton({
   onChange: (on: boolean) => void;
 }) {
   const title = on
-    ? "Auto-approve is on: tool calls run without asking"
-    : "Ask before tool calls run";
+    ? "Auto-approve is on in this browser: tool calls run without asking while this chat is open here. With the tab closed, a run waits for your approval."
+    : "Ask before tool calls run. Auto-approve works only while this chat is open in this browser.";
   return (
     <InputGroupButton
       size="sm"

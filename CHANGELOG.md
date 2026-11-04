@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.44 (2026-11-04)
+
+- QA-031: the Auto-approve button says what it does: it approves only while the chat is open in this browser; with the tab closed a run waits. Approving with no tab open needs the backend to know the setting.
+
 ## 1.1.43 (2026-11-04)
 
 - QA-030: the chat reads the live `retry` event and shows beside the running step "The model provider is busy (429); trying again in 8 s" (or "trying the next model" for attempt 0) until the run's next event.
