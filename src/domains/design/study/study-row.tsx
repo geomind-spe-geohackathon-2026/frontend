@@ -120,29 +120,31 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
       <TableCell>
         <Badge variant={tones[study.status]}>{study.status}</Badge>
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[9rem] [overflow-wrap:anywhere]">
         <OutcomeCell study={study} projectId={projectId} />
       </TableCell>
       <TableCell>
         {study.status === "blocked" ? (
           <Button
+            aria-label={`Start ${study.name}`}
             disabled={busy}
             onClick={() => {
               onStart(study.id);
             }}
           >
-            Start {study.name}
+            Start
           </Button>
         ) : null}
         {active ? (
           <Button
+            aria-label={`Cancel ${study.name}`}
             variant="destructive"
             disabled={busy}
             onClick={() => {
               onCancel(study.id);
             }}
           >
-            Cancel {study.name}
+            Cancel
           </Button>
         ) : null}
       </TableCell>
