@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Message } from "@/shared/api/types";
 import { runQuery, useAnswerRun, useCancelRun, useCreateChat, useSendMessage } from "./api";
-import { AddToCase } from "./add-to-case";
 import { Composer } from "./composer";
 import { CaseNotice, DemoNotice } from "./demo-notice";
 import { Conversation } from "./conversation";
@@ -20,27 +19,6 @@ type Props = {
   runId: string | null;
   messages: Message[];
 };
-
-const caseTools = new Set(["save_profile", "set_case", "accept_case"]);
-
-function toSavedProfile(view: View): boolean {
-  return view.blocks.some(
-    (block) => block.kind === "tool" && caseTools.has(block.tool) && block.state === "done",
-  );
-}
-
-function SavedProfile({
-  projectId,
-  chatId,
-  view,
-}: {
-  projectId: string;
-  chatId: string | null;
-  view: View;
-}) {
-  if (chatId === null || !toSavedProfile(view)) return null;
-  return <AddToCase projectId={projectId} chatId={chatId} />;
-}
 
 function SendFailure({ error }: { error: Error }) {
   return (
@@ -127,7 +105,6 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
           failure={failure}
         />
       </div>
-      <SavedProfile projectId={projectId} chatId={chatId} view={view} />
       <PanelHints projectId={projectId} chatId={chatId} view={view} />
       {runId === null ? null : (
         <RunRequest projectId={projectId} runId={runId} view={view} auto={auto} />

@@ -77,7 +77,17 @@ function connectorHandlers(): RequestHandler[] {
         const connector = update(params.connector_id, { checked: new Date().toISOString() });
         if (connector === undefined)
           return toErrorResponse(404, "mcp_server_not_found", "No such MCP server");
-        return HttpResponse.json(connector);
+        return HttpResponse.json({
+          ...connector,
+          steps: [
+            { name: "reachable", status: "ok", reason: null },
+            { name: "initialize", status: "ok", reason: null },
+            { name: "auth", status: "skipped", reason: null },
+            { name: "tools", status: "ok", reason: null },
+          ],
+          server_info: { name: null, version: null, protocol: null },
+          elapsed_ms: 412,
+        });
       },
     ),
     http.delete<{ connector_id: string }>(toRoute("/workspace/mcp/:connector_id"), ({ params }) => {

@@ -15,6 +15,16 @@ export type Connector = {
   checked: string | null;
   tools: ConnectorTool[];
   created?: string;
+  steps?: CheckStep[] | null;
+  server_info?: { name: string | null; version: string | null; protocol: string | null } | null;
+  elapsed_ms?: number | null;
+};
+
+/** One step of a connector check: reachable, initialize, auth or tools. */
+export type CheckStep = {
+  name: string;
+  status: "ok" | "failed" | "skipped";
+  reason: string | null;
 };
 
 export type ConnectorCreate = {

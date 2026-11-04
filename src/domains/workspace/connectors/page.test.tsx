@@ -17,6 +17,17 @@ describe("connectors page", () => {
     expect(dialog.getByText("read only")).toBeVisible();
   });
 
+  it("shows each step of a check and the time it took", { timeout: 20_000 }, async () => {
+    const user = userEvent.setup();
+    renderApp({ path });
+    await screen.findByText("example-weather");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const result = within(await screen.findByRole("region", { name: "Check of example-weather" }));
+    expect(result.getByText("Server reachable")).toBeVisible();
+    expect(result.getByText("Tools listed")).toBeVisible();
+    expect(result.getByText("412 ms")).toBeVisible();
+  });
+
   it("adds a connector with a token", { timeout: 20_000 }, async () => {
     const user = userEvent.setup();
     renderApp({ path });

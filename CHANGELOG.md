@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.29 (2026-11-04)
+
+- B11: Check on a connector shows each step (server reachable, server answered, sign-in accepted, tools listed) as ok, failed with its reason, or skipped, plus the server name and version when sent and the time taken (backend 1.1.10 `steps`, `server_info`, `elapsed_ms`).
+- B7: the "Add to Case" button is gone: backend 1.1.10 saves an accepted chat case and a built plant as the project's next version itself, and the Case and Plant pages refresh when a run ends.
+
 ## 1.1.28 (2026-11-04)
 
 - B8: the assistant's question keeps its line breaks, wraps long links and scrolls when long, so the economics question reads one value per line.

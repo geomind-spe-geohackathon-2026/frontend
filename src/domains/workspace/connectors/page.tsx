@@ -26,6 +26,7 @@ import { PendingNotice } from "@/shared/ui/pending-notice";
 import { AddConnectorButton } from "./add-dialog";
 import { connectorsQuery } from "@/shared/api/connectors";
 import { useCheckConnector, useDeleteConnector, useUpdateConnector } from "./api";
+import { CheckResult } from "./check-result";
 
 const statusDot: Record<Connector["status"], string> = {
   ok: "bg-ok",
@@ -72,9 +73,10 @@ function ToolsButton({ connector }: { connector: Connector }) {
   );
 }
 
-function ConnectorActions({ connector }: { connector: Connector }) {
+type Check = ReturnType<typeof useCheckConnector>;
+
+function ConnectorActions({ connector, check }: { connector: Connector; check: Check }) {
   const update = useUpdateConnector(connector.id);
-  const check = useCheckConnector(connector.id);
   const remove = useDeleteConnector(connector.id);
   return (
     <ItemActions className="flex-wrap">
@@ -116,6 +118,7 @@ function ConnectorActions({ connector }: { connector: Connector }) {
 }
 
 function ConnectorItem({ connector }: { connector: Connector }) {
+  const check = useCheckConnector(connector.id);
   return (
     <Item variant="outline">
       <ItemContent>
@@ -131,8 +134,9 @@ function ConnectorItem({ connector }: { connector: Connector }) {
           {connector.url}
           {connector.error === null ? "" : ` · ${connector.error}`}
         </ItemDescription>
+        {check.data === undefined ? null : <CheckResult result={check.data} />}
       </ItemContent>
-      <ConnectorActions connector={connector} />
+      <ConnectorActions connector={connector} check={check} />
     </Item>
   );
 }
