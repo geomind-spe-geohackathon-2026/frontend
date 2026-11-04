@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { readDraftFiles } from "./chat-draft";
 import { toReadDocument } from "./upload";
 
 export type Attachment = {
@@ -11,7 +12,9 @@ export type Attachment = {
 /** The files attached to a message that is being written, uploaded as project documents. */
 export function useAttachments(projectId: string) {
   const queryClient = useQueryClient();
-  const [items, setItems] = useState<Attachment[]>([]);
+  const [items, setItems] = useState<Attachment[]>(() =>
+    readDraftFiles(projectId).map((name) => ({ name, state: "ready", message: null })),
+  );
 
   function update(name: string, change: Partial<Attachment>): void {
     setItems((current) =>

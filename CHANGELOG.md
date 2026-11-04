@@ -2,6 +2,13 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.28 (2026-11-04)
+
+- B8: the assistant's question keeps its line breaks, wraps long links and scrolls when long, so the economics question reads one value per line.
+- B9: the file viewer shows CSV and TSV as a table (sticky header, wrapped cells), Markdown rendered and JSON pretty-printed.
+- B1: files added in New project come with the first chat message as attachments, next to the kept goal.
+- B7 (frontend part): "Add to Case" also shows after the assistant set or accepted a case, not only after a saved profile.
+
 ## 1.1.27 (2026-11-04)
 
 - Assistant questions with options also take a typed answer ("Or type your own answer"), as geomind 0.4.22 accepts free text; the step-limit question (continue or stop) keeps its options only. Needs the backend release with geomind 0.4.22: older servers answer 422.

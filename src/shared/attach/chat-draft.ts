@@ -19,9 +19,32 @@ export function readDraft(projectId: string): string {
   }
 }
 
-/** Forgets the kept message of a project once it is sent. */
+const filesPrefix = "geomind.draft-files.";
+
+/** Keeps the names of files already in the Library for the first chat message of a project. */
+export function keepDraftFiles(projectId: string, names: string[]): void {
+  try {
+    if (names.length === 0) return;
+    sessionStorage.setItem(`${filesPrefix}${projectId}`, JSON.stringify(names));
+  } catch {
+    return;
+  }
+}
+
+/** The kept file names of a project's first message, or none. */
+export function readDraftFiles(projectId: string): string[] {
+  try {
+    const value: unknown = JSON.parse(sessionStorage.getItem(`${filesPrefix}${projectId}`) ?? "[]");
+    return Array.isArray(value) ? value.filter((name) => typeof name === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Forgets the kept message and files of a project once it is sent. */
 export function clearDraft(projectId: string): void {
   try {
+    sessionStorage.removeItem(`${filesPrefix}${projectId}`);
     sessionStorage.removeItem(`${prefix}${projectId}`);
   } catch {
     return;

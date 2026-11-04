@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { toItems } from "@/shared/api/pagination";
 import { DropZone } from "@/shared/attach/drop-zone";
-import { keepDraft } from "@/shared/attach/chat-draft";
+import { keepDraft, keepDraftFiles } from "@/shared/attach/chat-draft";
 import { uploadDocument } from "@/shared/attach/upload";
 import { Button } from "@/components/ui/button";
 import {
@@ -162,6 +162,10 @@ function useAfterCreate(files: File[], onClose: () => void) {
         files.map((file) => uploadDocument(project.id, file)),
       );
       setUploading(false);
+      keepDraftFiles(
+        project.id,
+        files.filter((_, index) => results[index]?.status === "fulfilled").map((file) => file.name),
+      );
       onClose();
       const failed = results.filter((result) => result.status === "rejected").length;
       toast(failed === 0 ? "Project created" : `Project created; ${String(failed)} files failed`);

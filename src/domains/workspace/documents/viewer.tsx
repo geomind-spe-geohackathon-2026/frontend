@@ -3,7 +3,9 @@ import { useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, toData } from "@/shared/api/client";
 import type { Document } from "@/shared/api/types";
+import { Markdown } from "@/shared/ui/markdown";
 import { Notice } from "@/shared/ui/notice";
+import { CsvTable } from "./csv-table";
 import { PendingNotice } from "@/shared/ui/pending-notice";
 
 const textSuffixes = [".csv", ".md", ".txt", ".json", ".tsv", ".yaml", ".yml"];
@@ -27,17 +29,49 @@ const fileQuery = (documentId: string) => ({
   staleTime: Infinity,
 });
 
-function TextBody({ blob }: { blob: Blob }) {
+type TextKind = "table" | "markdown" | "json" | "plain";
+
+/** How a text file is shown: CSV and TSV as a table, Markdown rendered, JSON pretty, the rest as plain text. */
+export function toTextKind(name: string): TextKind {
+  const lower = name.toLowerCase();
+  if (lower.endsWith(".csv") || lower.endsWith(".tsv")) return "table";
+  if (lower.endsWith(".md")) return "markdown";
+  if (lower.endsWith(".json")) return "json";
+  return "plain";
+}
+
+function toPretty(text: string): string {
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return text;
+  }
+}
+
+function PlainText({ text }: { text: string }) {
+  return (
+    <pre className="min-h-0 flex-1 overflow-auto rounded-md bg-sunken p-3 text-[12.5px] whitespace-pre-wrap [overflow-wrap:anywhere]">
+      {text}
+    </pre>
+  );
+}
+
+function TextBody({ name, blob }: { name: string; blob: Blob }) {
   const text = useQuery({
-    queryKey: ["blob-text", blob.size, blob.type],
+    queryKey: ["blob-text", name, blob.size, blob.type],
     queryFn: () => blob.text(),
   });
   if (text.data === undefined) return <Notice status="loading" what="the file" />;
-  return (
-    <pre className="min-h-0 flex-1 overflow-auto rounded-md bg-sunken p-3 text-[12.5px]">
-      {text.data}
-    </pre>
-  );
+  const kind = toTextKind(name);
+  if (kind === "table") return <CsvTable text={text.data} />;
+  if (kind === "markdown") {
+    return (
+      <div className="min-h-0 flex-1 overflow-auto px-1">
+        <Markdown text={text.data} />
+      </div>
+    );
+  }
+  return <PlainText text={kind === "json" ? toPretty(text.data) : text.data} />;
 }
 
 function FileBody({ document, blob }: { document: Document; blob: Blob }) {
@@ -48,7 +82,7 @@ function FileBody({ document, blob }: { document: Document; blob: Blob }) {
     },
     [url],
   );
-  if (isText(document.name, blob.type)) return <TextBody blob={blob} />;
+  if (isText(document.name, blob.type)) return <TextBody name={document.name} blob={blob} />;
   if (blob.type.startsWith("image/")) {
     return <img src={url} alt={document.name} className="min-h-0 flex-1 object-contain" />;
   }

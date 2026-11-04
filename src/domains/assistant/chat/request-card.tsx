@@ -115,7 +115,9 @@ export function RequestCard({ request, pending, failure, onAnswer }: Props) {
       className="space-y-2 rounded-card border border-warn bg-warn-soft p-3"
     >
       <h2>{request.kind === "approval" ? "Approval needed" : "The assistant asks"}</h2>
-      <p>{request.message}</p>
+      <div className="max-h-[50vh] overflow-y-auto pr-1 text-[13.5px] leading-6 whitespace-pre-line [overflow-wrap:anywhere]">
+        {request.message}
+      </div>
       {request.kind === "approval" ? (
         <Approval pending={pending} onAnswer={onAnswer} />
       ) : (

@@ -81,7 +81,7 @@ export function AddToCase({ projectId, chatId }: Props) {
         Add to Case
       </Button>
       <span className="text-[12.5px] text-muted">
-        {failure ?? "The profile is in this chat only until you add it."}
+        {failure ?? "The case is in this chat only until you add it to the project."}
       </span>
     </div>
   );

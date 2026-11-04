@@ -21,9 +21,11 @@ type Props = {
   messages: Message[];
 };
 
+const caseTools = new Set(["save_profile", "set_case", "accept_case"]);
+
 function toSavedProfile(view: View): boolean {
   return view.blocks.some(
-    (block) => block.kind === "tool" && block.tool === "save_profile" && block.state === "done",
+    (block) => block.kind === "tool" && caseTools.has(block.tool) && block.state === "done",
   );
 }
 
