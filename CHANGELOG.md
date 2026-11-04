@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.40 (2026-11-04)
+
+- QA-025: a run ended by an app restart shows the run's own message in the chat ("The run stopped because the app was updated or restarted; send your message again."), not "internal error in geomind".
+
 ## 1.1.39 (2026-11-04)
 
 - QA-027: the run log page fetches the log again every 15 s while the run is queued, running or waiting, so its status, steps and tokens follow the run; it stops once the run ends.

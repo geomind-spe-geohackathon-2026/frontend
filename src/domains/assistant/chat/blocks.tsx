@@ -25,6 +25,7 @@ type EndBlock = Extract<Block, { kind: "end" }>;
 const internalStop = "error";
 const partialLoopNote = /^[a-z]*( loop(:( \{.*)?)?)?$/;
 const internalFailure = "The assistant stopped with an internal error in geomind";
+const interruptedStart = "The run stopped because the app was updated or restarted";
 
 /** The tool an agent ends with; its text is the answer, shown as the message. */
 export const finishTool = "finish";
@@ -98,6 +99,7 @@ function toEndText(block: EndBlock, problem: string | null): string {
   if (known !== undefined) return known;
   if (status === "failed" && problem !== null) return problem;
   if (status === "cancelled" || message === null) return `Run ${status}`;
+  if (message.startsWith(interruptedStart)) return message;
   const budget = toBudgetStop(message);
   if (budget !== null) return budget;
   return reason === internalStop ? internalFailure : `Run ${status}: ${message}`;
