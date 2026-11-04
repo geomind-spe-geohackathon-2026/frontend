@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.27 (2026-11-04)
+
+- Assistant questions with options also take a typed answer ("Or type your own answer"), as geomind 0.4.22 accepts free text; the step-limit question (continue or stop) keeps its options only. Needs the backend release with geomind 0.4.22: older servers answer 422.
+
 ## 1.1.26 (2026-11-04)
 
 - JSON editors (Case and the other config pages) open with every field folded; opening a field shows its own fields folded, one level at a time.

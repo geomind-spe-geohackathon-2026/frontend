@@ -49,6 +49,16 @@ function Approval({ pending, onAnswer }: Pick<Props, "pending" | "onAnswer">) {
   );
 }
 
+const stepLimitValues = ["continue", "stop"];
+
+function isStepLimit(request: RunRequest): boolean {
+  const values = (request.options ?? []).map((option) => option.value);
+  return (
+    values.length === stepLimitValues.length &&
+    stepLimitValues.every((value) => values.includes(value))
+  );
+}
+
 function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
   const [text, setText] = useState("");
 
@@ -72,11 +82,13 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
           </Button>
         ))}
       </div>
-      {request.options === undefined ? (
+      {isStepLimit(request) ? null : (
         <form onSubmit={handleSubmit} className="flex items-end gap-2">
           <div className="flex-1">
             <Field className="gap-1.5">
-              <FieldLabel htmlFor="question-answer">Your answer</FieldLabel>
+              <FieldLabel htmlFor="question-answer">
+                {request.options === undefined ? "Your answer" : "Or type your own answer"}
+              </FieldLabel>
               <Input
                 id="question-answer"
                 value={text}
@@ -90,7 +102,7 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
             Answer
           </Button>
         </form>
-      ) : null}
+      )}
     </div>
   );
 }
