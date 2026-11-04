@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.26 (2026-11-04)
+
+- JSON editors (Case and the other config pages) open with every field folded; opening a field shows its own fields folded, one level at a time.
+
 ## 1.1.25 (2026-11-04)
 
 - Chat box: more room around the text and its placeholder (16px left and top), like Claude's.
