@@ -2,6 +2,13 @@
 
 React app for designing geothermal heating and cooling plants with an AI assistant. The flow and layout come from `../docs/ui-mockup.html`; the API from `../docs/contracts.md`.
 
+## Read both: `.claude/` for agents, `docs/` for people
+
+`.claude/` is written for agents: start with [.claude/README.md](.claude/README.md) (`notes/`
+current work, `archive/` history). `docs/` is written for people and holds the reference for this
+repo (conventions, architecture, design, API notes). Read both, and the project-wide context in the
+project root (`../AGENTS.md`, the shared memory `../.claude/memory/MEMORY.md`, `../docs/`).
+
 ## Start here
 
 State: Phase D integration done for the golden path (real and mock). Every screen is built and tested in mock mode; the types now come from the backend schema (`npm run gen:api` reads `../backend/openapi.json`, contract version 21). The golden path (`e2e/golden.spec.ts`) passes in real mode against the backend stack (`../backend/scripts/stack-up.sh`) and in mock mode; screenshots go to `.tmp/build/screens/`. Open items are in `docs/app-build/handover.md` of the backend repo. What exists:
