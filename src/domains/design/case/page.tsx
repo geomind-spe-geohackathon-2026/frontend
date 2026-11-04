@@ -84,8 +84,8 @@ function ProblemList({ problems }: { problems: { path: string; message: string }
           {problems.length} {problems.length === 1 ? "problem" : "problems"} to fix before saving
         </p>
         <ul className="m-0 list-none p-0">
-          {problems.map((problem) => (
-            <li key={`${problem.path}:${problem.message}`}>
+          {problems.map((problem, position) => (
+            <li key={`${String(position)}:${problem.path}:${problem.message}`}>
               <span className="font-mono">{problem.path}</span> {problem.message}
             </li>
           ))}

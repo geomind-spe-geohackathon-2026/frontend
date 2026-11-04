@@ -23,6 +23,23 @@ function prefixed(section: string, problems: Problem[]): Problem[] {
   }));
 }
 
+function isExplained(path: string, serverProblems: Problem[]): boolean {
+  return serverProblems.some(
+    (problem) => problem.path === path || problem.path.startsWith(`${path}.`),
+  );
+}
+
+function toProblemList(formProblems: Problem[], serverProblems: Problem[]): Problem[] {
+  const shown = formProblems.filter((problem) => !isExplained(problem.path, serverProblems));
+  const seen = new Set<string>();
+  return [...shown, ...serverProblems].filter((problem) => {
+    const key = `${problem.path}:${problem.message}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /** Holds the draft of a case: dirty state, the debounced server check, and the problems from every section. */
 export function useCaseEditor(saved: Case) {
   const [state, setState] = useState<EditorState>({ draft: null, sectionProblems: {} });
@@ -34,7 +51,7 @@ export function useCaseEditor(saved: Case) {
   const formProblems = Object.entries(state.sectionProblems).flatMap(([section, problems]) =>
     prefixed(section, problems),
   );
-  const problems: Problem[] = [...formProblems, ...(server?.problems ?? [])];
+  const problems = toProblemList(formProblems, server?.problems ?? []);
   const missing: MissingValue[] = server?.missing ?? saved.missing;
 
   const edit = (section: string, value: unknown, sectionProblems: Problem[]) => {
