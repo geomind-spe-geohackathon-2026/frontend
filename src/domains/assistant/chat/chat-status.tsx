@@ -24,7 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { chatRunsQuery } from "./api";
+import { chatRunsQuery, runAgentsQuery } from "./api";
+import { AgentUsage } from "./agent-usage";
 import { RunPanel } from "./run-panel";
 import { UsageRing } from "./usage-ring";
 import type { View } from "./view";
@@ -81,9 +82,15 @@ function RunsTable({ projectId, runs }: { projectId: string; runs: Run[] }) {
 /** Under the message box: a ring like Claude's that opens what this chat used. The chat log button is off for now; ChatLog keeps its window for later. */
 export function ChatStatus({ projectId, chatId, runId, view }: Omit<Props, "run">) {
   const runs = useQuery({ ...chatRunsQuery(projectId, chatId ?? ""), enabled: chatId !== null });
+  const agents = useQuery({ ...runAgentsQuery(projectId, runId ?? ""), enabled: runId !== null });
   if (chatId === null) return null;
   return (
     <UsageRing
+      agents={
+        agents.data === undefined || agents.data.agents.length === 0 ? null : (
+          <AgentUsage data={agents.data} />
+        )
+      }
       context={view.context}
       window={view.window}
       usage={view.usage}

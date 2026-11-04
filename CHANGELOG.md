@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.30 (2026-11-04)
+
+- Chat usage window: one row per agent session of the last run, each with its own context ring (latest call over that model's window, what is left), tokens in and out, cost and its tool calls (open a row to list them), and the run's totals on top. From `GET /assistant/runs/{id}/agents`, refreshed on step, tool and run events. Older servers (404) keep the plain usage view; old logs show "context n/a".
+
 ## 1.1.29 (2026-11-04)
 
 - B11: Check on a connector shows each step (server reachable, server answered, sign-in accepted, tools listed) as ok, failed with its reason, or skipped, plus the server name and version when sent and the time taken (backend 1.1.10 `steps`, `server_info`, `elapsed_ms`).

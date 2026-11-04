@@ -174,3 +174,17 @@ export const chatSuggestionsQuery = (projectId: string, chatId: string | null) =
     retry: false,
     staleTime: 30_000,
   });
+
+/** Query options for what each agent session of a run used; servers without the route give no data and the plain usage shows. */
+export const runAgentsQuery = (projectId: string, runId: string) =>
+  queryOptions({
+    queryKey: [...runsKey(projectId), "agents", runId],
+    queryFn: async ({ signal }) =>
+      toData(
+        await api.GET("/assistant/runs/{run_id}/agents", {
+          params: { path: { run_id: runId } },
+          signal,
+        }),
+      ),
+    retry: false,
+  });

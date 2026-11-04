@@ -50,6 +50,9 @@ describe("chat page", () => {
       .click(await screen.findByRole("button", { name: "Usage of this chat" }));
     expect(await screen.findByText("Cost so far")).toBeVisible();
     expect(screen.getByText("Context")).toBeVisible();
+    const agents = within(await screen.findByRole("region", { name: "Agents of the last run" }));
+    expect(agents.getByText("designer")).toBeVisible();
+    expect(agents.getAllByText(/tool calls/).length).toBeGreaterThan(0);
   });
 
   it("asks for approval, continues after Approve and ends done", async () => {

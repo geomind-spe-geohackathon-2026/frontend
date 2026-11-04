@@ -174,6 +174,41 @@ function messageHandlers(world: World): RequestHandler[] {
   ];
 }
 
+function agentsHandler(world: World): RequestHandler {
+  return http.get<WithId>(toRoute("/assistant/runs/:id/agents"), ({ params }) => {
+    const mock = findRun(world, params.id);
+    if (mock === null) return runMissing();
+    const agent = (name: string, used: number, cost: number) => ({
+      session: `${mock.run.id}-${name}`,
+      parent_session: name === "coordinator" ? null : `${mock.run.id}-coordinator`,
+      agent: name === "coordinator" ? "coordinator" : `coordinator.${name}`,
+      model: "example/model-large",
+      status: "finished",
+      steps: 2,
+      llm_calls: 2,
+      input_tokens: used * 2,
+      output_tokens: 400,
+      cost,
+      context_used: used,
+      context_window: 128000,
+      context_left: 128000 - used,
+      tool_calls: [{ call_id: `${name}-1`, tool: "read_case", error: null, duration: 0.4 }],
+    });
+    return HttpResponse.json({
+      run: {
+        id: mock.run.id,
+        status: mock.run.status,
+        input_tokens: 9600,
+        output_tokens: 800,
+        cost: 0.03,
+        llm_calls: 4,
+        tool_calls: 2,
+      },
+      agents: [agent("coordinator", 3200, 0.02), agent("designer", 1600, 0.01)],
+    });
+  });
+}
+
 function runHandlers(world: World): RequestHandler[] {
   return [
     http.get(toRoute("/assistant/runs"), ({ request }) => {
@@ -188,6 +223,7 @@ function runHandlers(world: World): RequestHandler[] {
       const mock = findRun(world, params.id);
       return mock === null ? runMissing() : HttpResponse.json(mock.run);
     }),
+    agentsHandler(world),
     http.get(toRoute("/assistant/suggestions"), () =>
       HttpResponse.json({
         suggestions: [

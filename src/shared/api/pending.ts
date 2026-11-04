@@ -74,6 +74,46 @@ type Route = {
 };
 type ConnectorPath = { connector_id: string };
 
+/** One tool call of an agent session. */
+export type AgentToolCall = {
+  call_id: string;
+  tool: string;
+  error: string | null;
+  duration: number | null;
+};
+
+/** What one agent session used: its own context (latest call, not summed), tokens, cost and tool calls. */
+export type AgentSession = {
+  session: string;
+  parent_session: string | null;
+  agent: string;
+  model: string | null;
+  status: "running" | "finished" | "failed" | null;
+  steps: number;
+  llm_calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  cost: number;
+  context_used: number | null;
+  context_window: number | null;
+  context_left: number | null;
+  tool_calls: AgentToolCall[];
+};
+
+/** A run's totals and one row per agent session, in start order. */
+export type RunAgents = {
+  run: {
+    id: string;
+    status: string;
+    input_tokens: number;
+    output_tokens: number;
+    cost: number;
+    llm_calls: number;
+    tool_calls: number;
+  };
+  agents: AgentSession[];
+};
+
 /** One port that fits the dragged port, best first; exact and loose list the matching stream fields. */
 export type PortSuggestion = {
   port: string;
@@ -98,6 +138,9 @@ export type PendingPaths = {
   };
   "/workspace/mcp/{connector_id}/check": Omit<Route, "post"> & {
     post: Act<Connector, ConnectorPath>;
+  };
+  "/assistant/runs/{run_id}/agents": Omit<Route, "get"> & {
+    get: Read<RunAgents, never, { run_id: string }>;
   };
   "/assistant/suggestions": Omit<Route, "get"> & {
     get: Read<{ suggestions: unknown }, { project: string; chat?: string }>;

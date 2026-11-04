@@ -4,7 +4,7 @@ import type { ApiError } from "@/shared/api/errors";
 import { chatsKey } from "@/shared/sse/chats";
 import { streamEvents } from "@/shared/sse/stream";
 import type { RunEvent } from "@/shared/sse/types";
-import { problemQuery } from "./api";
+import { problemQuery, runAgentsQuery } from "./api";
 import { applyEvent, emptyView, loadProblem, type ProblemState, type View } from "./view";
 
 type Action =
@@ -49,6 +49,24 @@ function toBatcher(flush: (events: RunEvent[]) => void) {
   };
 }
 
+function refreshFor(
+  queryClient: ReturnType<typeof useQueryClient>,
+  projectId: string,
+  runId: string,
+  event: RunEvent,
+): void {
+  if (event.type === "request" || event.type === "run.started") {
+    void queryClient.invalidateQueries({ queryKey: chatsKey(projectId) });
+  }
+  if (
+    event.type === "step.finished" ||
+    event.type === "tool.finished" ||
+    event.type === "run.finished"
+  ) {
+    void queryClient.invalidateQueries({ queryKey: runAgentsQuery(projectId, runId).queryKey });
+  }
+}
+
 /** Streams a run (replayed from event 0 on every mount) and folds its events into the live view, at most once per batch. */
 export function useRunView(projectId: string, chatId: string | null, runId: string | null): Stream {
   const [stream, dispatch] = useReducer(reduceAction, emptyStream);
@@ -78,9 +96,7 @@ export function useRunView(projectId: string, chatId: string | null, runId: stri
       },
       onEvent: (event) => {
         batch.add(event);
-        if (event.type === "request" || event.type === "run.started") {
-          void queryClient.invalidateQueries({ queryKey: chatsKey(projectId) });
-        }
+        refreshFor(queryClient, projectId, runId, event);
         if (event.type !== "run.finished" || event.parent !== null) return;
         finished = true;
         void queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
