@@ -33,14 +33,14 @@ function StepList({ steps, selected, onSelect }: StepListProps) {
               className={`flex w-full justify-between gap-2 rounded-control px-2 py-1.5 text-left ${position === selected ? "bg-accent-soft" : ""}`}
               style={{ paddingLeft: `${String(8 + 12 * (step.agent.split(".").length - 1))}px` }}
             >
-              <span>
+              <span className="min-w-0 [overflow-wrap:anywhere]">
                 {step.agent} · step {step.index}
               </span>
               <Quantity
                 value={toStepTokens(step)}
                 unit=""
                 fractionDigits={0}
-                className="text-muted"
+                className="shrink-0 text-muted"
               />
             </button>
           </li>
@@ -129,7 +129,7 @@ export function RunLogPage() {
       {step === undefined ? (
         <p className="text-muted">This run has no recorded steps.</p>
       ) : (
-        <div className="grid grid-cols-[240px_minmax(0,1fr)] gap-3 max-[1000px]:grid-cols-1">
+        <div className="grid grid-cols-[300px_minmax(0,1fr)] gap-3 max-[1000px]:grid-cols-1">
           <StepList
             steps={steps}
             selected={selected}

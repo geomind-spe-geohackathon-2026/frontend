@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.46 (2026-11-04)
+
+- QA-019: the run log's step list is wider (300 px), long agent names wrap inside the row and the token count keeps its place inside the card.
+
 ## 1.1.45 (2026-11-04)
 
 - QA-033: the Case page's problems box lists each problem once (duplicate keys left stale lines, so the count and the list differed), and a form's "enter a valid value" is left out where the server's check explains the same field.
