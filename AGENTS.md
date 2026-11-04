@@ -7,7 +7,7 @@ React app for designing geothermal heating and cooling plants with an AI assista
 `.claude/` is written for agents: start with [.claude/README.md](.claude/README.md) (`notes/`
 current work, `archive/` history). `docs/` is written for people and holds the reference for this
 repo (conventions, architecture, design, API notes). Read both, and the project-wide context in the
-project root (`../AGENTS.md`, the shared memory `../.claude/memory/MEMORY.md`, `../docs/`).
+project root (`../.claude/AGENTS.md`, the shared memory `../.claude/memory/MEMORY.md`, `../documents/`).
 
 ## Start here
 
