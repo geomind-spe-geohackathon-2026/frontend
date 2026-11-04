@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.41 (2026-11-04)
+
+- QA-028: the first request of a new project and its file chips are kept in localStorage (was sessionStorage, lost in another tab or a fresh browser context) until the message is sent, and the composer keeps the kept text in step with the user's edits.
+
 ## 1.1.40 (2026-11-04)
 
 - QA-025: a run ended by an app restart shows the run's own message in the chat ("The run stopped because the app was updated or restarted; send your message again."), not "internal error in geomind".

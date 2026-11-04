@@ -4,7 +4,17 @@ const prefix = "geomind.draft.";
 export function keepDraft(projectId: string, text: string): void {
   try {
     if (text.trim() === "") return;
-    sessionStorage.setItem(`${prefix}${projectId}`, text.trim());
+    localStorage.setItem(`${prefix}${projectId}`, text.trim());
+  } catch {
+    return;
+  }
+}
+
+/** Follows the user's edits of a kept message (an empty text keeps an empty one); does nothing when no message is kept. */
+export function updateDraft(projectId: string, text: string): void {
+  try {
+    if (localStorage.getItem(`${prefix}${projectId}`) === null) return;
+    localStorage.setItem(`${prefix}${projectId}`, text);
   } catch {
     return;
   }
@@ -13,7 +23,7 @@ export function keepDraft(projectId: string, text: string): void {
 /** The kept message of a project, or an empty text. */
 export function readDraft(projectId: string): string {
   try {
-    return sessionStorage.getItem(`${prefix}${projectId}`) ?? "";
+    return localStorage.getItem(`${prefix}${projectId}`) ?? "";
   } catch {
     return "";
   }
@@ -25,7 +35,7 @@ const filesPrefix = "geomind.draft-files.";
 export function keepDraftFiles(projectId: string, names: string[]): void {
   try {
     if (names.length === 0) return;
-    sessionStorage.setItem(`${filesPrefix}${projectId}`, JSON.stringify(names));
+    localStorage.setItem(`${filesPrefix}${projectId}`, JSON.stringify(names));
   } catch {
     return;
   }
@@ -34,7 +44,7 @@ export function keepDraftFiles(projectId: string, names: string[]): void {
 /** The kept file names of a project's first message, or none. */
 export function readDraftFiles(projectId: string): string[] {
   try {
-    const value: unknown = JSON.parse(sessionStorage.getItem(`${filesPrefix}${projectId}`) ?? "[]");
+    const value: unknown = JSON.parse(localStorage.getItem(`${filesPrefix}${projectId}`) ?? "[]");
     return Array.isArray(value) ? value.filter((name) => typeof name === "string") : [];
   } catch {
     return [];
@@ -44,7 +54,7 @@ export function readDraftFiles(projectId: string): string[] {
 /** Forgets the kept files of a project once they are sent. */
 export function clearDraftFiles(projectId: string): void {
   try {
-    sessionStorage.removeItem(`${filesPrefix}${projectId}`);
+    localStorage.removeItem(`${filesPrefix}${projectId}`);
   } catch {
     return;
   }
@@ -53,8 +63,8 @@ export function clearDraftFiles(projectId: string): void {
 /** Forgets the kept message and files of a project once it is sent. */
 export function clearDraft(projectId: string): void {
   try {
-    sessionStorage.removeItem(`${filesPrefix}${projectId}`);
-    sessionStorage.removeItem(`${prefix}${projectId}`);
+    localStorage.removeItem(`${filesPrefix}${projectId}`);
+    localStorage.removeItem(`${prefix}${projectId}`);
   } catch {
     return;
   }

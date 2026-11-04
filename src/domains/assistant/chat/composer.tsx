@@ -3,7 +3,7 @@ import { ArrowUp, Square } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { AttachButton, AttachmentList, toDropProps } from "@/shared/attach/attach-files";
 import { toMessageWithFiles } from "@/shared/attach/upload";
-import { clearDraft, readDraft } from "@/shared/attach/chat-draft";
+import { clearDraft, readDraft, updateDraft } from "@/shared/attach/chat-draft";
 import type { useAttachments } from "@/shared/attach/use-attachments";
 import {
   InputGroup,
@@ -108,6 +108,7 @@ export function Composer({
           onKeyDown={submitOnEnter}
           onChange={(event) => {
             setText(event.target.value);
+            updateDraft(projectId, event.target.value);
           }}
         />
         <InputGroupAddon align="block-end" className="gap-2">
