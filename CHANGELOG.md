@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.74 (2026-11-05)
+
+- QA-077: the chat shows Cancel run while either the run's events or the server's run row say the run is not finished (queued, running or waiting); a run whose row stayed waiting after its events ended can be cancelled, so the chat can go on.
+
 ## 1.1.73 (2026-11-05)
 
 - QA-075 (Sahand): the run usage panel counts a tool call as failed only when it really failed (the API sends `error: false` for a success; every call showed as failed in red); agents show display names from one shared map (Project lead, Case lead, Geoscientist, ...; else the id in words) in the usage panel, the run panel, the chat's busy lines and the run log; each context ring shows its percent, so it no longer looks like a spinner.

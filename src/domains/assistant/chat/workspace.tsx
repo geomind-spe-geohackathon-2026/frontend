@@ -68,6 +68,10 @@ function RunRequest({ projectId, runId, view, auto }: RequestProps) {
   );
 }
 
+function isUnfinished(status: string | undefined): boolean {
+  return status === "queued" || status === "running" || status === "waiting";
+}
+
 function useStop(projectId: string, runId: string | null, active: boolean) {
   const cancel = useCancelRun(projectId, runId ?? "");
   const [asked, setAsked] = useState<string | null>(null);
@@ -103,8 +107,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   const { handleSend, send, pending } = useSendToChat(projectId, chatId, auto);
   const files = useAttachments(projectId);
   const status = view.blocks.length === 0 && run.data !== undefined ? run.data.status : view.status;
-  const active =
-    runId !== null && (status === "queued" || status === "running" || status === "waiting");
+  const active = runId !== null && (isUnfinished(status) || isUnfinished(run.data?.status));
   const stop = useStop(projectId, runId, active);
 
   return (
