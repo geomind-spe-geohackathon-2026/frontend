@@ -13,6 +13,17 @@ function toShare(agent: AgentSession): number | null {
   return agent.context_used / agent.context_window;
 }
 
+function ContextShare({ share }: { share: number | null }) {
+  if (share === null) return <span className="size-4 shrink-0" />;
+  const percent = `${String(Math.round(share * 100))} %`;
+  return (
+    <span className="flex shrink-0 items-center gap-1" title={`Context used: ${percent} of the window`}>
+      <Ring share={share} />
+      <span className="text-[11px] text-muted-foreground tabular-nums">{percent}</span>
+    </span>
+  );
+}
+
 function ContextLine({ agent }: { agent: AgentSession }) {
   if (agent.context_used === null) return <span>context n/a</span>;
   return (
@@ -38,7 +49,7 @@ function AgentRow({ agent }: { agent: AgentSession }) {
     <Collapsible asChild>
       <li className="rounded-md border px-2 py-1.5">
         <CollapsibleTrigger className="group flex w-full items-center gap-2 text-left">
-          <Ring share={toShare(agent)} />
+          <ContextShare share={toShare(agent)} />
           <span className="min-w-0 flex-1 truncate font-medium" title={agent.agent}>
             {toAgentName(agent.agent)}
           </span>
