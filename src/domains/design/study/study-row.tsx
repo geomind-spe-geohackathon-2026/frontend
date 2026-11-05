@@ -3,6 +3,7 @@ import { ProgressBar } from "@/shared/charts/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toProgress } from "./progress";
+import { wideColumnClass } from "./columns";
 import type { Study, StudyStatus } from "@/shared/api/types";
 import { TableRow, TableHead, TableCell } from "@/components/ui/table";
 
@@ -109,11 +110,11 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
   const active = study.status === "queued" || study.status === "running";
   return (
     <TableRow>
-      <TableHead scope="row" className="text-left font-medium">
+      <TableHead scope="row" className="text-left font-medium whitespace-normal">
         {study.name}
       </TableHead>
-      <TableCell>{kindLabels[study.kind] ?? study.kind}</TableCell>
-      <TableCell>{study.started_by.name}</TableCell>
+      <TableCell className={wideColumnClass}>{kindLabels[study.kind] ?? study.kind}</TableCell>
+      <TableCell className={wideColumnClass}>{study.started_by.name}</TableCell>
       <TableCell>
         <ProgressCell study={study} />
       </TableCell>

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.57 (2026-11-05)
+
+- QA-048: in a narrow panel (under 44 rem) the Study table leaves out the Kind and Started by columns and wraps the study name, so Result and the row buttons stay in view.
+
 ## 1.1.56 (2026-11-05)
 
 - While a run works, the chat lists every working agent (nested ones indented) with a spinning circle (lucide `Loader2`, still under prefers-reduced-motion) left of its name and, right of it, one muted line of what it is doing now (a phrase per tool: "Reading the case", "Asking connector open-meteo", "Searching the web for ...", "Asking the reservoir engineer", "Thinking" with no tool running; an unknown tool by its name in words), cut with an ellipsis and whole in a tooltip; the run panel's agent list marks the same agents. No mark while the run waits for the user, ends or fails.
