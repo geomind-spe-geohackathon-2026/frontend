@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.119 (2026-11-05)
+
+- QA-215 (frontend part): each Results tab shows its plant version (when known) and time, so repeats of one design can be told apart; the tab strip scrolls on its own instead of pushing the panel sideways.
+
 ## 1.1.118 (2026-11-05)
 
 - QA-213: a capacity tile with no peak shows the reason the API gives, else "no peak use measured for a rating in <unit>", never "not used in this run" (an exchanger rated in MW/K has no peak even when it ran).

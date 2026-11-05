@@ -10,6 +10,19 @@ import { ResultPane } from "./result-pane";
 
 const compareTab = "compare";
 
+const shortTime = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function toTabNote(entry: { plant_version: number | null; created: string }): string {
+  const plant = entry.plant_version === null ? "" : `plant v${String(entry.plant_version)} · `;
+  const at = Date.parse(entry.created);
+  return `${plant}${Number.isNaN(at) ? entry.created : shortTime.format(at)}`;
+}
+
 /** The Results page: one tab per result plus Compare; the selected tab is part of the address. */
 export function ResultsPage() {
   const projectId = useRequiredParam("projectId");
@@ -40,10 +53,11 @@ export function ResultsPage() {
         value={selected}
         onValueChange={(value) => void navigate(`/projects/${projectId}/design/results/${value}`)}
       >
-        <TabsList aria-label="Results">
+        <TabsList aria-label="Results" className="max-w-full justify-start overflow-x-auto">
           {results.data.map((entry) => (
-            <TabsTrigger key={entry.id} value={entry.id}>
+            <TabsTrigger key={entry.id} value={entry.id} title={toTabNote(entry)}>
               {entry.name}
+              <span className="text-[11px] font-normal text-muted">{toTabNote(entry)}</span>
             </TabsTrigger>
           ))}
           <TabsTrigger value={compareTab}>Compare</TabsTrigger>
