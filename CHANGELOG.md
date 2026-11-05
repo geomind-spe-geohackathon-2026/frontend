@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.126 (2026-11-05)
+
+- QA-267: the event parser kept no `ts` on step events, so every stage timer counted from the page load; it now keeps the server time of `step.started` and `step.finished`, and the timers stay the same after a reload.
+
 ## 1.1.125 (2026-11-05)
 
 - QA-255: the New project dialog lists the connectors that are On, all checked, and the new project gets the checked ones (`mcp`), so the agents of a new project have its connector tools (open-meteo).

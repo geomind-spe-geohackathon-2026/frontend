@@ -141,7 +141,8 @@ function toStepStarted(fields: Fields): RunEventBody {
     model: requireString(fields, "model", type),
   };
   const size = fields.context_window;
-  return typeof size === "number" && size > 0 ? { ...body, context_window: size } : body;
+  const stamped = typeof fields.ts === "string" && fields.ts !== "" ? { ...body, ts: fields.ts } : body;
+  return typeof size === "number" && size > 0 ? { ...stamped, context_window: size } : stamped;
 }
 
 function toToolStarted(fields: Fields): RunEventBody {
@@ -196,6 +197,7 @@ function toStateBody(type: string, fields: Fields): RunEventBody | null {
         index: requireNumber(fields, "index", type),
         usage: toUsage(fields.usage, type),
         text: requireString(fields, "text", type),
+        ...(typeof fields.ts === "string" && fields.ts !== "" ? { ts: fields.ts } : {}),
       };
     case "state.changed":
       if (!Array.isArray(fields.changes)) throw invalid(type, "changes");
