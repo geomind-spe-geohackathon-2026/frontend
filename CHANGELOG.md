@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.134 (2026-11-05)
+
+- QA-322: Days covered follows the final gemini 0.6.31 shape: `labels.other` null leaves the topped-up and other-only bands out of the legend.
+
 ## 1.1.133 (2026-11-05)
 
 - QA-322 (frontend part): Days covered names its sources from the coverage day's `labels` (gemini 0.6.31: e.g. cooling 'Absorption chiller (geothermal)' / 'Electric chiller'), shows `no_demand` days as 'No demand', and never calls the electric chiller 'backup'; old results fall back to Geothermal/Backup for heating and Main/Other source for cooling.
