@@ -245,6 +245,7 @@ function toLiveText(text: string): string | null {
 }
 
 function toSpeaker(actor: string): string {
+  if (actor === "") return "";
   const [agent = actor, instance] = actor.split("|");
   return instance ?? toAgentName(agent);
 }
@@ -727,6 +728,24 @@ function FinishedAgents(props: {
   );
 }
 
+function SpokenText(props: {
+  id: string;
+  speaker: string;
+  text: string;
+  settled: number;
+  open: boolean;
+}) {
+  const prefix = props.speaker === "" ? "" : `**${props.speaker}:** `;
+  return (
+    <PacedMarkdown
+      key={props.id}
+      text={prefix + props.text}
+      settled={prefix.length + props.settled}
+      open={props.open}
+    />
+  );
+}
+
 /** A run as one quiet line of work that opens to its steps; only the answer and a stop stand out. */
 export function Blocks({
   blocks,
@@ -784,12 +803,10 @@ export function Blocks({
         />
       )}
       <Decisions blocks={blocks} />
-      {answer === null || last === null || !running ? null : (
-        <p className="text-[12.5px] font-medium">{toSpeaker(last.agent)}</p>
-      )}
       {answer === null || last === null ? null : (
-        <PacedMarkdown
-          key={last.id}
+        <SpokenText
+          id={last.id}
+          speaker={running ? toSpeaker(last.agent) : ""}
           text={answer}
           settled={last.open ? last.settled : answer.length}
           open={last.open}
