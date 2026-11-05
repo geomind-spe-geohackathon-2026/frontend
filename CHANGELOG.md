@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.98 (2026-11-05)
+
+- QA-110 (frontend, plant and shared): Case and Plant History share one list and one read-only version view (`shared/versions/`): no "#" column beside Version, the full note on as many lines as it needs, Saved by "Assistant" from Version.by, Open on every row; an opened plant version shows its changes from the version before (modules, connections, spec, structure) and all values; Restore loads it into the editor as before. Paths in the change tables are shown in full.
+
 ## 1.1.97 (2026-11-05)
 
 - QA-110 (frontend part): case History: each version has Open; an opened version is read-only, shows its changes from the version before (path, change, old and new value, source; files included) and all its values, and has "Restore this version" (POST /design/case/versions/{n}/restore with the latest number as base; a 409 says the case was saved again; disabled while the form has unsaved changes). Saved by shows "Assistant" for versions the assistant saved. New endpoints typed in `shared/api/pending.ts`.

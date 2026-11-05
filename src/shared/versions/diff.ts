@@ -1,10 +1,10 @@
-export type CaseEntry = { path: string; value: string; source: string };
+export type VersionEntry = { path: string; value: string; source: string };
 
-export type CaseChange = {
+export type VersionChange = {
   path: string;
   kind: "added" | "removed" | "changed";
-  before: CaseEntry | undefined;
-  after: CaseEntry | undefined;
+  before: VersionEntry | undefined;
+  after: VersionEntry | undefined;
 };
 
 type FileRow = { name: string; size: number };
@@ -37,7 +37,7 @@ function toLeafText(leaf: Record<string, unknown>): string {
   return extras.length === 0 ? main : `${main} (${extras.join(", ")})`;
 }
 
-function walk(value: unknown, path: string, into: CaseEntry[]): void {
+function walk(value: unknown, path: string, into: VersionEntry[]): void {
   if (isRecord(value)) {
     if (isValueLeaf(value)) {
       into.push({ path, value: toLeafText(value), source: toText(value.source) });
@@ -67,9 +67,9 @@ function walk(value: unknown, path: string, into: CaseEntry[]): void {
   into.push({ path, value: toText(value), source: "" });
 }
 
-/** Lists every value of a case content and its files as one row per path, in document order. */
-export function toCaseEntries(content: unknown, files: readonly FileRow[] = []): CaseEntry[] {
-  const entries: CaseEntry[] = [];
+/** Lists every value of a saved document (case, plant) and its files as one row per path, in document order. */
+export function toVersionEntries(content: unknown, files: readonly FileRow[] = []): VersionEntry[] {
+  const entries: VersionEntry[] = [];
   walk(content, "", entries);
   for (const file of files) {
     entries.push({ path: `files.${file.name}`, value: `${String(file.size)} bytes`, source: "" });
@@ -77,11 +77,11 @@ export function toCaseEntries(content: unknown, files: readonly FileRow[] = []):
   return entries;
 }
 
-/** Compares two lists of case entries and returns the added, removed and changed paths. */
-export function toCaseChanges(before: CaseEntry[], after: CaseEntry[]): CaseChange[] {
+/** Compares two lists of version entries and returns the added, removed and changed paths. */
+export function toVersionChanges(before: VersionEntry[], after: VersionEntry[]): VersionChange[] {
   const old = new Map(before.map((entry) => [entry.path, entry]));
   const next = new Map(after.map((entry) => [entry.path, entry]));
-  const changes: CaseChange[] = [];
+  const changes: VersionChange[] = [];
   for (const entry of after) {
     const previous = old.get(entry.path);
     if (previous === undefined) {

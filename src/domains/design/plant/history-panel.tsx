@@ -1,26 +1,36 @@
-import { useQuery } from "@tanstack/react-query";
-import { toDisplayTime } from "@/shared/forms/display-time";
-import { LoadError } from "@/shared/forms/load-error";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DataCell, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
-import { Badge } from "@/components/ui/badge";
-import { plantVersionsQuery } from "./api";
-import type { Version } from "@/shared/api/types";
-import {
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableCaption,
-} from "@/components/ui/table";
+import type { Flowsheet } from "@/shared/api/types";
+import { LoadError } from "@/shared/forms/load-error";
 import { Notice } from "@/shared/ui/notice";
+import { toVersionEntries } from "@/shared/versions/diff";
+import { VersionDetail, VersionList } from "@/shared/versions/history";
+import { plantKeys, plantVersionQuery, plantVersionsQuery } from "./api";
 
 type Props = { projectId: string; current: number; onRestore: (number: number) => void };
 
-/** The table of saved plant versions with a Restore button that loads a version into the editor. */
+function toComparable(flowsheet: Flowsheet): Record<string, unknown> {
+  return {
+    modules: Object.fromEntries(
+      flowsheet.modules.map((module) => [module.id, { type: module.type, title: module.title }]),
+    ),
+    connections: Object.fromEntries(
+      flowsheet.connections.map((connection) => [
+        `${connection.source} -> ${connection.target}`,
+        { stream: connection.stream, kind: connection.kind },
+      ]),
+    ),
+    spec: flowsheet.spec,
+    structure: flowsheet.structure,
+  };
+}
+
+/** The saved plant versions, newest first; a version opens read-only with its changes from the version before and a Restore button that loads it into the editor. */
 export function HistoryPanel({ projectId, current, onRestore }: Props) {
   const versions = useQuery(plantVersionsQuery(projectId));
+  const queryClient = useQueryClient();
+  const [opened, setOpened] = useState<number | null>(null);
   if (versions.isPending) return <Notice status="loading" what="the history" />;
   if (versions.isError) {
     return (
@@ -31,71 +41,45 @@ export function HistoryPanel({ projectId, current, onRestore }: Props) {
       />
     );
   }
+  const list = versions.data;
+  const index = list.findIndex((version) => version.number === opened);
+  const version = list[index];
+  if (version === undefined) {
+    return <VersionList what="plant" versions={list} current={current} onOpen={setOpened} />;
+  }
+  const load = async (number: number) =>
+    toVersionEntries(
+      toComparable(await queryClient.fetchQuery(plantVersionQuery(projectId, number))),
+    );
   return (
-    <DataTableFrame className="max-h-[60vh]">
-        <TableCaption className="sr-only">Saved versions of the plant</TableCaption>
-        <TableHeader className={dataTableClass.header}>
-          <TableRow className="text-left text-muted">
-            <TableHead scope="col" className="p-2.5">
-              Version
-            </TableHead>
-            <TableHead scope="col" className="p-2.5">
-              Note
-            </TableHead>
-            <TableHead scope="col" className="p-2.5">
-              Saved by
-            </TableHead>
-            <TableHead scope="col" className="p-2.5">
-              Saved
-            </TableHead>
-            <TableHead scope="col" className="p-2.5">
-              <span className="sr-only">Actions</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {versions.data.map((version) => (
-            <VersionRow
-              key={version.number}
-              version={version}
-              current={current}
-              onRestore={onRestore}
-            />
-          ))}
-        </TableBody>
-      </DataTableFrame>
-  );
-}
-
-function VersionRow({
-  version,
-  current,
-  onRestore,
-}: {
-  version: Version;
-  current: number;
-  onRestore: (number: number) => void;
-}) {
-  return (
-    <TableRow className="border-t border-border">
-      <TableCell className="p-2.5 tabular-nums">v{version.number}</TableCell>
-      <DataCell className="px-3">{version.note}</DataCell>
-      <DataCell className="px-3">{version.author.name}</DataCell>
-      <TableCell className="p-2.5 tabular-nums">{toDisplayTime(version.created)}</TableCell>
-      <TableCell className="p-2.5">
-        {version.number === current ? (
-          <Badge variant="ok">current</Badge>
-        ) : (
-          <Button
-            aria-label={`Restore version ${String(version.number)}`}
-            onClick={() => {
-              onRestore(version.number);
-            }}
-          >
-            Restore
-          </Button>
-        )}
-      </TableCell>
-    </TableRow>
+    <VersionDetail
+      what="plant"
+      queryKey={plantKeys.versions(projectId)}
+      load={load}
+      version={version}
+      previous={list[index + 1]?.number}
+      current={current}
+      onBack={() => {
+        setOpened(null);
+      }}
+      restore={
+        <Button
+          variant="default"
+          aria-label={`Restore version ${String(version.number)}`}
+          onClick={() => {
+            onRestore(version.number);
+          }}
+        >
+          Restore this version
+        </Button>
+      }
+      notice={
+        version.number === current ? null : (
+          <p className="text-[13px] text-muted">
+            Restore loads version {version.number} into the editor; save to keep it.
+          </p>
+        )
+      }
+    />
   );
 }
