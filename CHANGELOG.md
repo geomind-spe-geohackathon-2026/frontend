@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.60 (2026-11-05)
+
+- QA-059: the answer to an assistant's question is a multi-line field that grows with its text (up to 12 rem); Enter makes a new line, Ctrl+Enter (Cmd+Enter) or the Answer button sends.
+
 ## 1.1.59 (2026-11-05)
 
 - QA-058: after an approval or a question, the chat shows the decision as a line (You approved "Set case" / You denied "Set case": <reason> / You answered: ...), in the run and in its steps. The tab remembers the answers it sent (sessionStorage); a lasting record for every browser needs the answer in the run's public events.

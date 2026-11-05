@@ -3,6 +3,7 @@ import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { Answer } from "@/shared/api/types";
 import type { RunRequest } from "@/shared/sse/types";
 
@@ -90,9 +91,17 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
               <FieldLabel htmlFor="question-answer">
                 {request.options === undefined ? "Your answer" : "Or type your own answer"}
               </FieldLabel>
-              <Input
+              <Textarea
                 id="question-answer"
+                rows={2}
+                className="max-h-48"
                 value={text}
+                placeholder="One value per line is fine. Ctrl+Enter sends."
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" || !(event.ctrlKey || event.metaKey)) return;
+                  event.preventDefault();
+                  if (text.trim() !== "" && !pending) onAnswer({ text });
+                }}
                 onChange={(event) => {
                   setText(event.target.value);
                 }}
