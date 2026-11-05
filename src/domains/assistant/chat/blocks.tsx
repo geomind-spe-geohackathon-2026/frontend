@@ -400,11 +400,13 @@ function toWorkUsage(work: Block[]): { tokens: number; cost: number } {
 function WorkingAgents({
   blocks,
   agents,
+  work: runWork,
   calculations,
   runId,
 }: {
   blocks: Block[];
   agents: AgentNode[];
+  work: Block[];
   calculations: Calculation[];
   runId: string | null;
 }) {
@@ -444,6 +446,13 @@ function WorkingAgents({
           </li>
         );
       })}
+      <TotalRow
+        blocks={blocks}
+        agents={agents}
+        work={runWork}
+        calculations={calculations}
+        runId={runId}
+      />
     </ul>
   );
 }
@@ -578,6 +587,52 @@ function WorkLog({
   );
 }
 
+function toAgentCount(count: number): string {
+  return `${String(count)} ${count === 1 ? "agent" : "agents"} working`;
+}
+
+function TotalRow({
+  blocks,
+  agents,
+  work,
+  calculations,
+  runId,
+}: {
+  blocks: Block[];
+  agents: AgentNode[];
+  work: Block[];
+  calculations: Calculation[];
+  runId: string | null;
+}) {
+  const usage = toWorkUsage(blocks);
+  const since = Math.min(...agents.map((agent) => agent.startedAt));
+  const steps = work.filter((block) => block.kind === "tool").length;
+  return (
+    <li className="min-w-0 text-muted">
+      <StepsWindow
+        title={toRunningLabel(work)}
+        work={work}
+        calculations={calculations}
+        runId={runId}
+        emptyText="No steps yet."
+        trigger={
+          <button
+            type="button"
+            className="flex min-w-0 cursor-pointer items-center gap-1.5 text-left"
+          >
+            <span aria-hidden="true" className="size-3.5 shrink-0" />
+            <span className="shrink-0 font-medium text-foreground">Total</span>
+            <DoingLine text={toAgentCount(agents.length)} />
+            <span className="shrink-0 tabular-nums">· {toStepCount(steps)}</span>
+            <UsageParts tokens={usage.tokens} cost={usage.cost} />
+            {Number.isFinite(since) ? <StageTimer since={since} /> : null}
+          </button>
+        }
+      />
+    </li>
+  );
+}
+
 function RunTotals({ blocks, agents }: { blocks: Block[]; agents: AgentNode[] }) {
   const usage = toWorkUsage(blocks);
   const since = Math.min(...agents.map((agent) => agent.startedAt));
@@ -626,6 +681,7 @@ export function Blocks({
             <WorkingAgents
               blocks={blocks}
               agents={agents}
+              work={work}
               calculations={calculations}
               runId={runId}
             />
@@ -633,7 +689,7 @@ export function Blocks({
           {retry === null ? null : <p className="text-warn">{retry}</p>}
         </div>
       ) : null}
-      {work.length === 0 ? null : (
+      {work.length === 0 || (running && !waiting && agents.length > 0) ? null : (
         <WorkLog
           work={work}
           label={running ? toRunningLabel(work) : toDoneLabel(work)}
