@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.104 (2026-11-05)
+
+- IMP-024: "Run again" on every study that is not running opens New study filled with its kind, name ("<name> again"), the settings its kind knows and its plant version (empty runs on the current plant); everything stays editable before Create study.
+
 ## 1.1.103 (2026-11-05)
 
 - QA-107, QA-126: Days covered states the year on the report's basis: "Geothermal gave 96% of the year's demand (96614 of 100690 MWh), backup ..., unmet 4%", so it agrees with the report's "Geothermal share of heat"; the days the main source was off are named only when there are some.

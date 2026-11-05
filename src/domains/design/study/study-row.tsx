@@ -15,6 +15,7 @@ type Props = {
   busy: boolean;
   onStart: (studyId: string) => void;
   onCancel: (studyId: string) => void;
+  onRunAgain: (study: Study) => void;
 };
 
 type Tone = "ok" | "warn" | "bad" | "info" | "off";
@@ -57,12 +58,18 @@ function AgentOutcome({ study, projectId, run }: { study: Study; projectId: stri
       {record.data === undefined ? null : (
         <>
           <span>{toRecordSummary(record.data.tool, record.data.result)}</span>
-          <Link to={`/projects/${projectId}/design/study/${study.id}/record`} className="text-accent">
+          <Link
+            to={`/projects/${projectId}/design/study/${study.id}/record`}
+            className="text-accent"
+          >
             Open record
           </Link>
         </>
       )}
-      <Link to={`/projects/${projectId}/assistant/runs/${run}`} className="text-[12px] text-muted underline">
+      <Link
+        to={`/projects/${projectId}/assistant/runs/${run}`}
+        className="text-[12px] text-muted underline"
+      >
         Open run
       </Link>
     </div>
@@ -86,8 +93,7 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
       <div className="flex min-w-0 flex-col gap-1">
         <details>
           <summary className="cursor-pointer text-warn">
-            Waits for {study.missing.length}{" "}
-            {study.missing.length === 1 ? "value" : "values"}
+            Waits for {study.missing.length} {study.missing.length === 1 ? "value" : "values"}
           </summary>
           <ul className="mt-1 list-none p-0 font-mono text-[12px] [overflow-wrap:anywhere]">
             {study.missing.map((entry) => (
@@ -121,7 +127,7 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
 }
 
 /** One study row: kind, who started it, status, progress, and its result link or what is missing. */
-export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
+export function StudyRow({ study, projectId, busy, onStart, onCancel, onRunAgain }: Props) {
   const active = study.status === "queued" || study.status === "running";
   return (
     <TableRow>
@@ -173,6 +179,16 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
             Cancel
           </Button>
         ) : null}
+        {active ? null : (
+          <Button
+            aria-label={`Run ${study.name} again`}
+            onClick={() => {
+              onRunAgain(study);
+            }}
+          >
+            Run again
+          </Button>
+        )}
       </TableCell>
     </TableRow>
   );

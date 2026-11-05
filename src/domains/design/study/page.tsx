@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import type { Study } from "@/shared/api/types";
 import { toItems } from "@/shared/api/pagination";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
@@ -17,6 +18,7 @@ export function StudyPage() {
   const start = useStartStudy(projectId);
   const cancel = useCancelStudy(projectId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [template, setTemplate] = useState<Study | null>(null);
   const items = toItems(studies.data?.pages);
   const mutationError = start.error ?? cancel.error;
   useRefreshOnFinish(projectId, hasActiveStudy(items));
@@ -30,6 +32,7 @@ export function StudyPage() {
           <Button
             variant="default"
             onClick={() => {
+              setTemplate(null);
               setDialogOpen(true);
             }}
           >
@@ -37,7 +40,12 @@ export function StudyPage() {
           </Button>
         }
       />
-      <NewStudyDialog projectId={projectId} open={dialogOpen} onOpenChange={setDialogOpen} />
+      <NewStudyDialog
+        projectId={projectId}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        template={template}
+      />
       {studies.isPending ? <Notice status="loading" what="studies" /> : null}
       {studies.isError ? <Notice status="failed" error={studies.error} /> : null}
       {mutationError === null ? null : <Notice status="failed" error={mutationError} />}
@@ -51,6 +59,10 @@ export function StudyPage() {
           busy={start.isPending || cancel.isPending}
           onStart={start.mutate}
           onCancel={cancel.mutate}
+          onRunAgain={(study) => {
+            setTemplate(study);
+            setDialogOpen(true);
+          }}
         />
       ) : null}
       {studies.hasNextPage ? (
