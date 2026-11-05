@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.149 (2026-11-05)
+
+- QA-360 (reopened): the project layout sets 'Geomind · <project name>' after every render instead of restoring an earlier title on cleanup (an overlapping old layout could put 'Geomind' back); the home pages set 'Geomind'.
+
 ## 1.1.148 (2026-11-05)
 
 - QA-360: the browser tab shows 'Geomind · <project name>' on project pages; other pages 'Geomind'.
