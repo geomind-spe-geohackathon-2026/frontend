@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.148 (2026-11-05)
+
+- QA-360: the browser tab shows 'Geomind · <project name>' on project pages; other pages 'Geomind'.
+
 ## 1.1.147 (2026-11-05)
 
 - QA-358: knowledge and file tools are named by what they read (geomind names unchanged): a project file 'Read inputs' (busy list 'Reading inputs'), a knowledge/* document 'Read knowledge', a Knowledge search 'Search knowledge'.
