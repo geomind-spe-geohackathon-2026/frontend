@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
+  isFileReader,
+  isKnowledgeRead,
   toFailureText,
   toToolName,
   toPretty,
@@ -131,7 +133,7 @@ function ToolCard({
     >
       <summary className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5">
         <Badge variant={tone}>{block.state}</Badge>
-        <span>{toToolName(block.tool)}</span>
+        <span>{toToolName(block.tool, block.input)}</span>
         <span
           className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}
         >
@@ -287,17 +289,16 @@ const doingTexts: Record<string, string> = {
   geoscientists: "Asking the geoscientists",
   fill_parts: "Asking the team",
   read_file: "Reading a file",
-  read_rag: "Reading a file",
+  search_rag: "Searching knowledge",
+  read_knowledge: "Reading knowledge",
   read_case: "Reading the case",
   set_case: "Writing the case",
   describe_case: "Looking up the case's fields",
   ask_user: "Waiting for your answer",
   ask_economics: "Asking you about the economics",
   list_files: "Listing the project documents",
-  read_document: "Reading a document",
-  rag_search: "Searching the files and Knowledge",
-  rag_read: "Reading a document",
-  search_knowledge: "Searching the Knowledge",
+  rag_search: "Searching knowledge",
+  search_knowledge: "Searching knowledge",
   list_mcp: "Listing the connectors",
   save_mcp_table: "Saving a connector table to the case",
   build_plant: "Building the plant",
@@ -330,6 +331,7 @@ function toDoing(own: Block[], agents: AgentNode[]): string {
   if ((tool === "call_mcp" || tool === "read_mcp" || tool.includes("__")) && server !== null) {
     return `Asking connector ${server}`;
   }
+  if (isFileReader(tool)) return isKnowledgeRead(input) ? "Reading knowledge" : "Reading inputs";
   if (tool === "web_search") {
     const query = readInput(input, "query");
     return query === null ? "Searching the web" : `Searching the web for ${query}`;

@@ -107,10 +107,10 @@ const problemTexts: Record<string, string> = {
 
 const toolLabels: Record<string, string> = {
   list_files: "Listed the project documents",
-  read_document: "Read a document",
-  rag_search: "Searched the files and Knowledge",
-  rag_read: "Read a document",
-  search_knowledge: "Searched the Knowledge",
+  rag_search: "Search knowledge",
+  search_rag: "Search knowledge",
+  read_knowledge: "Read knowledge",
+  search_knowledge: "Search knowledge",
   list_mcp: "Listed the connectors",
   save_mcp_table: "Saved a connector table to the case",
 };
@@ -120,8 +120,28 @@ function toWords(name: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-/** A tool's name for reading: a friendly label for known tools, an MCP tool (`server__tool`) with its connector, else the name in plain words. */
-export function toToolName(tool: string): string {
+const fileReaders = new Set(["read_rag", "rag_read", "read_document"]);
+
+function toReadTarget(input: unknown): string | null {
+  if (typeof input !== "object" || input === null) return null;
+  const record = input as Record<string, unknown>;
+  const name = record.name ?? record.path ?? record.document;
+  return typeof name === "string" ? name : null;
+}
+
+/** Whether a file-reading tool call reads the Knowledge (a `knowledge/...` document) rather than the project's own inputs. */
+export function isKnowledgeRead(input: unknown): boolean {
+  return toReadTarget(input)?.startsWith("knowledge/") ?? false;
+}
+
+/** Whether a tool reads files: a project input or a Knowledge document, told apart by its input. */
+export function isFileReader(tool: string): boolean {
+  return fileReaders.has(tool);
+}
+
+/** A tool's name for reading: a friendly label for known tools (file reads as 'Read inputs' or 'Read knowledge' by their target), an MCP tool (`server__tool`) with its connector, else the name in plain words. */
+export function toToolName(tool: string, input?: unknown): string {
+  if (fileReaders.has(tool)) return isKnowledgeRead(input) ? "Read knowledge" : "Read inputs";
   const label = toolLabels[tool];
   if (label !== undefined) return label;
   const split = tool.indexOf("__");

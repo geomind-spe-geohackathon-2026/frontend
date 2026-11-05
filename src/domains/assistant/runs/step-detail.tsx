@@ -89,7 +89,7 @@ function ToolCard({ call }: { call: ToolCall }) {
   return (
     <Card>
       <CardHeader>
-        <h2>Tool call · {toToolName(call.tool)}</h2>
+        <h2>Tool call · {toToolName(call.tool, call.input)}</h2>
         <CardAction className="flex items-center gap-2">
           <Duration seconds={call.duration} />
           <Badge variant={failed ? "bad" : "ok"}>{failed ? "failed" : "ok"}</Badge>
