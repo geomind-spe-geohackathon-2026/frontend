@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.86 (2026-11-05)
+
+- QA-098 (user): the browser tab shows the GeoMind mark. The icons lived in `public/`, which the production build leaves out (it holds the mock service worker), so every icon URL returned index.html. They now live in `static/`, the build's public folder: favicon.ico (16/32/48), favicon.svg, favicon-16/32.png and a 180 px apple-touch-icon, all linked in index.html; nginx serves them as files with a one-day cache and never falls back to index.html for them. In `npm run dev` the tab has no icon.
+
 ## 1.1.85 (2026-11-05)
 
 - QA-096 step 4: the lists use the shared data table too: studies, runs and their totals, project Library, users, case and plant history (sticky header, scrolling inside the box; names, notes and e-mails one line, open in full on a click). The chat's usage popover keeps its small table.

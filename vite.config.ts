@@ -5,7 +5,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
-  publicDir: command === "serve" ? "public" : false,
+  publicDir: command === "serve" ? "public" : "static",
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
   server: {
     proxy: {
