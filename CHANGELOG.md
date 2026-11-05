@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.63 (2026-11-05)
+
+- QA-066: every dialog is at most the window's height less 2 rem and scrolls inside, so on a short window (1280x577, or zoom 125-150 %) the New project dialog's title and Create/Cancel stay reachable.
+
 ## 1.1.62 (2026-11-05)
 
 - QA-063: a composition stored in a percent unit (`mol%`) shows as stored (CH4 80, total 100 %) instead of x100 (8000); only shares without a percent unit are read as fractions. A long number that is float noise of a short one (0.800000011920929) shows as 0.8.
