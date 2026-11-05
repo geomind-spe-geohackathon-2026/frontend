@@ -1,5 +1,5 @@
 import { Duration } from "@/shared/quantity/usage";
-import { memo, useState } from "react";
+import { memo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { Link, useParams } from "react-router-dom";
@@ -7,6 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   toFailureText,
@@ -67,7 +75,9 @@ function toOwnCalculations(block: ToolBlock, calculations: Calculation[]): Calcu
 function toCalculationLine(block: ToolBlock, calculations: Calculation[]): string | null {
   if (block.tool !== "calculate") return null;
   const [own] = toOwnCalculations(block, calculations);
-  return own === undefined ? null : `${own.label} = ${String(Number(own.value.toPrecision(6)))} ${own.unit}`.trim();
+  return own === undefined
+    ? null
+    : `${own.label} = ${String(Number(own.value.toPrecision(6)))} ${own.unit}`.trim();
 }
 
 const fullViewTools = ["calculate", "run_python", "web_search", "read_web_page", "set_case"];
@@ -135,7 +145,9 @@ function ToolCard({
             {view}
             {full !== null ? null : (
               <p className="text-[12px] text-muted">
-                {call.isFetching ? "Loading the full result..." : "The full result is in Runs and logs."}
+                {call.isFetching
+                  ? "Loading the full result..."
+                  : "The full result is in Runs and logs."}
               </p>
             )}
           </>
@@ -250,7 +262,10 @@ function toAnswerText(block: TextBlock): string | null {
 function isWork(block: Block): boolean {
   if (block.kind === "tool") return block.tool !== finishTool || block.error !== null;
   if (block.kind === "request") {
-    return block.resolved && toDecisionText(block.request.request, block.request.message, block.answer) === null;
+    return (
+      block.resolved &&
+      toDecisionText(block.request.request, block.request.message, block.answer) === null
+    );
   }
   return block.kind === "text" && toShownText(block) !== null;
 }
@@ -302,7 +317,8 @@ function toDoing(own: Block[], agents: AgentNode[]): string {
   const call = own.findLast((block) => block.kind === "tool" && block.state === "running");
   if (call?.kind !== "tool") return "Thinking";
   const { tool, input } = call;
-  const server = readInput(input, "server") ?? (tool.includes("__") ? tool.split("__")[0] ?? null : null);
+  const server =
+    readInput(input, "server") ?? (tool.includes("__") ? (tool.split("__")[0] ?? null) : null);
   if ((tool === "call_mcp" || tool === "read_mcp" || tool.includes("__")) && server !== null) {
     return `Asking connector ${server}`;
   }
@@ -314,7 +330,10 @@ function toDoing(own: Block[], agents: AgentNode[]): string {
     const url = readInput(input, "url");
     return url === null ? "Reading a web page" : `Reading ${url}`;
   }
-  if (agents.some((node) => toLabel(node.path).split(".").at(-1) === tool) || /_(lead|engineer)$/.test(tool)) {
+  if (
+    agents.some((node) => toLabel(node.path).split(".").at(-1) === tool) ||
+    /_(lead|engineer)$/.test(tool)
+  ) {
     return `Asking the ${toAgentName(tool).toLowerCase()}`;
   }
   return doingTexts[tool] ?? toToolName(tool);
@@ -355,27 +374,68 @@ function WorkingAgents({
             className="min-w-0 text-muted"
             style={{ paddingLeft: `${String(toDepth(agent.path) * 12)}px` }}
           >
-            <details className="space-y-1.5">
-              <summary className="flex min-w-0 cursor-pointer items-center gap-1.5">
-                <BusyMark />
-                <span className="shrink-0 font-medium text-foreground">{toAgentTitle(agent)}</span>
-                <DoingLine text={toDoing(own, agents)} />
-                <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
-              </summary>
-              {work.length === 0 ? (
-                <p className="pl-5 text-[12px]">No steps yet.</p>
-              ) : (
-                <div className="space-y-1.5 pl-5">
-                  {work.map((block) => (
-                    <WorkItem key={block.id} block={block} calculations={calculations} runId={runId} />
-                  ))}
-                </div>
-              )}
-            </details>
+            <StepsWindow
+              title={toAgentTitle(agent)}
+              work={work}
+              calculations={calculations}
+              runId={runId}
+              emptyText="No steps yet."
+              trigger={
+                <button
+                  type="button"
+                  className="flex min-w-0 cursor-pointer items-center gap-1.5 text-left"
+                >
+                  <BusyMark />
+                  <span className="shrink-0 font-medium text-foreground">
+                    {toAgentTitle(agent)}
+                  </span>
+                  <DoingLine text={toDoing(own, agents)} />
+                  <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
+                </button>
+              }
+            />
           </li>
         );
       })}
     </ul>
+  );
+}
+
+/** A button that opens the given steps in a window over the chat, so the chat itself does not move; the list follows the live blocks. */
+function StepsWindow({
+  title,
+  work,
+  calculations,
+  runId,
+  emptyText,
+  trigger,
+}: {
+  title: string;
+  work: Block[];
+  calculations: Calculation[];
+  runId: string | null;
+  emptyText: string;
+  trigger: ReactNode;
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="flex max-h-[calc(100svh-4rem)] max-w-3xl flex-col">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>Steps of this work, newest last.</DialogDescription>
+        </DialogHeader>
+        <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto">
+          {work.length === 0 ? (
+            <p className="text-[12px] text-muted">{emptyText}</p>
+          ) : (
+            work.map((block) => (
+              <WorkItem key={block.id} block={block} calculations={calculations} runId={runId} />
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -450,12 +510,18 @@ function WorkLog({
   runId: string | null;
 }) {
   return (
-    <details className="space-y-1.5">
-      <summary className="cursor-pointer text-muted">{label}</summary>
-      {work.map((block) => (
-        <WorkItem key={block.id} block={block} calculations={calculations} runId={runId} />
-      ))}
-    </details>
+    <StepsWindow
+      title={label}
+      work={work}
+      calculations={calculations}
+      runId={runId}
+      emptyText="No steps."
+      trigger={
+        <button type="button" className="cursor-pointer text-left text-muted">
+          {label}
+        </button>
+      }
+    />
   );
 }
 

@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.110 (2026-11-05)
+
+- QA-141: no templates anywhere: the empty-plant card no longer offers "Start from template" (it points to the chat); the templates dialog is removed.
+- QA-142: "Steps so far", "Worked through" and each agent or instance line open their steps in a window (live, scrollable, closable) instead of expanding inside the chat, so the chat no longer jumps.
+
 ## 1.1.109 (2026-11-05)
 
 - QA-137, QA-139: the Plant and Case History window's height follows its content (at most the screen), so a short list or a two-row change no longer sits over a large empty area; the tables use the room there is and scroll inside. A plant version has a third view, "Flowsheet": the diagram of that version (every module and connection), with the modules added or changed from the version before named above it.

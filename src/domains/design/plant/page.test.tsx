@@ -420,23 +420,10 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(screen.getByRole("button", { name: "Discard changes" })).toBeEnabled();
   });
 
-  it("offers templates when the project has no plant", async () => {
+  it("points to the chat when the project has no plant", async () => {
     renderApp({ path: withoutPlant });
-    const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Start from template" }, slow));
-    await user.click(await screen.findByRole("button", { name: "Use ExampleHeatingPlant" }));
-    expect(await screen.findByText("Plant v1 saved", {}, slow)).toBeVisible();
-  });
-
-  it("opens the first module with missing values after a template and walks through them", async () => {
-    renderApp({ path: withPlant });
-    const user = userEvent.setup();
-    await findSave();
-    await user.click(screen.getByRole("button", { name: "Start from template" }));
-    await user.click(await screen.findByRole("button", { name: "Use ExampleHeatingPlant" }, slow));
-    expect(await screen.findByLabelText("Module id", {}, slow)).toHaveValue("hx");
-    await user.click(await screen.findByRole("button", { name: "next" }, slow));
-    expect(screen.getByLabelText("Module id")).toHaveValue("hx");
+    expect(await screen.findByText("This project has no plant yet.", {}, slow)).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Start from template" })).not.toBeInTheDocument();
   });
 
   it("lists the missing values from the badge and says when the draft is unsaved", async () => {
@@ -469,29 +456,6 @@ describe("Plant page", { timeout: 20000 }, () => {
     expect(last).toHaveTextContent("Sub-plants");
     expect(last).toHaveAttribute("title", expect.stringContaining("nested plant"));
     expect(last).toContainElement(screen.getByRole("option", { name: "Add BigPlant" }));
-  });
-
-  it("shows template names in words with the class below and rst literals as code", async () => {
-    server.use(
-      http.get("*/api/v1/plant/flowsheet/templates", () =>
-        HttpResponse.json([
-          {
-            name: "MultiWellPlant",
-            title: "MultiWellPlant",
-            description: "A field of ``producers`` limbs.",
-            purpose: null,
-            modules: 3,
-            categories: ["plants"],
-          },
-        ]),
-      ),
-    );
-    renderApp({ path: withoutPlant });
-    const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Start from template" }, slow));
-    expect(await screen.findByText("Multi Well Plant")).toBeVisible();
-    expect(screen.getByText("MultiWellPlant")).toBeVisible();
-    expect(screen.getByText("producers").tagName).toBe("CODE");
   });
 
   it("shows the error state with a retry", async () => {

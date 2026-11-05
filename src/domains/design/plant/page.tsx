@@ -26,7 +26,6 @@ import { FlowsheetTab } from "./flowsheet-tab";
 import { HistoryPanel } from "./history-panel";
 import { ValidityStatus, toMissingModules } from "./validity-status";
 import type { ParameterDraft } from "./parameters-panel";
-import { TemplatesDialog } from "./templates-dialog";
 import { AddModuleButton } from "./palette-panel";
 import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
 import type { SaveFlowsheetInput } from "./types";
@@ -380,42 +379,12 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   );
 }
 
-function EmptyPlant({ projectId }: { projectId: string }) {
-  const [isPicking, setIsPicking] = useState(false);
-  const flow = useSaveFlow(projectId);
-  const { follow } = usePlantParams();
+function EmptyPlant() {
   return (
     <Card>
       <CardContent className="flex flex-col items-start gap-2">
         <p className="font-medium">This project has no plant yet.</p>
-        <p className="text-muted">
-          Start from one of gemini's plant templates, then edit the modules.
-        </p>
-        <Button
-          variant="default"
-          onClick={() => {
-            setIsPicking(true);
-          }}
-        >
-          Start from template
-        </Button>
-        <TemplatesDialog
-          open={isPicking}
-          pending={flow.pending}
-          replaces={false}
-          onClose={() => {
-            setIsPicking(false);
-          }}
-          onPick={(name) => {
-            flow.submit(
-              { base: null, note: `Started from template ${name}`, template: name },
-              () => {
-                setIsPicking(false);
-                follow();
-              },
-            );
-          }}
-        />
+        <p className="text-muted">Ask the assistant in the chat to design one for this project.</p>
       </CardContent>
     </Card>
   );
@@ -468,7 +437,7 @@ export function PlantPage() {
     return (
       <>
         {header}
-        <EmptyPlant projectId={projectId} />
+        <EmptyPlant />
       </>
     );
   return (
