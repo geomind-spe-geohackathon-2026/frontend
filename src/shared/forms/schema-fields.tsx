@@ -149,7 +149,13 @@ function QuantityField({
       path={path}
       label={label}
       unit={percent ? "%" : undefined}
-      hint={hints?.[toFullPath(prefix, path)] ?? boundsOf(schema)}
+      hint={
+        hints?.[toFullPath(prefix, path)] ??
+        boundsOf(
+          schema,
+          isRecord(quantity) && typeof quantity.unit === "string" ? quantity.unit : undefined,
+        )
+      }
       description={schema.description}
       required={!optional}
     >

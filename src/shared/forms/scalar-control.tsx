@@ -46,7 +46,7 @@ function toClean(value: number): string {
 function toShown(current: unknown, scale: number): string {
   if (typeof current !== "number") return "";
   if (scale === 1) return toClean(current);
-  return String(Number((current * scale).toPrecision(scaledDigits)));
+  return toClean(Number((current * scale).toPrecision(scaledDigits)));
 }
 
 function NumberControl({

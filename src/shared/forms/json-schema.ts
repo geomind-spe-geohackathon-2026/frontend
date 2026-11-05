@@ -95,18 +95,63 @@ export function unitsOf(schema: JsonSchema): string[] {
   return options.filter((option): option is string => typeof option === "string");
 }
 
-/** Writes the bounds of a number node as a hint, or nothing when it has none. */
-export function boundsOf(schema: JsonSchema): string | undefined {
+const fromSi: Record<string, Record<string, { factor: number; offset?: number }>> = {
+  Pa: {
+    kPa: { factor: 1e-3 },
+    MPa: { factor: 1e-6 },
+    bar: { factor: 1e-5 },
+    barg: { factor: 1e-5, offset: -101325 },
+    "bar(g)": { factor: 1e-5, offset: -101325 },
+  },
+  m2: { mD: { factor: 1 / 9.869233e-16 }, D: { factor: 1 / 9.869233e-13 } },
+  "Pa.s": { "mPa.s": { factor: 1e3 }, "mPa*s": { factor: 1e3 }, cP: { factor: 1e3 } },
+  K: {
+    "°C": { factor: 1, offset: -273.15 },
+    C: { factor: 1, offset: -273.15 },
+    degC: { factor: 1, offset: -273.15 },
+  },
+  W: { kW: { factor: 1e-3 }, MW: { factor: 1e-6 } },
+  "m3/s": { "m3/h": { factor: 3600 }, "l/s": { factor: 1e3 } },
+  m: { km: { factor: 1e-3 } },
+};
+
+function toBoundText(value: number): string {
+  return String(Number(value.toPrecision(7)));
+}
+
+function toUnitBound(
+  low: number | undefined,
+  high: number | undefined,
+  siUnit: string | undefined,
+  unit: string | undefined,
+): { low: number | undefined; high: number | undefined; unit: string | undefined } {
+  if (siUnit === undefined || unit === undefined || unit === siUnit) {
+    return { low, high, unit: siUnit };
+  }
+  const rule = fromSi[siUnit]?.[unit];
+  if (rule === undefined) return { low, high, unit: siUnit };
+  const convert = (value: number | undefined) =>
+    value === undefined ? undefined : (value + (rule.offset ?? 0)) * rule.factor;
+  return { low: convert(low), high: convert(high), unit };
+}
+
+/** Writes the bounds of a number node as a hint in the given unit when known, or nothing when it has none. */
+export function boundsOf(schema: JsonSchema, unit?: string): string | undefined {
   const limits = schema["x-limits"];
   if (isFraction(schema)) return undefined;
-  const low = limits?.min ?? schema.minimum ?? schema.exclusiveMinimum;
-  const high = limits?.max ?? schema.maximum ?? schema.exclusiveMaximum;
-  const unit = limits?.unit === undefined ? "" : ` ${limits.unit}`;
+  const bound = toUnitBound(
+    limits?.min ?? schema.minimum ?? schema.exclusiveMinimum,
+    limits?.max ?? schema.maximum ?? schema.exclusiveMaximum,
+    limits?.unit,
+    unit,
+  );
+  const { low, high } = bound;
+  const suffix = bound.unit === undefined ? "" : ` ${bound.unit}`;
   if (low !== undefined && high !== undefined) {
-    return `between ${String(low)} and ${String(high)}${unit}`;
+    return `between ${toBoundText(low)} and ${toBoundText(high)}${suffix}`;
   }
-  if (low !== undefined) return `at least ${String(low)}${unit}`;
-  return high === undefined ? undefined : `at most ${String(high)}${unit}`;
+  if (low !== undefined) return `at least ${toBoundText(low)}${suffix}`;
+  return high === undefined ? undefined : `at most ${toBoundText(high)}${suffix}`;
 }
 
 /** Narrows a requirement's quantity and unit to what its role and quantity allow. */

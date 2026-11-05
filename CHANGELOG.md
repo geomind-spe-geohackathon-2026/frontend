@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.128 (2026-11-05)
+
+- QA-291: each agent line of the busy list reads steps · tokens · cost · time, live (tokens and cost summed from that agent's step.finished usage); the totals line the same.
+- QA-286: number fields show at most 7 significant digits (no float32 noise such as 0.4000000059604645), also for % fields; min/max hints are in the field's unit (barg, mD, °C ...), or name the SI unit when no conversion is known. Display only.
+
 ## 1.1.127 (2026-11-05)
 
 - QA-281: on Days covered, "geothermal topped up by backup" days are diagonal stripes (mostly the geothermal colour with thin backup stripes), clearly different from plain "Backup only"; the legend uses the same stripes.
