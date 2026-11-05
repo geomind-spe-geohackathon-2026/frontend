@@ -59,15 +59,23 @@ function toMeanShare(days: Day[]): string {
   return `, ${percent.format(mean)} unmet on average`;
 }
 
-function toYearShare(days: Day[], main: string): string | null {
+function toYearShare(days: Day[], main: string): { text: string; hasBackup: boolean } | null {
   const sum = (pick: (day: Day) => Energy | undefined) =>
     days.reduce((total, day) => total + (pick(day)?.value ?? 0), 0);
+  const demand = sum((day) => day.demand);
+  const unit = days.find((day) => day.demand !== undefined)?.demand?.unit;
+  if (demand <= 0 || unit === undefined) return null;
+  const geothermal = sum((day) => day.geothermal);
   const backup = sum((day) => day.backup);
-  const delivered = sum((day) => day.geothermal) + backup;
-  const unit = days.find((day) => day.backup !== undefined)?.backup?.unit;
-  if (delivered <= 0 || backup <= 0 || unit === undefined) return null;
+  const short = sum((day) => day.short);
   const off = days.filter((day) => toShown(day) === "backup").length;
-  return `Backup gave ${percent.format(backup / delivered)} of the delivered energy (${backup.toFixed(0)} of ${delivered.toFixed(0)} ${unit}); ${main.toLowerCase()} was off on ${String(off)} days.`;
+  const parts = [
+    `${main} gave ${percent.format(geothermal / demand)} of the year's demand (${geothermal.toFixed(0)} of ${demand.toFixed(0)} ${unit})`,
+    ...(backup > 0 ? [`backup ${percent.format(backup / demand)}`] : []),
+    ...(short > 0 ? [`unmet ${percent.format(short / demand)}`] : []),
+  ];
+  const offText = off > 0 ? `; ${main.toLowerCase()} was off on ${String(off)} days` : "";
+  return { text: `${parts.join(", ")}${offText}.`, hasBackup: backup > 0 };
 }
 
 function toDayNumber(date: string): number {
@@ -155,9 +163,9 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
             {entry.extra}
           </span>
         ))}
-        {yearShare === null ? null : <span className="basis-full text-text">{yearShare}</span>}
+        {yearShare === null ? null : <span className="basis-full text-text">{yearShare.text}</span>}
         <span className="basis-full">
-          {yearShare === null
+          {yearShare === null || !yearShare.hasBackup
             ? null
             : `Backup is the plant's boilers (gas, CHP or electric) covering what ${main.toLowerCase()} cannot. `}
           A day counts as short when any of its demand is unmet; partly short days got part of it
