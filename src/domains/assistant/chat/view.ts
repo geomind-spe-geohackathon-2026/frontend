@@ -113,6 +113,7 @@ function toParentPath(path: string): string | null {
 }
 
 function touchAgent(view: View, event: RunEvent): View {
+  if (event.agent === "") return view;
   const key = toActor(event);
   const known = view.agents[key];
   const base: AgentNode = known ?? {

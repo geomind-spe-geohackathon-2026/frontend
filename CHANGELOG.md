@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.115 (2026-11-05)
+
+- QA-170: an event that names no agent (run-level) no longer adds a busy-list line; the phantom "Coordinator · Thinking · 0 steps" with a running timer is gone.
+
 ## 1.1.114 (2026-11-05)
 
 - QA-164: the Search dialog sends the typed term to the projects API (debounced), so it finds every project, not only the first page of 50.

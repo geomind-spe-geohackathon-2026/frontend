@@ -41,7 +41,6 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const projectId = useMatch("/projects/:projectId/*")?.params.projectId;
   const [term, setTerm] = useState("");
-  // The server searches every project; a browser-side filter would see only the first page.
   const search = useDebouncedValue(term.trim(), 250);
   const projects = useInfiniteQuery({ ...projectsQuery(search), placeholderData: keepPreviousData });
   const open = (to: string) => {
