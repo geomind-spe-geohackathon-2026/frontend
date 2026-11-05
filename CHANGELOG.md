@@ -6,6 +6,8 @@ The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0
 
 - QA-341: a finished run keeps its busy list (each agent and the Total, frozen and marked done) and its summary reads steps · tokens · cost · total time.
 - QA-344: the dot next to a chat in the sidebar is green and pulsing while its run is running or waiting, grey and still otherwise.
+- QA-345: the live text under the busy list starts with the name of the agent writing it.
+- QA-339: a question answered automatically (event `question.auto_answered`) shows as a settled card tagged 'Answered automatically', never an input.
 
 ## 1.1.139 (2026-11-05)
 
