@@ -26,6 +26,31 @@ function withPath(target: unknown, keys: string[], value: unknown): unknown {
   return { ...base, [key]: withPath(base[key], rest, value) };
 }
 
+const handSource = { source: "user: set by hand on the Case page" };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function atPath(target: unknown, path: string): unknown {
+  return path
+    .split(".")
+    .reduce<unknown>((node, key) => (isRecord(node) ? node[key] : undefined), target);
+}
+
+function withHandSources(saved: unknown, next: unknown): unknown {
+  if (!isRecord(next) || !isRecord(next.about) || !isRecord(next.about.sources)) return next;
+  const kept = atPath(saved, "about.sources");
+  const sources = Object.entries(next.about.sources).flatMap(([key, cited]) => {
+    const value = atPath(next, key);
+    const before = atPath(saved, key);
+    if (value === undefined && before !== undefined) return [];
+    if (!isEqualDocument(value, before)) return [[key, handSource]];
+    return [[key, (isRecord(kept) ? kept[key] : undefined) ?? cited]];
+  });
+  return { ...next, about: { ...next.about, sources: Object.fromEntries(sources) } };
+}
+
 function prefixed(section: string, problems: Problem[]): Problem[] {
   return problems.map((problem) => ({
     ...problem,
@@ -66,7 +91,11 @@ export function useCaseEditor(saved: Case) {
 
   const edit = (section: string, value: unknown, sectionProblems: Problem[]) => {
     setState((previous) => ({
-      draft: withSection(previous.draft ?? saved.content, section, value),
+      draft: withSection(
+        previous.draft ?? saved.content,
+        section,
+        withHandSources(saved.content[section], value),
+      ),
       sectionProblems: { ...previous.sectionProblems, [section]: sectionProblems },
     }));
   };
@@ -74,7 +103,10 @@ export function useCaseEditor(saved: Case) {
     setState((previous) => {
       const content = previous.draft ?? saved.content;
       const placed = withPath(content[section], path === "" ? [] : path.split("."), value);
-      return { ...previous, draft: withSection(content, section, placed) };
+      return {
+        ...previous,
+        draft: withSection(content, section, withHandSources(saved.content[section], placed)),
+      };
     });
   };
   const reset = () => {

@@ -7,6 +7,7 @@ The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0
 - QA-307: the busy list ends with a Total row laid out like the agent rows (Total · N agents working · steps · tokens · cost · time); it replaces the 'Steps so far' line and opens the steps window.
 - QA-311: the Results tab strip shows no scrollbar when the tabs fit; it still scrolls sideways when they do not.
 - QA-313 (frontend part): the report reads like a document: heading sizes per level with space above, 3.5rem between sections, paragraphs at most 75 characters wide, muted centred captions under figures and tables, full-width tables, flowsheet at a '<!-- flowsheet -->' marker.
+- QA-305: a case value changed by hand on the Case page gets the source 'user: set by hand on the Case page'; unchanged values keep their source, removed ones lose it.
 
 ## 1.1.130 (2026-11-05)
 
