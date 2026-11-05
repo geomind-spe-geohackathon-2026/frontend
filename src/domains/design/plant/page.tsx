@@ -20,6 +20,7 @@ import {
   portsQuery,
   plantKeys,
   plantVersionQuery,
+  useAdoptResult,
   useSaveFlowsheet,
 } from "./api";
 import { FlowsheetTab } from "./flowsheet-tab";
@@ -33,6 +34,7 @@ import { usePlantActions } from "./use-plant-actions";
 import { useAutoLayout, usePlantGraph, type PlantGraph } from "./use-auto-layout";
 import { usePlantEditor } from "./use-plant-editor";
 import { Notice } from "@/shared/ui/notice";
+import { projectQuery } from "@/shared/api/projects";
 
 type Editor = ReturnType<typeof usePlantEditor>;
 
@@ -379,12 +381,45 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   );
 }
 
-function EmptyPlant() {
+function toNewestResult(project: unknown): string | null {
+  if (typeof project !== "object" || project === null || !("progress" in project)) return null;
+  const { progress } = project;
+  if (typeof progress !== "object" || progress === null || !("plant" in progress)) return null;
+  const { plant } = progress;
+  if (typeof plant !== "object" || plant === null || !("result" in plant)) return null;
+  return typeof plant.result === "string" && plant.result !== "" ? plant.result : null;
+}
+
+function EmptyPlant({ projectId }: { projectId: string }) {
+  const project = useQuery(projectQuery(projectId));
+  const adopt = useAdoptResult(projectId);
+  const resultId = toNewestResult(project.data);
   return (
     <Card>
       <CardContent className="flex flex-col items-start gap-2">
         <p className="font-medium">This project has no plant yet.</p>
-        <p className="text-muted">Ask the assistant in the chat to design one for this project.</p>
+        {resultId === null ? (
+          <p className="text-muted">Ask the assistant in the chat to design one for this project.</p>
+        ) : (
+          <>
+            <p className="text-muted">
+              The newest result holds a design that is not saved as the plant yet.
+            </p>
+            <Button
+              disabled={adopt.isPending}
+              onClick={() => {
+                adopt.mutate(resultId, {
+                  onSuccess: () => {
+                    toast.success("The design is saved as the plant.");
+                  },
+                });
+              }}
+            >
+              Use this design as the plant
+            </Button>
+            {adopt.error === null ? null : <Notice status="failed" error={adopt.error} />}
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -437,7 +472,7 @@ export function PlantPage() {
     return (
       <>
         {header}
-        <EmptyPlant />
+        <EmptyPlant projectId={projectId} />
       </>
     );
   return (

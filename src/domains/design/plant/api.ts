@@ -192,3 +192,17 @@ export const plantSuggestQuery = (projectId: string, port: string) =>
     retry: false,
     staleTime: 60_000,
   });
+
+/** Mutation that saves the design of a result as the project's plant (when no plant is saved yet). */
+export function useAdoptResult(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (resultId: string) =>
+      toData(
+        await api.POST("/design/results/{result_id}/adopt", {
+          params: { path: { result_id: resultId } },
+        }),
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects", projectId] }),
+  });
+}
