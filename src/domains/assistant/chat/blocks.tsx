@@ -69,7 +69,7 @@ function toCalculationLine(block: ToolBlock, calculations: Calculation[]): strin
   return own === undefined ? null : `${own.label} = ${String(Number(own.value.toPrecision(6)))} ${own.unit}`.trim();
 }
 
-const fullViewTools = ["calculate", "run_python", "web_search", "read_web_page"];
+const fullViewTools = ["calculate", "run_python", "web_search", "read_web_page", "set_case"];
 
 function useFullCall(runId: string | null, block: ToolBlock, open: boolean) {
   return useQuery({
@@ -101,7 +101,7 @@ function ToolCard({
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
   const full = call.data?.output ?? null;
   const view =
-    block.error === null ? (
+    block.error === null && fullViewTools.includes(block.tool) ? (
       <ToolResultView
         tool={block.tool}
         input={block.input}

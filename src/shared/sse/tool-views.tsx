@@ -244,7 +244,29 @@ function PageView({ input, output }: { input: unknown; output: Fields | null }) 
   );
 }
 
-/** A readable view of a calculate, run_python, web_search or read_web_page call, or null for any other tool. */
+function PlantsNeed({ output }: { output: Fields | null }) {
+  const needs = list(output?.plants_need);
+  if (needs.length === 0) return null;
+  return (
+    <div className="space-y-0.5 text-[12.5px]">
+      <p className="font-medium text-warn">Plants still need:</p>
+      <ul className="list-inside list-disc">
+        {needs.map((need, position) => {
+          const plants = Array.isArray(need.plants) ? need.plants.filter((plant) => typeof plant === "string") : [];
+          return (
+            <li key={position} className="[overflow-wrap:anywhere]">
+              <span className="font-mono">{text(need.path)}</span>
+              {text(need.message) === null ? null : ` · ${text(need.message) ?? ""}`}
+              {plants.length === 0 ? null : <span className="text-muted"> ({plants.join(", ")})</span>}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/** A readable view of a calculate, run_python, web_search, read_web_page or set_case call, or null for any other tool. */
 export function ToolResultView({
   tool,
   input,
@@ -267,6 +289,7 @@ export function ToolResultView({
   }
   if (tool === "web_search") return <SearchView input={input} output={full} />;
   if (tool === "read_web_page") return <PageView input={input} output={full} />;
+  if (tool === "set_case") return list(full?.plants_need).length === 0 ? null : <PlantsNeed output={full} />;
   return null;
 }
 

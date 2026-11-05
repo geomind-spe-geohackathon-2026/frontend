@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.69 (2026-11-05)
+
+- set_case (geomind 0.4.62, backend 1.1.64): an opened set_case step in the chat fetches its full result and lists `plants_need` as "Plants still need:" (path, message, plants) when there are any.
+- The chat's tool cards show the tool view and "The full result is in Runs and logs." only for the tools that have a view (calculate, run_python, web_search, read_web_page, set_case); since 1.1.65 every card showed the note.
+
 ## 1.1.68 (2026-11-05)
 
 - QA-067: in a new chat (no messages yet) the Auto-approve toggle switches and shows its state; the first message makes the chat, stores the choice on it, and only then sends, so the first run starts with auto-approve.
