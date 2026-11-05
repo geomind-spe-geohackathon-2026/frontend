@@ -73,6 +73,25 @@ function isSort(value: string): value is Sort {
   return sorts.some((sort) => sort.value === value);
 }
 
+const sortKey = "geomind.projects.sort";
+
+function readSort(): Sort {
+  try {
+    const stored = window.localStorage.getItem(sortKey);
+    return stored !== null && isSort(stored) ? stored : "created";
+  } catch {
+    return "created";
+  }
+}
+
+function keepSort(sort: Sort): void {
+  try {
+    window.localStorage.setItem(sortKey, sort);
+  } catch {
+    return;
+  }
+}
+
 function toSorted(items: Project[], sort: Sort): Project[] {
   const copy = [...items];
   if (sort === "name") return copy.sort((a, b) => a.name.localeCompare(b.name));
@@ -124,7 +143,7 @@ function SortMenu({ sort, onSort }: { sort: Sort; onSort: (sort: Sort) => void }
 /** The projects home: the Search dialog and sort icons, import zip, New project, and one card per project with the project menu the routes give it. */
 export function ProjectsPage({ menu }: { menu: ProjectMenuComponent }) {
   const projects = useInfiniteQuery(projectsQuery(""));
-  const [sort, setSort] = useState<Sort>("updated");
+  const [sort, setSort] = useState<Sort>(readSort);
   const items = toSorted(toItems(projects.data?.pages), sort);
 
   return (
@@ -135,7 +154,13 @@ export function ProjectsPage({ menu }: { menu: ProjectMenuComponent }) {
         actions={
           <>
             <SearchButton />
-            <SortMenu sort={sort} onSort={setSort} />
+            <SortMenu
+              sort={sort}
+              onSort={(next) => {
+                keepSort(next);
+                setSort(next);
+              }}
+            />
             <ImportButton />
             <Button
               variant="default"

@@ -19,7 +19,13 @@ function toCount(count: number, name: string): string {
 export type ProjectMenuComponent = ComponentType<{ project: Project }>;
 
 /** One project card: name, owner, last change, its chats and runs, the five-step progress bar, the step to work on next, and the project menu (Pin, Rename, Settings, Delete). */
-export function ProjectCard({ project, menu: Menu }: { project: Project; menu: ProjectMenuComponent }) {
+export function ProjectCard({
+  project,
+  menu: Menu,
+}: {
+  project: Project;
+  menu: ProjectMenuComponent;
+}) {
   return (
     <div
       data-slot="project-card"
@@ -37,7 +43,8 @@ export function ProjectCard({ project, menu: Menu }: { project: Project; menu: P
         <Menu project={project} />
       </div>
       <p className="text-muted">
-        Owner {project.owner.name} · updated {toDateLabel(project.updated)}
+        Owner {project.owner.name} · created {toDateLabel(project.created)} · updated{" "}
+        {toDateLabel(project.updated)}
       </p>
       <p className="text-muted">
         {toCount(project.chats, "chat")} · {toCount(project.runs, "run")}
