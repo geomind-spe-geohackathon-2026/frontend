@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.135 (2026-11-05)
+
+- QA-328: every Design tab status dot has a tooltip with its state in words, the reason (e.g. 'Out of date: the plant (version 3, now 4) changed after the newest result was made') and the action that clears it; the stray study-name tooltip under Design is gone.
+
 ## 1.1.134 (2026-11-05)
 
 - QA-322: Days covered follows the final gemini 0.6.31 shape: `labels.other` null leaves the topped-up and other-only bands out of the legend.

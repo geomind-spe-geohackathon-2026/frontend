@@ -192,7 +192,6 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel, onRunAgain
     <TableRow>
       <TableHead
         scope="row"
-        title={study.name}
         className="text-left font-medium whitespace-normal [overflow-wrap:anywhere]"
       >
         {study.name}
