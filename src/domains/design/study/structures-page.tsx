@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api, toData } from "@/shared/api/client";
+import { ApiError } from "@/shared/api/errors";
 import type { StudyStructure, StudyStructures } from "@/shared/api/pending";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
@@ -82,8 +83,8 @@ function Feasible({ row }: { row: StudyStructure }) {
 
 const notStored = "Plant not stored for this structure yet";
 
-function hasPlant(row: StudyStructure): boolean {
-  return row.rank === 1 || row.on_front;
+function isNotStored(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404;
 }
 
 function RowActions({ studyId, row }: { studyId: string; row: StudyStructure }) {
@@ -106,10 +107,10 @@ function RowActions({ studyId, row }: { studyId: string; row: StudyStructure }) 
       await queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
     onError: (error) => {
-      toast(error instanceof Error ? error.message : "The plant could not be saved");
+      toast(isNotStored(error) ? notStored : error instanceof Error ? error.message : "The plant could not be saved");
     },
   });
-  if (!hasPlant(row)) {
+  if (isNotStored(plant.error) || isNotStored(save.error)) {
     return (
       <span className="flex flex-col gap-1" title={notStored}>
         <Button size="sm" disabled aria-label={`Open rank ${String(row.rank)}: ${notStored}`}>

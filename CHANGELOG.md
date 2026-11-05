@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.72 (2026-11-05)
+
+- Compare structures: Open and Save as plant on every row (backend 1.1.69 with gemini 0.6.6 stores a plant for every rank); a row turns both off with "Plant not stored for this structure yet" only after a real 404.
+
 ## 1.1.71 (2026-11-05)
 
 - Compare structures: Open (the structure's plant in a dialog, backend 1.1.67 `GET /design/study/{id}/structures/{rank}/plant`) and Save as plant (`POST` the same path, saved as the project's next plant version, with a link to the Plant page) on rank 1 and Pareto-front rows; other rows show both disabled with "Plant not stored for this structure yet".
