@@ -4,6 +4,7 @@ import { Card, CardAction, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { fromRoute, toRouteLabel } from "@/shared/sse/route";
 import { toProblem } from "@/shared/sse/events";
+import { ToolResultView } from "@/shared/sse/tool-views";
 import { toFailureText, toPretty as toPrettyText, toToolName } from "@/shared/sse/pretty";
 import { toPretty, toSplit } from "./split";
 
@@ -15,6 +16,12 @@ function toAnswer(answer: string): string {
 
 function toOutput(output: unknown): string {
   return typeof output === "string" ? toPrettyText(output) : toPretty(output);
+}
+
+const viewedTools = ["calculate", "run_python", "web_search", "read_web_page"];
+
+function hasView(tool: string): boolean {
+  return viewedTools.includes(tool);
 }
 
 function toCallFailure(call: ToolCall): string {
@@ -96,9 +103,15 @@ function ToolCard({ call }: { call: ToolCall }) {
         </section>
         <section aria-label="Output" className="min-w-0 space-y-1.5">
           <h3 className="text-[11.5px] tracking-wide text-muted uppercase">Output</h3>
-          <pre className="overflow-x-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
-            {toOutput(call.output)}
-          </pre>
+          {failed ? null : (
+            <ToolResultView tool={call.tool} input={call.input} output={call.output} calculations={[]} />
+          )}
+          <details open={failed || !hasView(call.tool)}>
+            <summary className="cursor-pointer text-[12px] text-muted">Raw output</summary>
+            <pre className="overflow-x-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
+              {toOutput(call.output)}
+            </pre>
+          </details>
           {failed ? <p className="text-bad">{toCallFailure(call)}</p> : null}
         </section>
       </CardContent>

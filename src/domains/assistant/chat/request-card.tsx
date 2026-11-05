@@ -1,4 +1,5 @@
 import { toRoundedText, toToolName } from "@/shared/sse/pretty";
+import { withLinks } from "@/shared/sse/tool-views";
 import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -126,6 +127,44 @@ function toAskText(text: string): string {
   return `${text.slice(0, found.index)}Allow "${toToolName(found[1] ?? "")}" to ${effect}?${text.slice(found.index + found[0].length)}`;
 }
 
+const preClass =
+  "rounded-control bg-sunken p-2 font-mono text-[12px] leading-5 whitespace-pre-wrap [overflow-wrap:anywhere]";
+
+function fromSends(sends: string): Record<string, unknown> | null {
+  try {
+    const value: unknown = JSON.parse(sends);
+    return typeof value === "object" && value !== null && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function Sends({ sends }: { sends: string }) {
+  const fields = fromSends(sends);
+  const code = fields !== null && typeof fields.code === "string" ? fields.code : null;
+  if (fields === null || code === null) {
+    return (
+      <>
+        <p className="text-[12px] text-muted">{sendsMark}</p>
+        <pre className={preClass}>{withLinks(sends)}</pre>
+      </>
+    );
+  }
+  const { code: _code, purpose, ...rest } = fields;
+  return (
+    <>
+      {typeof purpose === "string" ? <p className="font-medium">{purpose}</p> : null}
+      <p className="text-[12px] text-muted">The code it runs:</p>
+      <pre className={`${preClass} max-h-[320px] overflow-auto whitespace-pre`}>{code}</pre>
+      {Object.keys(rest).length === 0 ? null : (
+        <pre className={preClass}>{withLinks(JSON.stringify(rest, null, 2))}</pre>
+      )}
+    </>
+  );
+}
+
 function RequestMessage({ message }: { message: string }) {
   const at = message.indexOf(sendsMark);
   const ask = at < 0 ? message : message.slice(0, at).trimEnd();
@@ -133,14 +172,7 @@ function RequestMessage({ message }: { message: string }) {
   return (
     <div className="max-h-[50vh] space-y-2 overflow-y-auto pr-1 text-[13.5px] leading-6">
       <p className="whitespace-pre-line [overflow-wrap:anywhere]">{toAskText(ask)}</p>
-      {sends === null ? null : (
-        <>
-          <p className="text-[12px] text-muted">{sendsMark}</p>
-          <pre className="rounded-control bg-sunken p-2 font-mono text-[12px] leading-5 whitespace-pre-wrap [overflow-wrap:anywhere]">
-            {sends}
-          </pre>
-        </>
-      )}
+      {sends === null ? null : <Sends sends={sends} />}
     </div>
   );
 }

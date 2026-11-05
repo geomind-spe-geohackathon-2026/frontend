@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.65 (2026-11-05)
+
+- Agent tools (spec agent-tools-2026-11-05, section 5): views for `calculate` (label = result with unit, the expression, each operand with its source: case path, assumption, catalogue row with publisher, year, page and link, stored result, earlier calculation, plain number tagged "plain", constant), `run_python` (purpose and status, collapsible code, inputs with sources, stdout, stderr, output files, derived values), `web_search` (source cards: title link, site, date, snippet) and `read_web_page` (title, publisher, author, date, site link, collapsible text, a "more text follows" marker). The run log shows them from the full output. The chat shows them from what its events carry (the call's input, the calculations in the problem state; a calculate step's line reads "label = value unit") and points to Runs and logs for the rest, since a live tool.finished carries only the first 200 characters of the result.
+- Approval cards: a run_python approval shows its purpose and the code as code; every http(s) address in "What the call sends" is a link (web citations).
+
 ## 1.1.64 (2026-11-05)
 
 - QA-064: the empty Results page reads as one sentence ("No results yet. Run a study to get one."), not three centred lines.

@@ -18,6 +18,7 @@ import { fromPartialRoute, fromRoute } from "@/shared/sse/route";
 import { PacedMarkdown } from "./paced-markdown";
 import { BusyMark } from "./busy";
 import { toDecisionText } from "./answers";
+import { ToolResultView, toResultId, type Calculation } from "@/shared/sse/tool-views";
 import { toDepth, toLabel } from "./agents";
 import type { Block, RecordedStudy } from "./view";
 
@@ -53,8 +54,30 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function ToolCard({ block }: { block: ToolBlock }) {
+function toOwnCalculations(block: ToolBlock, calculations: Calculation[]): Calculation[] {
+  const id = toResultId(block.summary);
+  if (id === null) return [];
+  if (block.tool === "calculate") return calculations.filter((item) => item.id === id);
+  return calculations.filter((item) => item.expression.startsWith(`run_python ${id}`));
+}
+
+function toCalculationLine(block: ToolBlock, calculations: Calculation[]): string | null {
+  if (block.tool !== "calculate") return null;
+  const [own] = toOwnCalculations(block, calculations);
+  return own === undefined ? null : `${own.label} = ${String(Number(own.value.toPrecision(6)))} ${own.unit}`.trim();
+}
+
+function ToolCard({ block, calculations }: { block: ToolBlock; calculations: Calculation[] }) {
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
+  const view =
+    block.error === null ? (
+      <ToolResultView
+        tool={block.tool}
+        input={block.input}
+        output={null}
+        calculations={toOwnCalculations(block, calculations)}
+      />
+    ) : null;
   return (
     <details className="rounded-control border border-border bg-surface">
       <summary className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5">
@@ -64,12 +87,18 @@ function ToolCard({ block }: { block: ToolBlock }) {
           className={`min-w-0 flex-1 truncate ${block.error === null ? "text-muted" : "text-bad"}`}
         >
           {block.error === null
-            ? toSummary(block.summary)
+            ? (toCalculationLine(block, calculations) ?? toSummary(block.summary))
             : toFailureText(block.error, block.problem)}
         </span>
         {block.duration === null ? null : <Quantity value={block.duration} unit="s" />}
       </summary>
       <div className="space-y-2 border-t border-border p-2.5">
+        {view === null ? null : (
+          <>
+            {view}
+            <p className="text-[12px] text-muted">The full result is in Runs and logs.</p>
+          </>
+        )}
         <p className="text-[11.5px] tracking-wide text-muted uppercase">Input</p>
         <pre className="overflow-x-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
           {JSON.stringify(block.input, null, 2)}
@@ -278,8 +307,14 @@ function toDoneLabel(work: Block[]): string {
   return failed === 0 ? label : `${label}, ${String(failed)} needed another try`;
 }
 
-const WorkItem = memo(function WorkItem({ block }: { block: Block }) {
-  if (block.kind === "tool") return <ToolCard block={block} />;
+const WorkItem = memo(function WorkItem({
+  block,
+  calculations,
+}: {
+  block: Block;
+  calculations: Calculation[];
+}) {
+  if (block.kind === "tool") return <ToolCard block={block} calculations={calculations} />;
   if (block.kind === "request") {
     const decision = toDecisionText(block.request.request, block.request.message);
     return (
@@ -315,12 +350,20 @@ function Decisions({ blocks }: { blocks: Block[] }) {
   );
 }
 
-function WorkLog({ work, label }: { work: Block[]; label: string }) {
+function WorkLog({
+  work,
+  label,
+  calculations,
+}: {
+  work: Block[];
+  label: string;
+  calculations: Calculation[];
+}) {
   return (
     <details className="space-y-1.5">
       <summary className="cursor-pointer text-muted">{label}</summary>
       {work.map((block) => (
-        <WorkItem key={block.id} block={block} />
+        <WorkItem key={block.id} block={block} calculations={calculations} />
       ))}
     </details>
   );
@@ -333,12 +376,14 @@ export function Blocks({
   retry = null,
   agents = [],
   waiting = false,
+  calculations = [],
 }: {
   blocks: Block[];
   running: boolean;
   retry?: string | null;
   agents?: string[];
   waiting?: boolean;
+  calculations?: Calculation[];
 }) {
   const last = running ? toLiveBlock(blocks) : toAnswer(blocks);
   const answer = last === null ? null : running ? toLiveText(last.text) : toAnswerText(last);
@@ -361,7 +406,11 @@ export function Blocks({
         </div>
       ) : null}
       {work.length === 0 ? null : (
-        <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />
+        <WorkLog
+          work={work}
+          label={running ? "Steps so far" : toDoneLabel(work)}
+          calculations={calculations}
+        />
       )}
       <Decisions blocks={blocks} />
       {answer === null || last === null ? null : (

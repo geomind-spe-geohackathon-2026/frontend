@@ -15,6 +15,7 @@ import { Blocks, finishTool } from "./blocks";
 import { MessageButtons } from "./message-actions";
 import { PastRun } from "./past-run";
 import { toWorkingAgents } from "./busy";
+import { fromCalculations } from "@/shared/sse/tool-views";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { PacedMarkdown } from "./paced-markdown";
 import type { View } from "./view";
@@ -147,6 +148,7 @@ export function Conversation({
                   retry={view.retry}
                   waiting={view.status === "waiting"}
                   agents={toWorkingAgents(view)}
+                  calculations={fromCalculations(view.problem.document)}
                 /> : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (
                 <PastRun projectId={projectId} runId={message.run} />
