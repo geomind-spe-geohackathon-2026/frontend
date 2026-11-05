@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.142 (2026-11-05)
+
+- QA-292: the auto-approve question shows only when the user has never chosen; the choice is stored per user in the backend (GET/PUT /assistant/preferences) instead of the browser; until the backend route is live the question stays hidden.
+
 ## 1.1.141 (2026-11-05)
 
 - QA-348: assistant answers show their time after the copy and log icons, like user messages ('20:55', with the date when not today).
