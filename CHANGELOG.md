@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.83 (2026-11-05)
+
+- QA-096 step 2: Markdown tables (chat answers, .md files, reports), the agent study record and the chat's Alternatives use the shared data table. A cell opens its full content only when it is cut; DataCell and DataHead take any content (links, code) as children.
+
 ## 1.1.82 (2026-11-05)
 
 - QA-096 (user): a shared data table (`shared/ui/data-table.tsx`: DataTable, DataHead, DataCell) with compact one-line rows, cells cut with an ellipsis in a capped width (a click opens the full text in a popover), a header that stays on top and scrolling both ways. The CSV view of Knowledge and project files uses it first; other tables follow.

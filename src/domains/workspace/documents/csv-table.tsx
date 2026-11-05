@@ -20,13 +20,13 @@ export function CsvTable({ text }: { text: string }) {
         caption="File contents"
         className="flex-1"
         head={head.map((cell, index) => (
-          <DataHead key={index} text={cell} />
+          <DataHead key={index}>{cell}</DataHead>
         ))}
       >
         {shown.map((row, index) => (
           <TableRow key={index}>
             {row.map((cell, column) => (
-              <DataCell key={column} text={cell} />
+              <DataCell key={column}>{cell}</DataCell>
             ))}
           </TableRow>
         ))}

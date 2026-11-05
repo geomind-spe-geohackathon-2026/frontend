@@ -4,14 +4,11 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Notice } from "@/shared/ui/notice";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { tableCardClass } from "@/shared/ui/table-card";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { DataCell, DataHead, DataTable } from "@/shared/ui/data-table";
 import { agentRecordQuery, asFields, asList, toCell, toRecordSummary } from "./agent-record";
 
 type Fields = Record<string, unknown>;
-
-const tableClass = "[&_td]:p-2.5 [&_td]:align-top [&_td]:whitespace-normal [&_th]:p-2.5";
 
 function toWords(name: string): string {
   const words = name.replaceAll("_", " ").replaceAll(".", " › ");
@@ -21,70 +18,70 @@ function toWords(name: string): string {
 function RunsTable({ runs }: { runs: Fields[] }) {
   const metricKeys = [...new Set(runs.flatMap((run) => Object.keys(asFields(run.metrics) ?? {})))];
   return (
-    <Card className={tableCardClass}>
-      <Table className={tableClass}>
-        <TableHeader>
-          <TableRow>
-            <TableHead scope="col">Plant</TableHead>
-            <TableHead scope="col">Verdict</TableHead>
+    <DataTable
+      caption="Runs of this study"
+      className="max-h-[70vh]"
+      head={
+        <>
+          <DataHead>Plant</DataHead>
+          <DataHead>Design</DataHead>
+          <DataHead>Verdict</DataHead>
+          <DataHead>Why</DataHead>
+          {metricKeys.map((key) => (
+            <DataHead key={key}>{toWords(key)}</DataHead>
+          ))}
+          <DataHead>Note</DataHead>
+        </>
+      }
+    >
+      {runs.map((run, position) => {
+        const metrics = asFields(run.metrics) ?? {};
+        return (
+          <TableRow key={position}>
+            <DataCell className="font-medium">{toCell(run.plant_name ?? run.design)}</DataCell>
+            <DataCell className="font-mono text-[11.5px] text-muted">
+              {typeof run.design === "string" && run.plant_name !== undefined ? run.design : ""}
+            </DataCell>
+            <TableCell className="py-1.5">
+              <Badge variant={run.feasible === true ? "ok" : "bad"}>
+                {run.feasible === true ? "feasible" : "infeasible"}
+              </Badge>
+            </TableCell>
+            <DataCell className="text-muted">
+              {typeof run.verdict === "string" ? run.verdict : ""}
+            </DataCell>
             {metricKeys.map((key) => (
-              <TableHead key={key} scope="col">
-                {toWords(key)}
-              </TableHead>
+              <DataCell key={key} className="tabular-nums">
+                {toCell(metrics[key])}
+              </DataCell>
             ))}
-            <TableHead scope="col">Note</TableHead>
+            <DataCell className="text-muted">{toCell(run.note ?? null)}</DataCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {runs.map((run, position) => {
-            const metrics = asFields(run.metrics) ?? {};
-            return (
-              <TableRow key={position}>
-                <TableHead scope="row" className="font-medium whitespace-normal">
-                  {toCell(run.plant_name ?? run.design)}
-                  {typeof run.design === "string" && run.plant_name !== undefined ? (
-                    <span className="block font-mono text-[11.5px] text-muted">{run.design}</span>
-                  ) : null}
-                </TableHead>
-                <TableCell>
-                  <Badge variant={run.feasible === true ? "ok" : "bad"}>
-                    {run.feasible === true ? "feasible" : "infeasible"}
-                  </Badge>
-                  {typeof run.verdict === "string" ? (
-                    <span className="mt-0.5 block text-[12px] text-muted">{run.verdict}</span>
-                  ) : null}
-                </TableCell>
-                {metricKeys.map((key) => (
-                  <TableCell key={key} className="tabular-nums">
-                    {toCell(metrics[key])}
-                  </TableCell>
-                ))}
-                <TableCell className="text-[12px] text-muted">{toCell(run.note ?? null)}</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </Card>
+        );
+      })}
+    </DataTable>
   );
 }
 
 function ValuesTable({ values }: { values: Fields }) {
   return (
-    <Card className={tableCardClass}>
-      <Table className={tableClass}>
-        <TableBody>
-          {Object.entries(values).map(([key, value]) => (
-            <TableRow key={key}>
-              <TableHead scope="row" className="font-medium whitespace-normal">
-                {toWords(key)}
-              </TableHead>
-              <TableCell className="tabular-nums [overflow-wrap:anywhere]">{toCell(value)}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
+    <DataTable
+      caption="Values"
+      className="max-h-[70vh]"
+      head={
+        <>
+          <DataHead>Name</DataHead>
+          <DataHead>Value</DataHead>
+        </>
+      }
+    >
+      {Object.entries(values).map(([key, value]) => (
+        <TableRow key={key}>
+          <DataCell className="font-medium">{toWords(key)}</DataCell>
+          <DataCell className="tabular-nums">{toCell(value)}</DataCell>
+        </TableRow>
+      ))}
+    </DataTable>
   );
 }
 

@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -13,54 +13,66 @@ import { cn } from "@/lib/cn";
 
 const lineClass = "block max-w-60 truncate text-left";
 
-/** A table cell that shows its text on one line, cut with an ellipsis, in a capped width; a click opens the full text beside it. */
-export function DataCell({
-  text,
-  children,
-  className,
-}: {
-  text: string;
-  children?: ReactNode;
-  className?: string;
-}) {
+/** Classes of the shared data table: the bordered box whose table container scrolls both ways, and the header row that stays on top. */
+export const dataTableClass = {
+  box: "min-h-0 overflow-hidden rounded-md border [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:max-h-[inherit] [&>[data-slot=table-container]]:overflow-auto",
+  header: "sticky top-0 z-10 bg-background shadow-[0_1px_0_var(--border)]",
+};
+
+/** A table cell that shows its content on one line, cut with an ellipsis, in a capped width; a click on a cut cell opens the full content beside it. */
+export function DataCell({ children, className }: { children?: ReactNode; className?: string }) {
   const [open, setOpen] = useState(false);
-  if (text === "") return <TableCell className={cn("py-1.5", className)}>{children}</TableCell>;
-  const button = (
-    <button
-      type="button"
-      title={open ? undefined : "Show the full text"}
+  const line = useRef<HTMLSpanElement>(null);
+  const openIfCut = () => {
+    const element = line.current;
+    if (element !== null && element.scrollWidth > element.clientWidth) setOpen(true);
+  };
+  const onKey = (event: KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openIfCut();
+    }
+  };
+  const cell = (
+    <span
+      ref={line}
+      role="button"
+      tabIndex={0}
       className={cn(lineClass, "cursor-pointer rounded-sm hover:bg-sunken")}
-      onClick={() => {
-        setOpen(true);
-      }}
+      onClick={openIfCut}
+      onKeyDown={onKey}
     >
-      {children ?? text}
-    </button>
+      {children}
+    </span>
   );
   return (
     <TableCell className={cn("py-1.5", className)}>
       {open ? (
         <Popover open onOpenChange={setOpen}>
-          <PopoverTrigger asChild>{button}</PopoverTrigger>
+          <PopoverAnchor asChild>{cell}</PopoverAnchor>
           <PopoverContent
             align="start"
             className="max-h-72 w-auto max-w-md overflow-auto text-[12.5px] whitespace-pre-wrap [overflow-wrap:anywhere]"
           >
-            {text}
+            {children}
           </PopoverContent>
         </Popover>
       ) : (
-        button
+        cell
       )}
     </TableCell>
   );
 }
 
-/** A header cell cut to one line in the same capped width as a DataCell; the full name shows on hover. */
-export function DataHead({ text, className }: { text: string; className?: string }) {
+/** A header cell cut to one line in the same capped width as a DataCell; the full name shows on hover when it is text. */
+export function DataHead({ children, className }: { children?: ReactNode; className?: string }) {
   return (
-    <TableHead scope="col" title={text} className={className}>
-      <span className={lineClass}>{text}</span>
+    <TableHead
+      scope="col"
+      title={typeof children === "string" ? children : undefined}
+      className={className}
+    >
+      <span className={lineClass}>{children}</span>
     </TableHead>
   );
 }
@@ -78,15 +90,10 @@ export function DataTable({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "min-h-0 overflow-hidden rounded-md border [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:overflow-auto",
-        className,
-      )}
-    >
+    <div className={cn(dataTableClass.box, className)}>
       <Table className="text-[12.5px]">
         <TableCaption className="sr-only">{caption}</TableCaption>
-        <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_var(--border)]">
+        <TableHeader className={dataTableClass.header}>
           <TableRow>{head}</TableRow>
         </TableHeader>
         <TableBody>{children}</TableBody>
