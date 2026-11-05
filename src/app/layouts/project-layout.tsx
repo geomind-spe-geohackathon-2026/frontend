@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Link,
@@ -170,6 +170,15 @@ function ProjectShell({ project }: { project: Project }) {
 export function ProjectLayout() {
   const projectId = useRequiredParam("projectId");
   const project = useQuery(projectQuery(projectId));
+  const name = project.data?.name;
+  useEffect(() => {
+    if (name === undefined) return;
+    const before = document.title;
+    document.title = `Geomind · ${name}`;
+    return () => {
+      document.title = before;
+    };
+  }, [name]);
 
   if (hasCode(project.error, "project_not_found")) {
     return (
