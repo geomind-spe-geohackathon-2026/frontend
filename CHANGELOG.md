@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.79 (2026-11-05)
+
+- QA-074: while a nested agent works, the chat's tokens and cost come from the larger of the run's usage total and the sum of every finished step (nested agents included), so they grow live instead of showing 0; the collapsed "Steps so far" says how many steps it holds.
+
 ## 1.1.78 (2026-11-05)
 
 - QA-088: a study the assistant ran shows in the study list what it found ("Sizing done", "3 runs, 2 feasible", "Best ...") from backend 1.1.80 `GET /design/study/{id}/agent-record`, with Open record (a page with its runs table: verdict and metrics; its sizing table; or its best design) and Open run. Without a record (page studies: 404) the row stays as before.

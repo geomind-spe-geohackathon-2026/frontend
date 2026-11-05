@@ -343,6 +343,11 @@ function WorkingAgents({ blocks, agents }: { blocks: Block[]; agents: string[] }
   );
 }
 
+function toRunningLabel(work: Block[]): string {
+  const steps = work.filter((block) => block.kind === "tool").length;
+  return `Steps so far (${String(steps)} ${steps === 1 ? "step" : "steps"})`;
+}
+
 function toDoneLabel(work: Block[]): string {
   const steps = work.filter((block) => block.kind === "tool").length;
   const failed = toFailedCount(work);
@@ -459,7 +464,7 @@ export function Blocks({
       {work.length === 0 ? null : (
         <WorkLog
           work={work}
-          label={running ? "Steps so far" : toDoneLabel(work)}
+          label={running ? toRunningLabel(work) : toDoneLabel(work)}
           calculations={calculations}
           runId={runId}
         />

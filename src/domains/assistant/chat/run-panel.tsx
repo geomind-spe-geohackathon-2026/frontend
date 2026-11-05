@@ -14,7 +14,7 @@ import { toDepth } from "./agents";
 import { toAgentName } from "@/shared/sse/agent-names";
 import { ProblemView } from "./problem";
 import { BusyMark, toWorkingAgents } from "./busy";
-import type { View } from "./view";
+import { toRunUsage, type View } from "./view";
 
 type Props = { projectId: string; runId: string; view: View; run: Run | undefined };
 
@@ -94,7 +94,7 @@ export function RunPanel({ projectId, runId, view, run }: Props) {
             <div className="mt-1.5 space-y-1.5">
               <p className="text-muted">Run {toShortId(runId)}</p>
               <p>
-                <UsageLine usage={view.usage} />
+                <UsageLine usage={toRunUsage(view)} />
               </p>
               <AgentTree view={view} />
             </div>

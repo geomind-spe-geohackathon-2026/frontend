@@ -28,7 +28,7 @@ import { chatRunsQuery, runAgentsQuery } from "./api";
 import { AgentUsage } from "./agent-usage";
 import { RunPanel } from "./run-panel";
 import { UsageRing } from "./usage-ring";
-import type { View } from "./view";
+import { toRunUsage, type View } from "./view";
 
 type Props = {
   projectId: string;
@@ -93,7 +93,7 @@ export function ChatStatus({ projectId, chatId, runId, view }: Omit<Props, "run"
       }
       context={view.context}
       window={view.window}
-      usage={view.usage}
+      usage={toRunUsage(view)}
       cost={toTotalCost(runs.data, view, runId)}
     />
   );
