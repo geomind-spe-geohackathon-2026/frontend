@@ -1,4 +1,6 @@
-import { memo } from "react";
+import { memo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api, toData } from "@/shared/api/client";
 import { Link, useParams } from "react-router-dom";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Badge } from "@/components/ui/badge";
@@ -67,19 +69,53 @@ function toCalculationLine(block: ToolBlock, calculations: Calculation[]): strin
   return own === undefined ? null : `${own.label} = ${String(Number(own.value.toPrecision(6)))} ${own.unit}`.trim();
 }
 
-function ToolCard({ block, calculations }: { block: ToolBlock; calculations: Calculation[] }) {
+const fullViewTools = ["calculate", "run_python", "web_search", "read_web_page"];
+
+function useFullCall(runId: string | null, block: ToolBlock, open: boolean) {
+  return useQuery({
+    queryKey: ["run-call", runId, block.id],
+    queryFn: async ({ signal }) =>
+      toData(
+        await api.GET("/assistant/runs/{run_id}/calls/{call_id}", {
+          params: { path: { run_id: runId ?? "", call_id: block.id } },
+          signal,
+        }),
+      ),
+    enabled: open && runId !== null && block.state === "done" && fullViewTools.includes(block.tool),
+    staleTime: Number.POSITIVE_INFINITY,
+    retry: false,
+  });
+}
+
+function ToolCard({
+  block,
+  calculations,
+  runId,
+}: {
+  block: ToolBlock;
+  calculations: Calculation[];
+  runId: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const call = useFullCall(runId, block, open);
   const tone = block.state === "failed" ? "bad" : block.state === "done" ? "ok" : "info";
+  const full = call.data?.output ?? null;
   const view =
     block.error === null ? (
       <ToolResultView
         tool={block.tool}
         input={block.input}
-        output={null}
+        output={full}
         calculations={toOwnCalculations(block, calculations)}
       />
     ) : null;
   return (
-    <details className="rounded-control border border-border bg-surface">
+    <details
+      className="rounded-control border border-border bg-surface"
+      onToggle={(event) => {
+        setOpen(event.currentTarget.open);
+      }}
+    >
       <summary className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5">
         <Badge variant={tone}>{block.state}</Badge>
         <span>{toToolName(block.tool)}</span>
@@ -96,7 +132,11 @@ function ToolCard({ block, calculations }: { block: ToolBlock; calculations: Cal
         {view === null ? null : (
           <>
             {view}
-            <p className="text-[12px] text-muted">The full result is in Runs and logs.</p>
+            {full !== null ? null : (
+              <p className="text-[12px] text-muted">
+                {call.isFetching ? "Loading the full result..." : "The full result is in Runs and logs."}
+              </p>
+            )}
           </>
         )}
         <p className="text-[11.5px] tracking-wide text-muted uppercase">Input</p>
@@ -310,11 +350,15 @@ function toDoneLabel(work: Block[]): string {
 const WorkItem = memo(function WorkItem({
   block,
   calculations,
+  runId,
 }: {
   block: Block;
   calculations: Calculation[];
+  runId: string | null;
 }) {
-  if (block.kind === "tool") return <ToolCard block={block} calculations={calculations} />;
+  if (block.kind === "tool") {
+    return <ToolCard block={block} calculations={calculations} runId={runId} />;
+  }
   if (block.kind === "request") {
     const decision = toDecisionText(block.request.request, block.request.message, block.answer);
     return (
@@ -354,16 +398,18 @@ function WorkLog({
   work,
   label,
   calculations,
+  runId,
 }: {
   work: Block[];
   label: string;
   calculations: Calculation[];
+  runId: string | null;
 }) {
   return (
     <details className="space-y-1.5">
       <summary className="cursor-pointer text-muted">{label}</summary>
       {work.map((block) => (
-        <WorkItem key={block.id} block={block} calculations={calculations} />
+        <WorkItem key={block.id} block={block} calculations={calculations} runId={runId} />
       ))}
     </details>
   );
@@ -377,6 +423,7 @@ export function Blocks({
   agents = [],
   waiting = false,
   calculations = [],
+  runId = null,
 }: {
   blocks: Block[];
   running: boolean;
@@ -384,6 +431,7 @@ export function Blocks({
   agents?: string[];
   waiting?: boolean;
   calculations?: Calculation[];
+  runId?: string | null;
 }) {
   const last = running ? toLiveBlock(blocks) : toAnswer(blocks);
   const answer = last === null ? null : running ? toLiveText(last.text) : toAnswerText(last);
@@ -410,6 +458,7 @@ export function Blocks({
           work={work}
           label={running ? "Steps so far" : toDoneLabel(work)}
           calculations={calculations}
+          runId={runId}
         />
       )}
       <Decisions blocks={blocks} />

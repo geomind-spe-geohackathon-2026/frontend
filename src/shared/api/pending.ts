@@ -129,7 +129,20 @@ export type PortSuggestions = { port: string; suggestions: PortSuggestion[] };
 /** Routes the backend has not published yet (Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
 export type AutoApprove = { auto_approve: boolean };
 
+export type RunCall = {
+  call_id: string;
+  tool: string;
+  agent: string;
+  status: "ok" | "error";
+  source: unknown;
+  input: unknown;
+  output: unknown;
+};
+
 export type PendingPaths = {
+  "/assistant/runs/{run_id}/calls/{call_id}": Omit<Route, "get"> & {
+    get: Read<RunCall, never, { run_id: string; call_id: string }>;
+  };
   "/assistant/chat/{chat_id}/auto-approve": Omit<Route, "get" | "put"> & {
     get: Read<AutoApprove, never, { chat_id: string }>;
     put: Write<AutoApprove, AutoApprove, { chat_id: string }>;

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.67 (2026-11-05)
+
+- Agent tools: when a calculate, run_python, web_search or read_web_page step is opened in the chat, it fetches the call's full output once (backend 1.1.60, `GET /assistant/runs/{run_id}/calls/{call_id}`) and shows the full view (stdout, outputs, search results, page text) as the run log does.
+
 ## 1.1.66 (2026-11-05)
 
 - QA-058: the decision lines ("You approved/denied ...: reason", "You answered: ...") come from the run's public `answer` event (backend 1.1.59), so they show in every browser and after a reload; the tab's own memory is kept only as a fallback for runs before that.

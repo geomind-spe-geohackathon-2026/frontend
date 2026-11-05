@@ -149,6 +149,7 @@ export function Conversation({
                   waiting={view.status === "waiting"}
                   agents={toWorkingAgents(view)}
                   calculations={fromCalculations(view.problem.document)}
+                  runId={liveRunId}
                 /> : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (
                 <PastRun projectId={projectId} runId={message.run} />

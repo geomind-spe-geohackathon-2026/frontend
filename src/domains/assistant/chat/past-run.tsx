@@ -46,7 +46,7 @@ function Replay({ runId }: { runId: string }) {
   const { view, failed } = useReplay(runId);
   if (failed) return <p className="text-bad">The steps of this run could not be loaded.</p>;
   if (view.blocks.length === 0) return <p className="text-muted">Loading the steps...</p>;
-  return <Blocks blocks={view.blocks} running={false} />;
+  return <Blocks blocks={view.blocks} running={false} runId={runId} />;
 }
 
 /** An earlier run of the chat that ended without an answer (cancelled or failed): its steps on demand, and a link to its log. */
