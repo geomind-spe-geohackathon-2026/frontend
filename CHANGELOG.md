@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.61 (2026-11-05)
+
+- QA-062: while a run waits for the user, the chat's status line reads "Waiting for your answer below" (not "Thinking"), and the question or approval card scrolls into view when it appears, also after a reload or coming back to the chat.
+
 ## 1.1.60 (2026-11-05)
 
 - QA-059: the answer to an assistant's question is a multi-line field that grows with its text (up to 12 rem); Enter makes a new line, Ctrl+Enter (Cmd+Enter) or the Answer button sends.

@@ -145,6 +145,7 @@ export function Conversation({
                   blocks={view.blocks}
                   running={isActive(view)}
                   retry={view.retry}
+                  waiting={view.status === "waiting"}
                   agents={toWorkingAgents(view)}
                 /> : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Message } from "@/shared/api/types";
 import { runQuery, useAnswerRun, useCancelRun, useCreateChat, useSendMessage } from "./api";
@@ -39,6 +39,14 @@ type RequestProps = { projectId: string; runId: string; view: View; auto: boolea
 
 function RunRequest({ projectId, runId, view, auto }: RequestProps) {
   const answer = useAnswerRun(projectId, runId);
+  const shown = useRef<string | null>(null);
+  const toInView = (element: HTMLDivElement | null, id: string) => {
+    if (element === null || shown.current === id) return;
+    shown.current = id;
+    requestAnimationFrame(() => {
+      element.scrollIntoView({ block: "end" });
+    });
+  };
   useApproveByItself(auto, view.request, (request) => {
     keepAnswer(request, { approved: true });
     answer.mutate({ request, answer: { approved: true } });
@@ -46,7 +54,7 @@ function RunRequest({ projectId, runId, view, auto }: RequestProps) {
   if (view.request === null || (auto && view.request.kind === "approval")) return null;
   const { request } = view;
   return (
-    <div className="sticky bottom-0">
+    <div className="sticky bottom-0" ref={(element) => toInView(element, request.request)}>
       <RequestCard
         request={request}
         pending={answer.isPending}

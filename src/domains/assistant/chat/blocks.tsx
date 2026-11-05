@@ -332,11 +332,13 @@ export function Blocks({
   running,
   retry = null,
   agents = [],
+  waiting = false,
 }: {
   blocks: Block[];
   running: boolean;
   retry?: string | null;
   agents?: string[];
+  waiting?: boolean;
 }) {
   const last = running ? toLiveBlock(blocks) : toAnswer(blocks);
   const answer = last === null ? null : running ? toLiveText(last.text) : toAnswerText(last);
@@ -348,7 +350,13 @@ export function Blocks({
     <div className="space-y-2.5">
       {running ? (
         <div role="status" className="space-y-0.5 text-muted">
-          {agents.length === 0 ? <p>{toLatest(blocks)}</p> : <WorkingAgents blocks={blocks} agents={agents} />}
+          {waiting ? (
+            <p className="text-warn">Waiting for your answer below</p>
+          ) : agents.length === 0 ? (
+            <p>{toLatest(blocks)}</p>
+          ) : (
+            <WorkingAgents blocks={blocks} agents={agents} />
+          )}
           {retry === null ? null : <p className="text-warn">{retry}</p>}
         </div>
       ) : null}
