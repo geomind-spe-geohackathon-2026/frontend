@@ -1,13 +1,6 @@
 import Papa from "papaparse";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableRow } from "@/components/ui/table";
+import { DataCell, DataHead, DataTable } from "@/shared/ui/data-table";
 
 const rowLimit = 2000;
 
@@ -17,40 +10,29 @@ export function toCsvRows(text: string): string[][] {
   return parsed.data;
 }
 
-/** A CSV file as a table: the first row as a sticky header, long cells wrapped, scrolling both ways. */
+/** A CSV file in the shared data table: one-line cells that open in full on a click, a header that stays on top, scrolling both ways. */
 export function CsvTable({ text }: { text: string }) {
   const [head = [], ...rows] = toCsvRows(text);
   const shown = rows.slice(0, rowLimit);
   return (
-    <div className="min-h-0 flex-1 overflow-auto rounded-md border">
-      <Table className="text-[12.5px]">
-        <TableCaption className="sr-only">File contents</TableCaption>
-        <TableHeader className="sticky top-0 z-10 bg-background">
-          <TableRow>
-            {head.map((cell, index) => (
-              <TableHead key={index} scope="col" className="whitespace-nowrap">
-                {cell}
-              </TableHead>
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <DataTable
+        caption="File contents"
+        className="flex-1"
+        head={head.map((cell, index) => (
+          <DataHead key={index} text={cell} />
+        ))}
+      >
+        {shown.map((row, index) => (
+          <TableRow key={index}>
+            {row.map((cell, column) => (
+              <DataCell key={column} text={cell} />
             ))}
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {shown.map((row, index) => (
-            <TableRow key={index}>
-              {row.map((cell, column) => (
-                <TableCell
-                  key={column}
-                  className="max-w-[28rem] align-top whitespace-normal [overflow-wrap:anywhere]"
-                >
-                  {cell}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+        ))}
+      </DataTable>
       {rows.length > rowLimit ? (
-        <p className="p-2 text-[12px] text-muted-foreground">
+        <p className="text-[12px] text-muted-foreground">
           Showing the first {rowLimit} of {rows.length} rows.
         </p>
       ) : null}

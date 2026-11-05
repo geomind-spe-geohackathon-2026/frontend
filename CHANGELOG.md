@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.82 (2026-11-05)
+
+- QA-096 (user): a shared data table (`shared/ui/data-table.tsx`: DataTable, DataHead, DataCell) with compact one-line rows, cells cut with an ellipsis in a capped width (a click opens the full text in a popover), a header that stays on top and scrolling both ways. The CSV view of Knowledge and project files uses it first; other tables follow.
+
 ## 1.1.81 (2026-11-05)
 
 - QA-093: the New project dialog no longer closes on a click outside it (Cancel, the close button and Escape still close it); Cancel and Create stay visible at the dialog's foot in a short window; a missing name or Shared memory scrolls to and focuses that field beside its message.
