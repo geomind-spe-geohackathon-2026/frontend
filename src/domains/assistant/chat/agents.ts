@@ -16,7 +16,7 @@ export function toLabel(path: string): string {
 
 /** The name of an agent run: its instance name ("Geoscientist II") when it is one of several, else the agent's name. */
 export function toAgentTitle(node: AgentNode): string {
-  return node.instance ?? toAgentName(node.path);
+  return node.instance === null || node.instance === "" ? toAgentName(node.path) : node.instance;
 }
 
 /** Splits blocks into groups of consecutive blocks of the same agent. */

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.112 (2026-11-05)
+
+- QA-146: the busy list never shows an unnamed line: an agent run with an empty id (the root run) is named "Coordinator", and an empty instance name falls back to the agent's name.
+
 ## 1.1.111 (2026-11-05)
 
 - QA-139 follow-up: the Flowsheet tab of a plant version is the Plant page's own diagram, read-only: zoom, fit, Arrange (view only), minimap, stream legend, group frames; modules added or changed from the version before are outlined and marked "changed".

@@ -24,8 +24,9 @@ function toWords(id: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-/** The display name of an agent from its id or dotted path (its last part): the known name, else the id in words. */
+/** The display name of an agent from its id or dotted path (its last part): the known name, else the id in words; an empty id is the root agent, the Coordinator. */
 export function toAgentName(path: string): string {
   const id = path.split(".").at(-1) ?? path;
+  if (id === "") return agentNames["coordinator"] ?? "Coordinator";
   return agentNames[id] ?? toWords(id);
 }
