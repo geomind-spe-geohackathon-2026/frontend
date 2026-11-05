@@ -6,7 +6,14 @@ import { Notice } from "@/shared/ui/notice";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { DataCell, DataHead, DataTable } from "@/shared/ui/data-table";
-import { agentRecordQuery, asFields, asList, toCell, toRecordSummary } from "./agent-record";
+import {
+  agentRecordQuery,
+  asFields,
+  asList,
+  toCell,
+  toRankedRows,
+  toRecordSummary,
+} from "./agent-record";
 
 type Fields = Record<string, unknown>;
 
@@ -85,11 +92,81 @@ function ValuesTable({ values }: { values: Fields }) {
   );
 }
 
+function toFeasible(row: Fields): string {
+  if (row.feasible_low === undefined && row.feasible_high === undefined) return "";
+  if (row.feasible_low === true && row.feasible_high === true) return "both";
+  if (row.feasible_low === false && row.feasible_high === false) return "neither";
+  return row.feasible_low === true ? "low only" : "high only";
+}
+
+function SensitivityTable({ rows }: { rows: Fields[] }) {
+  return (
+    <DataTable
+      caption="Uncertain values ranked by their swing of each result, largest first"
+      className="max-h-[70vh]"
+      head={
+        <>
+          <DataHead>Rank</DataHead>
+          <DataHead>Value</DataHead>
+          <DataHead>Low</DataHead>
+          <DataHead>High</DataHead>
+          <DataHead>Result</DataHead>
+          <DataHead>At low</DataHead>
+          <DataHead>At high</DataHead>
+          <DataHead>Swing</DataHead>
+          <DataHead>Feasible</DataHead>
+        </>
+      }
+    >
+      {toRankedRows(rows).map((row, position, ranked) => {
+        const rank = ranked
+          .slice(0, position + 1)
+          .filter((item) => item.metric === row.metric).length;
+        return (
+          <TableRow key={`${String(row.parameter)}-${String(row.metric)}`}>
+            <DataCell className="tabular-nums text-muted">{rank}</DataCell>
+            <DataCell className="font-medium">
+              {toWords(String(row.parameter).replace(/^case\./, ""))}
+            </DataCell>
+            <DataCell className="tabular-nums">{toCell(row.low)}</DataCell>
+            <DataCell className="tabular-nums">{toCell(row.high)}</DataCell>
+            <DataCell>{toWords(String(row.metric))}</DataCell>
+            <DataCell className="tabular-nums">{toCell(row.at_low)}</DataCell>
+            <DataCell className="tabular-nums">{toCell(row.at_high)}</DataCell>
+            <DataCell className="font-medium tabular-nums">{toCell(row.effect)}</DataCell>
+            <DataCell className="text-muted">{toFeasible(row)}</DataCell>
+          </TableRow>
+        );
+      })}
+    </DataTable>
+  );
+}
+
+function RawRecord({ result }: { result: unknown }) {
+  return (
+    <details className="text-[12.5px] text-muted">
+      <summary className="cursor-pointer">Raw record (JSON)</summary>
+      <pre className="mt-1 max-h-[60vh] overflow-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
+        {JSON.stringify(result, null, 2)}
+      </pre>
+    </details>
+  );
+}
+
 function RecordBody({ result }: { result: unknown }) {
   const fields = asFields(result);
   if (fields === null) return <p className="text-muted">The study stored no result.</p>;
   const runs = asList(fields.runs);
   if (runs.length > 0) return <RunsTable runs={runs} />;
+  const rows = asList(fields.rows);
+  if (rows.length > 0) {
+    return (
+      <div className="space-y-2">
+        <SensitivityTable rows={rows} />
+        <RawRecord result={result} />
+      </div>
+    );
+  }
   const sizing = asFields(fields.sizing);
   if (sizing !== null) return <ValuesTable values={sizing} />;
   if ("best" in fields) {
