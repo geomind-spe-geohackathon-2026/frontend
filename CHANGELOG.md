@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.68 (2026-11-05)
+
+- QA-067: in a new chat (no messages yet) the Auto-approve toggle switches and shows its state; the first message makes the chat, stores the choice on it, and only then sends, so the first run starts with auto-approve.
+
 ## 1.1.67 (2026-11-05)
 
 - Agent tools: when a calculate, run_python, web_search or read_web_page step is opened in the chat, it fetches the call's full output once (backend 1.1.60, `GET /assistant/runs/{run_id}/calls/{call_id}`) and shows the full view (stdout, outputs, search results, page text) as the run log does.

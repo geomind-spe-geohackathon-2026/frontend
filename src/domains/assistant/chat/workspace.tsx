@@ -9,7 +9,7 @@ import { Conversation } from "./conversation";
 import { RequestCard } from "./request-card";
 import { ChatStatus } from "./chat-status";
 import { PanelHints } from "./panel-hints";
-import { AutoApproveButton, useApproveByItself, useAutoApprove } from "./auto-approve";
+import { AutoApproveButton, saveAutoApprove, useApproveByItself, useAutoApprove } from "./auto-approve";
 import { useRunView } from "./use-run-view";
 import { keepAnswer } from "./answers";
 import { toMessageWithFiles } from "@/shared/attach/upload";
@@ -82,12 +82,13 @@ function useStop(projectId: string, runId: string | null, active: boolean) {
   return { stop, stopping, error: cancel.error };
 }
 
-function useSendToChat(projectId: string, chatId: string | null) {
+function useSendToChat(projectId: string, chatId: string | null, auto: boolean) {
   const navigate = useNavigate();
   const create = useCreateChat(projectId);
   const send = useSendMessage(projectId);
   async function handleSend(content: string): Promise<void> {
     const target = chatId ?? (await create.mutateAsync({})).id;
+    if (chatId === null && auto) await saveAutoApprove(target, true);
     await send.mutateAsync({ chatId: target, content });
     if (chatId === null) void navigate(`/projects/${projectId}/assistant/chat/${target}`);
   }
@@ -98,8 +99,8 @@ function useSendToChat(projectId: string, chatId: string | null) {
 export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
   const { view, failure } = useRunView(projectId, chatId, runId);
   const run = useQuery({ ...runQuery(projectId, runId ?? ""), enabled: runId !== null });
-  const { handleSend, send, pending } = useSendToChat(projectId, chatId);
   const [auto, setAuto] = useAutoApprove(chatId);
+  const { handleSend, send, pending } = useSendToChat(projectId, chatId, auto);
   const files = useAttachments(projectId);
   const status = view.blocks.length === 0 && run.data !== undefined ? run.data.status : view.status;
   const active =

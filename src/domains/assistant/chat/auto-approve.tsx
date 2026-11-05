@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, toData } from "@/shared/api/client";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -10,7 +10,7 @@ function toKey(chatId: string | null) {
   return ["chats", chatId ?? "new", "auto-approve"] as const;
 }
 
-/** Whether the worker approves this chat's tool calls itself, stored per chat on the server; off for a chat not created yet. */
+/** Whether the worker approves this chat's tool calls itself, stored per chat on the server; for a chat not made yet, kept here until its first message. */
 export function useAutoApprove(chatId: string | null): [boolean, (on: boolean) => void] {
   const queryClient = useQueryClient();
   const stored = useQuery({
@@ -37,11 +37,25 @@ export function useAutoApprove(chatId: string | null): [boolean, (on: boolean) =
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: toKey(chatId) }),
   });
+  const [draft, setDraft] = useState(false);
   const change = (next: boolean) => {
-    if (chatId === null) return;
+    if (chatId === null) {
+      setDraft(next);
+      return;
+    }
     save.mutate(next);
   };
-  return [stored.data?.auto_approve ?? false, change];
+  return [chatId === null ? draft : (stored.data?.auto_approve ?? false), change];
+}
+
+/** Stores the auto-approve choice on a chat that was just made, before its first message starts a run. */
+export async function saveAutoApprove(chatId: string, on: boolean): Promise<void> {
+  toData(
+    await api.PUT("/assistant/chat/{chat_id}/auto-approve", {
+      params: { path: { chat_id: chatId } },
+      body: { auto_approve: on },
+    }),
+  );
 }
 
 /** Approves an approval request once, as soon as it shows, while auto-approve is on; questions still wait for the user. */
