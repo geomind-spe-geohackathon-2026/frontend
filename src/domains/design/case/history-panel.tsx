@@ -13,6 +13,7 @@ type Props = {
   current: number;
   dirty: boolean;
   onRestored: () => void;
+  initial?: number | undefined;
 };
 
 function toRestoreFailure(error: unknown): string {
@@ -23,11 +24,11 @@ function toRestoreFailure(error: unknown): string {
 }
 
 /** The saved case versions, newest first; a version opens read-only with its changes from the version before and a Restore button. */
-export function HistoryPanel({ projectId, current, dirty, onRestored }: Props) {
+export function HistoryPanel({ projectId, current, dirty, onRestored, initial }: Props) {
   const versions = useQuery(caseVersionsQuery(projectId));
   const queryClient = useQueryClient();
   const restore = useRestoreCase(projectId);
-  const [opened, setOpened] = useState<number | null>(null);
+  const [opened, setOpened] = useState<number | null>(initial ?? null);
   if (versions.isPending) return <Notice status="loading" what="the history" />;
   if (versions.isError) {
     return (

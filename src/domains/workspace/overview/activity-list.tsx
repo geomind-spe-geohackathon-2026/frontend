@@ -5,9 +5,10 @@ import { toActivityPath } from "./link";
 import type { Activity } from "@/shared/api/types";
 
 function ActivityText({ projectId, item }: { projectId: string; item: Activity }) {
-  const text = item.text.toLowerCase().startsWith(item.actor.name.toLowerCase())
+  const joined = item.text.toLowerCase().startsWith(item.actor.name.toLowerCase())
     ? item.text
-    : `${item.actor.name} ${item.text}`;
+    : `${item.actor.name} ${item.text.charAt(0).toLowerCase()}${item.text.slice(1)}`;
+  const text = `${joined.charAt(0).toUpperCase()}${joined.slice(1)}`;
   if (item.link === null) return <span>{text}</span>;
   return <Link to={toActivityPath(projectId, item.link)}>{text}</Link>;
 }

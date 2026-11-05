@@ -18,7 +18,7 @@ import {
   type JsonSchema,
 } from "@/shared/forms/json-schema";
 import { PageHeader } from "@/shared/layout/page-header";
-import { HistoryButton } from "@/shared/layout/history-button";
+import { HistoryButton, toVersionParam } from "@/shared/layout/history-button";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -452,7 +452,8 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
     setGeneration((value) => value + 1);
   });
   const blocker = useUnsavedGuard(editor.dirty);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const askedVersion = toVersionParam(params);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(askedVersion !== undefined);
   const tab = params.get("tab") ?? caseSections(schema)[0] ?? "";
   const canSave = editor.dirty && editor.problems.length === 0 && !editor.isChecking;
   const showTab = (next: string) => {
@@ -475,11 +476,19 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
             dirty={editor.dirty}
             canSave={canSave && !flow.save.isPending}
             history={
-              <HistoryButton what="case" open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+              <HistoryButton
+                what="case"
+                open={isHistoryOpen}
+                onOpenChange={(open) => {
+                  setIsHistoryOpen(open);
+                  if (!open && askedVersion !== undefined) setParams({ tab }, { replace: true });
+                }}
+              >
                 <HistoryPanel
                   projectId={projectId}
                   current={saved.version}
                   dirty={editor.dirty}
+                  initial={askedVersion}
                   onRestored={() => {
                     setIsHistoryOpen(false);
                   }}

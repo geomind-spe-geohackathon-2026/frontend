@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.99 (2026-11-05)
+
+- QA-102 (frontend part): Overview Activity: a "Saved case/plant version N" row with a link id opens that page with History on version N (`?version=N`; closing History drops the parameter); a study row opens the study's record; rows read in sentence case ("Assistant saved plant version 3"). Older rows without an id still open the page.
+
 ## 1.1.98 (2026-11-05)
 
 - QA-110 (frontend, plant and shared): Case and Plant History share one list and one read-only version view (`shared/versions/`): no "#" column beside Version, the full note on as many lines as it needs, Saved by "Assistant" from Version.by, Open on every row; an opened plant version shows its changes from the version before (modules, connections, spec, structure) and all values; Restore loads it into the editor as before. Paths in the change tables are shown in full.

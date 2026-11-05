@@ -7,7 +7,7 @@ import { LoadError } from "@/shared/forms/load-error";
 import { NoteDialog } from "@/shared/forms/note-dialog";
 import { UnsavedChangesDialog, useUnsavedGuard } from "@/shared/forms/unsaved-guard";
 import { PageHeader } from "@/shared/layout/page-header";
-import { HistoryButton } from "@/shared/layout/history-button";
+import { HistoryButton, toVersionParam } from "@/shared/layout/history-button";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -278,14 +278,24 @@ function PlantHistory({
   current: number;
   onRestore: (number: number) => Promise<void>;
 }) {
-  const [open, setOpen] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const initial = toVersionParam(params);
+  const [open, setOpen] = useState(initial !== undefined);
+  const onOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next || initial === undefined) return;
+    const rest = new URLSearchParams(params);
+    rest.delete("version");
+    setParams(rest, { replace: true });
+  };
   return (
-    <HistoryButton what="plant" open={open} onOpenChange={setOpen}>
+    <HistoryButton what="plant" open={open} onOpenChange={onOpenChange}>
       <HistoryPanel
         projectId={projectId}
         current={current}
+        initial={initial}
         onRestore={(number) => {
-          setOpen(false);
+          onOpenChange(false);
           void onRestore(number);
         }}
       />

@@ -37,3 +37,9 @@ export function HistoryButton({ what, open, onOpenChange, children }: Props) {
     </Dialog>
   );
 }
+
+/** Reads the version number a link asks History to open (?version=N), if any. */
+export function toVersionParam(params: URLSearchParams): number | undefined {
+  const asked = Number(params.get("version"));
+  return Number.isInteger(asked) && asked > 0 ? asked : undefined;
+}

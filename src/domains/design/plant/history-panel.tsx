@@ -8,7 +8,12 @@ import { toVersionEntries } from "@/shared/versions/diff";
 import { VersionDetail, VersionList } from "@/shared/versions/history";
 import { plantKeys, plantVersionQuery, plantVersionsQuery } from "./api";
 
-type Props = { projectId: string; current: number; onRestore: (number: number) => void };
+type Props = {
+  projectId: string;
+  current: number;
+  onRestore: (number: number) => void;
+  initial?: number | undefined;
+};
 
 function toComparable(flowsheet: Flowsheet): Record<string, unknown> {
   return {
@@ -27,10 +32,10 @@ function toComparable(flowsheet: Flowsheet): Record<string, unknown> {
 }
 
 /** The saved plant versions, newest first; a version opens read-only with its changes from the version before and a Restore button that loads it into the editor. */
-export function HistoryPanel({ projectId, current, onRestore }: Props) {
+export function HistoryPanel({ projectId, current, onRestore, initial }: Props) {
   const versions = useQuery(plantVersionsQuery(projectId));
   const queryClient = useQueryClient();
-  const [opened, setOpened] = useState<number | null>(null);
+  const [opened, setOpened] = useState<number | null>(initial ?? null);
   if (versions.isPending) return <Notice status="loading" what="the history" />;
   if (versions.isError) {
     return (

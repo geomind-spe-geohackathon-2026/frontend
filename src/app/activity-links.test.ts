@@ -12,6 +12,7 @@ const written = [
   { route: "design/case", id: null, param: null },
   { route: "design/plant", id: null, param: null },
   { route: "design/study", id: null, param: null },
+  { route: "design/study", id: "example-study-1", param: "studyId" },
   { route: "design/results", id: "example-result-1", param: "resultId" },
   { route: "design/report", id: null, param: null },
   { route: "assistant/runs", id: "example-run-1", param: "runId" },
