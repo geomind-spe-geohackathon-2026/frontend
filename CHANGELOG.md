@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.81 (2026-11-05)
+
+- QA-093: the New project dialog no longer closes on a click outside it (Cancel, the close button and Escape still close it); Cancel and Create stay visible at the dialog's foot in a short window; a missing name or Shared memory scrolls to and focuses that field beside its message.
+
 ## 1.1.80 (2026-11-05)
 
 - QA-089 (Sahand): the run log's step list is a compact tree: agents under the agent that called them (Project lead > Design lead > Process engineer ...), each collapsed with its step count and tokens (its own and its helpers'), opening to its steps in order; the agent of the selected step is open. The list is 260 px, scrolls on its own and stays beside the step detail (stacked only under 760 px); labels no longer wrap ("step\n15").

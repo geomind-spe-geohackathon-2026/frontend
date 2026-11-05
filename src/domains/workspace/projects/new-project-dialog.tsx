@@ -139,7 +139,7 @@ function NameProblem() {
 
 function FormButtons({ pending }: { pending: boolean }) {
   return (
-    <div className="flex justify-end gap-2">
+    <div className="sticky -bottom-6 -mx-6 -mb-6 flex justify-end gap-2 border-t border-border bg-background px-6 py-3">
       <DialogClose asChild>
         <Button>Cancel</Button>
       </DialogClose>
@@ -247,7 +247,14 @@ function NewProjectForm({ onClose }: { onClose: () => void }) {
     const noMemory = source !== "zip" && memory.memory === undefined;
     setNameMissing(isBlank);
     setMemoryMissing(noMemory);
-    if (isBlank || noMemory) return;
+    if (isBlank || noMemory) {
+      const missing = event.currentTarget.querySelector<HTMLElement>(
+        isBlank ? "#project-name" : "#project-memory",
+      );
+      missing?.scrollIntoView({ block: "center" });
+      missing?.focus();
+      return;
+    }
     const onSuccess = (project: { id: string }) =>
       void after.done(project, typeof goal === "string" ? goal : "");
     if (source === "empty" && typeof name === "string") {
@@ -287,7 +294,12 @@ function NewProjectForm({ onClose }: { onClose: () => void }) {
 export function NewProjectDialog({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent
+        className="sm:max-w-xl"
+        onInteractOutside={(event) => {
+          event.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>New project</DialogTitle>
           <DialogDescription>
