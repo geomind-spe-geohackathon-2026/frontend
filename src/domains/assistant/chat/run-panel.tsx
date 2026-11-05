@@ -11,8 +11,7 @@ import type { Run } from "@/shared/api/types";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { toDepth } from "./agents";
-import { toAgentName } from "@/shared/sse/agent-names";
+import { toAgentTitle, toDepth } from "./agents";
 import { ProblemView } from "./problem";
 import { BusyMark, toWorkingAgents } from "./busy";
 import { toRunUsage, type View } from "./view";
@@ -51,12 +50,12 @@ function AgentTree({ view }: { view: View }) {
     <ul className="space-y-0.5 font-mono text-[12.5px]">
       {agents.map((agent) => (
         <li
-          key={agent.path}
+          key={agent.key}
           className="flex items-center gap-1.5"
           style={{ paddingLeft: `${String(toDepth(agent.path) * 12)}px` }}
         >
-          {working.includes(agent.path) ? <BusyMark /> : <span className="size-3.5 shrink-0" />}
-          {toAgentName(agent.path)} <span className="text-muted">· {agent.state}</span>
+          {working.includes(agent) ? <BusyMark /> : <span className="size-3.5 shrink-0" />}
+          {toAgentTitle(agent)} <span className="text-muted">· {agent.state}</span>
         </li>
       ))}
     </ul>

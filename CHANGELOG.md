@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.107 (2026-11-05)
+
+- IMP-025 (frontend part): parallel instances of one agent ("Geoscientist I", "Geoscientist II") each get their own line in the chat while a run works, under their lead, with what they do and their own step count ("Geoscientist I · Thinking · 12 steps"); each line opens that instance's own steps. Lines, steps and counts are keyed by agent and `instance`, so two instances never mix (stream events carry no run id). The run panel's agent list and the chat's per-agent usage show the instance name.
+
 ## 1.1.106 (2026-11-05)
 
 - QA-135 (frontend part): Overview and the sidebar judge "Out of date" by the newest result; they took the first of the list, which comes oldest first, so a project with a current result still read Study and Results "Out of date".

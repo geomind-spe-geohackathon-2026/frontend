@@ -52,7 +52,7 @@ function AgentRow({ agent }: { agent: AgentSession }) {
         <CollapsibleTrigger className="group flex w-full items-center gap-2 text-left">
           <ContextShare share={toShare(agent)} />
           <span className="min-w-0 flex-1 truncate font-medium" title={agent.agent}>
-            {toAgentName(agent.agent)}
+            {agent.instance ?? toAgentName(agent.agent)}
           </span>
           <span className="text-muted-foreground tabular-nums">
             <Quantity value={agent.cost} unit="USD" fractionDigits={3} />

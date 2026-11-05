@@ -287,6 +287,7 @@ export function fromPayload(type: string, data: unknown, id: string): RunEvent |
     sequence: Number.isNaN(sequence) ? null : sequence,
     agent: requireString(fields, "agent", type),
     parent: toParent(fields),
+    instance: optionalString(fields, "instance"),
   };
 }
 

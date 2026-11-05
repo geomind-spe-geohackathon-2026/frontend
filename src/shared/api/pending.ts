@@ -87,6 +87,8 @@ export type AgentSession = {
   session: string;
   parent_session: string | null;
   agent: string;
+  /** One of parallel instances of a role ("Geoscientist II"), else null or absent (IMP-025). */
+  instance?: string | null;
   model: string | null;
   status: "running" | "finished" | "failed" | null;
   steps: number;

@@ -25,7 +25,13 @@ export type StateOperation = "add" | "replace" | "remove";
 
 export type StateChange = { op: StateOperation; path: string; value?: unknown };
 
-type Origin = { sequence: number | null; agent: string; parent: string | null };
+/** Where an event comes from; `instance` names one of several parallel runs of one agent ("Geoscientist II", IMP-025), else null. */
+type Origin = {
+  sequence: number | null;
+  agent: string;
+  parent: string | null;
+  instance?: string | null;
+};
 
 export type RunEventBody =
   | { type: "run.started"; run: string; loop: string | null }

@@ -21,9 +21,9 @@ import { PacedMarkdown } from "./paced-markdown";
 import { BusyMark } from "./busy";
 import { toDecisionText } from "./answers";
 import { ToolResultView, toResultId, type Calculation } from "@/shared/sse/tool-views";
-import { toDepth, toLabel } from "./agents";
+import { toAgentTitle, toDepth, toLabel } from "./agents";
 import { toAgentName } from "@/shared/sse/agent-names";
-import type { Block, RecordedStudy } from "./view";
+import type { AgentNode, Block, RecordedStudy } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
 type TextBlock = Extract<Block, { kind: "text" }>;
@@ -261,6 +261,10 @@ function toLatest(blocks: Block[]): string {
 }
 
 const doingTexts: Record<string, string> = {
+  geoscientists: "Asking the geoscientists",
+  fill_parts: "Asking the team",
+  read_file: "Reading a file",
+  read_rag: "Reading a file",
   read_case: "Reading the case",
   set_case: "Writing the case",
   describe_case: "Looking up the case's fields",
@@ -294,8 +298,7 @@ function readInput(input: unknown, key: string): string | null {
   return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 }
 
-function toDoing(blocks: Block[], agent: string, agents: string[]): string {
-  const own = blocks.filter((block) => block.agent === agent);
+function toDoing(own: Block[], agents: AgentNode[]): string {
   const call = own.findLast((block) => block.kind === "tool" && block.state === "running");
   if (call?.kind !== "tool") return "Thinking";
   const { tool, input } = call;
@@ -311,7 +314,7 @@ function toDoing(blocks: Block[], agent: string, agents: string[]): string {
     const url = readInput(input, "url");
     return url === null ? "Reading a web page" : `Reading ${url}`;
   }
-  if (agents.some((path) => toLabel(path).split(".").at(-1) === tool) || /_(lead|engineer)$/.test(tool)) {
+  if (agents.some((node) => toLabel(node.path).split(".").at(-1) === tool) || /_(lead|engineer)$/.test(tool)) {
     return `Asking the ${toAgentName(tool).toLowerCase()}`;
   }
   return doingTexts[tool] ?? toToolName(tool);
@@ -325,20 +328,53 @@ function DoingLine({ text }: { text: string }) {
   );
 }
 
-function WorkingAgents({ blocks, agents }: { blocks: Block[]; agents: string[] }) {
+function toStepCount(steps: number): string {
+  return `${String(steps)} ${steps === 1 ? "step" : "steps"}`;
+}
+
+/** One line per working agent run (each parallel instance its own, IMP-025): name, what it does, its steps; it opens to its own work. */
+function WorkingAgents({
+  blocks,
+  agents,
+  calculations,
+  runId,
+}: {
+  blocks: Block[];
+  agents: AgentNode[];
+  calculations: Calculation[];
+  runId: string | null;
+}) {
   return (
     <ul className="space-y-0.5">
-      {agents.map((agent) => (
-        <li
-          key={agent}
-          className="flex min-w-0 items-center gap-1.5 text-muted"
-          style={{ paddingLeft: `${String(toDepth(agent) * 12)}px` }}
-        >
-          <BusyMark />
-          <span className="shrink-0 font-medium text-foreground">{toAgentName(agent)}</span>
-          <DoingLine text={toDoing(blocks, agent, agents)} />
-        </li>
-      ))}
+      {agents.map((agent) => {
+        const own = blocks.filter((block) => block.agent === agent.key);
+        const work = own.filter(isWork);
+        return (
+          <li
+            key={agent.key}
+            className="min-w-0 text-muted"
+            style={{ paddingLeft: `${String(toDepth(agent.path) * 12)}px` }}
+          >
+            <details className="space-y-1.5">
+              <summary className="flex min-w-0 cursor-pointer items-center gap-1.5">
+                <BusyMark />
+                <span className="shrink-0 font-medium text-foreground">{toAgentTitle(agent)}</span>
+                <DoingLine text={toDoing(own, agents)} />
+                <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
+              </summary>
+              {work.length === 0 ? (
+                <p className="pl-5 text-[12px]">No steps yet.</p>
+              ) : (
+                <div className="space-y-1.5 pl-5">
+                  {work.map((block) => (
+                    <WorkItem key={block.id} block={block} calculations={calculations} runId={runId} />
+                  ))}
+                </div>
+              )}
+            </details>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -436,7 +472,7 @@ export function Blocks({
   blocks: Block[];
   running: boolean;
   retry?: string | null;
-  agents?: string[];
+  agents?: AgentNode[];
   waiting?: boolean;
   calculations?: Calculation[];
   runId?: string | null;
@@ -456,7 +492,12 @@ export function Blocks({
           ) : agents.length === 0 ? (
             <p>{toLatest(blocks)}</p>
           ) : (
-            <WorkingAgents blocks={blocks} agents={agents} />
+            <WorkingAgents
+              blocks={blocks}
+              agents={agents}
+              calculations={calculations}
+              runId={runId}
+            />
           )}
           {retry === null ? null : <p className="text-warn">{retry}</p>}
         </div>

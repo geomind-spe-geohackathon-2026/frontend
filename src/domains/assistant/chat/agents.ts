@@ -1,4 +1,5 @@
-import type { Block } from "./view";
+import { toAgentName } from "@/shared/sse/agent-names";
+import type { AgentNode, Block } from "./view";
 
 export type Group = { id: string; agent: string; blocks: Block[] };
 
@@ -11,6 +12,11 @@ export function toDepth(path: string): number {
 export function toLabel(path: string): string {
   if (toDepth(path) > 2) return path;
   return path.split(".").at(-1) ?? path;
+}
+
+/** The name of an agent run: its instance name ("Geoscientist II") when it is one of several, else the agent's name. */
+export function toAgentTitle(node: AgentNode): string {
+  return node.instance ?? toAgentName(node.path);
 }
 
 /** Splits blocks into groups of consecutive blocks of the same agent. */

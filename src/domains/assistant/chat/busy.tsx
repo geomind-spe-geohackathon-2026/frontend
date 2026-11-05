@@ -1,5 +1,5 @@
 import { Loader2 } from "lucide-react";
-import type { View } from "./view";
+import type { AgentNode, View } from "./view";
 
 /** A small spinning circle that marks an agent at work; it stands still when the user asks for less motion. */
 export function BusyMark() {
@@ -12,9 +12,7 @@ export function BusyMark() {
 }
 
 /** The agents of the run that are working now: none while the run waits for the user, ends or fails. */
-export function toWorkingAgents(view: View): string[] {
+export function toWorkingAgents(view: View): AgentNode[] {
   if (view.status !== "running") return [];
-  return Object.values(view.agents)
-    .filter((agent) => agent.state === "running")
-    .map((agent) => agent.path);
+  return Object.values(view.agents).filter((agent) => agent.state === "running");
 }

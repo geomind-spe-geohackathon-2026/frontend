@@ -38,8 +38,11 @@ export type Block =
 
 export type RecordedStudy = { id: string; name: string; best: string | null };
 
+/** One agent run of the view: `key` is its actor (see toActor), `instance` its name among parallel runs of one agent. */
 export type AgentNode = {
+  key: string;
   path: string;
+  instance: string | null;
   parent: string | null;
   state: "running" | "done";
   steps: number;
@@ -88,8 +91,18 @@ export const emptyView: View = {
   retry: null,
 };
 
-function toStepKey(agent: string, index: number): string {
-  return `${agent}#${String(index)}`;
+/**
+ * The actor of an event: its agent path, or path and instance name when it is one of several
+ * parallel runs of one agent (IMP-025), so two instances never share a line, a step or a count.
+ * Blocks carry it as `agent`.
+ */
+export function toActor(event: { agent: string; instance?: string | null }): string {
+  const instance = event.instance ?? null;
+  return instance === null ? event.agent : `${event.agent}|${instance}`;
+}
+
+function toStepKey(event: RunEvent & { index: number }): string {
+  return `${toActor(event)}#${String(event.index)}`;
 }
 
 function toParentPath(path: string): string | null {
@@ -98,9 +111,12 @@ function toParentPath(path: string): string | null {
 }
 
 function touchAgent(view: View, event: RunEvent): View {
-  const known = view.agents[event.agent];
+  const key = toActor(event);
+  const known = view.agents[key];
   const base: AgentNode = known ?? {
+    key,
     path: event.agent,
+    instance: event.instance ?? null,
     parent: toParentPath(event.agent),
     state: "running",
     steps: 0,
@@ -110,7 +126,7 @@ function touchAgent(view: View, event: RunEvent): View {
   const tools = base.tools + (event.type === "tool.started" ? 1 : 0);
   const finished = event.type === "run.finished" && event.parent !== null;
   const node: AgentNode = { ...base, steps, tools, state: finished ? "done" : base.state };
-  return { ...view, agents: { ...view.agents, [event.agent]: node } };
+  return { ...view, agents: { ...view.agents, [key]: node } };
 }
 
 function nextId(view: View): string {
@@ -126,7 +142,7 @@ function changeBlock(view: View, id: string, change: (block: Block) => Block): V
 }
 
 function changeText(view: View, event: RunEvent & { type: "text.delta" }): View {
-  const key = toStepKey(event.agent, event.index);
+  const key = toStepKey(event);
   const id = view.openSteps[key];
   if (id === undefined) return view;
   return changeBlock(view, id, (block) => {
@@ -140,15 +156,15 @@ function changeText(view: View, event: RunEvent & { type: "text.delta" }): View 
 
 function startStep(view: View, event: RunEvent & { type: "step.started" }): View {
   const id = nextId(view);
-  const block: Block = { kind: "text", id, agent: event.agent, text: "", open: true, settled: 0 };
+  const block: Block = { kind: "text", id, agent: toActor(event), text: "", open: true, settled: 0 };
   const next = addBlock(view, block);
-  const key = toStepKey(event.agent, event.index);
+  const key = toStepKey(event);
   const window = event.context_window ?? view.window;
   return { ...next, openSteps: { ...next.openSteps, [key]: id }, window };
 }
 
 function finishStep(view: View, event: RunEvent & { type: "step.finished" }): View {
-  const key = toStepKey(event.agent, event.index);
+  const key = toStepKey(event);
   const id = view.openSteps[key];
   if (id === undefined) {
     return { ...view, context: event.usage.input_tokens, stepUsage: addUsage(view.stepUsage, event.usage) };
@@ -272,7 +288,7 @@ function reduce(view: View, event: RunEvent): View {
       return addBlock(view, {
         kind: "tool",
         id: event.call_id,
-        agent: event.agent,
+        agent: toActor(event),
         tool: event.tool,
         input: event.input,
         state: "running",
@@ -323,7 +339,7 @@ function reduceRequest(view: View, event: RunEvent & { type: "request" }): View 
   const next = addBlock(view, {
     kind: "request",
     id: nextId(view),
-    agent: event.agent,
+    agent: toActor(event),
     request,
     resolved: false,
   });
@@ -335,7 +351,7 @@ function reduceFinished(view: View, event: RunEvent & { type: "run.finished" }):
   const next = addBlock(view, {
     kind: "end",
     id: nextId(view),
-    agent: event.agent,
+    agent: toActor(event),
     status: event.status,
     message: event.message ?? null,
     reason: event.stop_reason,
