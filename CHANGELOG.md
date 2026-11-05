@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.125 (2026-11-05)
+
+- QA-255: the New project dialog lists the connectors that are On, all checked, and the new project gets the checked ones (`mcp`), so the agents of a new project have its connector tools (open-meteo).
+
 ## 1.1.124 (2026-11-05)
 
 - QA-249: each Runs and logs row shows the user message that started the run (`prompt`, backend 1.1.111; first 120 characters), with the chat title below it.

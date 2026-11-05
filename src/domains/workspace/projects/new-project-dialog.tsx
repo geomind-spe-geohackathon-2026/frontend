@@ -1,4 +1,5 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { connectorsQuery } from "@/shared/api/connectors";
 import { toFieldMessage } from "@/shared/api/errors";
 import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -209,6 +210,7 @@ function NameFields({
           Choose whether the agents use the shared memory.
         </p>
       ) : null}
+      <ConnectorPicker />
       <Field className="gap-1.5">
         <FieldLabel htmlFor="project-goal">What do you want to work on? (optional)</FieldLabel>
         <Textarea
@@ -220,6 +222,24 @@ function NameFields({
         <FieldDescription>It waits in the first chat; you send it.</FieldDescription>
       </Field>
     </>
+  );
+}
+
+function ConnectorPicker() {
+  const connectors = useQuery(connectorsQuery());
+  const on = (connectors.data ?? []).filter((connector) => connector.enabled);
+  if (on.length === 0) return null;
+  return (
+    <fieldset className="flex flex-col gap-1.5">
+      <legend className="mb-1.5 text-sm font-medium">Connectors the agents may use</legend>
+      <input type="hidden" name="mcp-listed" value="yes" />
+      {on.map((connector) => (
+        <label key={connector.id} className="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" name="mcp" value={connector.id} defaultChecked />
+          {connector.name}
+        </label>
+      ))}
+    </fieldset>
   );
 }
 
@@ -241,8 +261,11 @@ function NewProjectForm({ onClose }: { onClose: () => void }) {
     const file = form.get("file");
     const caseFrom = form.get("case_from");
     const chosen = form.get("memory");
-    const memory: { memory?: "on" | "off" } =
+    const memory: { memory?: "on" | "off"; mcp?: string[] } =
       chosen === "on" ? { memory: "on" } : chosen === "off" ? { memory: "off" } : {};
+    if (form.get("mcp-listed") === "yes") {
+      memory.mcp = form.getAll("mcp").filter((id): id is string => typeof id === "string");
+    }
     const isBlank = source !== "zip" && typeof name === "string" && name.trim() === "";
     const noMemory = source !== "zip" && memory.memory === undefined;
     setNameMissing(isBlank);
