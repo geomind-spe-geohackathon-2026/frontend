@@ -139,7 +139,32 @@ export type RunCall = {
   output: unknown;
 };
 
+export type StudyStructure = {
+  rank: number;
+  structure: Record<string, unknown>;
+  evaluations: number;
+  feasible_evaluations: number;
+  feasible: boolean;
+  reason?: string | null;
+  violation?: number | null;
+  metrics: Record<string, unknown>;
+  parameters: Record<string, unknown>;
+  on_front: boolean;
+};
+
+export type StudyStructures = {
+  study: string;
+  name: string;
+  objectives: string[];
+  budget: unknown;
+  total: number;
+  structures: StudyStructure[];
+};
+
 export type PendingPaths = {
+  "/design/study/{study_id}/structures": Omit<Route, "get"> & {
+    get: Read<StudyStructures, { limit?: number }, { study_id: string }>;
+  };
   "/assistant/runs/{run_id}/calls/{call_id}": Omit<Route, "get"> & {
     get: Read<RunCall, never, { run_id: string; call_id: string }>;
   };

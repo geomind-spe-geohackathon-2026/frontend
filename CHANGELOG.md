@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.70 (2026-11-05)
+
+- Compare structures (spec evolve-structures-view-2026-11-05): a finished evolve study ("Find the best structure") has a "Compare structures" link that opens a new tab at `/projects/:id/design/study/:study/structures`, from backend 1.1.66 `GET /design/study/{study_id}/structures?limit=10`. The page lists up to 10 unique structures as gemini ranks them (rank, the structure in words, feasible with its reason, the objectives first then the other metrics, the parameters, a "front" mark when there are several objectives); tick 2 or 3 rows to see them side by side with the differing values highlighted. Open and Save per row wait for the backend's plant endpoint.
+
 ## 1.1.69 (2026-11-05)
 
 - set_case (geomind 0.4.62, backend 1.1.64): an opened set_case step in the chat fetches its full result and lists `plants_need` as "Plants still need:" (path, message, plants) when there are any.

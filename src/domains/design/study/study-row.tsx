@@ -31,6 +31,7 @@ const kindLabels: Record<string, string> = {
   minimize: "Best design",
   sample: "Uncertainty",
   sensitivity: "What matters most",
+  evolve: "Find the best structure",
 };
 
 function ProgressCell({ study }: { study: Study }) {
@@ -125,6 +126,16 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel }: Props) {
         <OutcomeCell study={study} projectId={projectId} />
       </TableCell>
       <TableCell>
+        {study.kind === "evolve" && study.status === "done" ? (
+          <a
+            className="text-accent"
+            href={`/projects/${projectId}/design/study/${study.id}/structures`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Compare structures
+          </a>
+        ) : null}
         {study.status === "blocked" ? (
           <Button
             aria-label={`Start ${study.name}`}
