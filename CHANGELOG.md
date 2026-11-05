@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.132 (2026-11-05)
+
+- QA-316: the auto-approve question shows at most once per browser (remembered after any answer or dismissal); the toggle is quiet when off (no blue).
+
 ## 1.1.131 (2026-11-05)
 
 - QA-307: the busy list ends with a Total row laid out like the agent rows (Total · N agents working · steps · tokens · cost · time); it replaces the 'Steps so far' line and opens the steps window.

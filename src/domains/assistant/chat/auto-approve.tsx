@@ -99,7 +99,7 @@ export function AutoApproveButton({
       title={title}
       className={cn(
         "gap-1 rounded-full text-[12px]",
-        on ? "text-primary" : "text-muted-foreground",
+        on ? "bg-accent-soft text-accent" : "bg-transparent text-muted-foreground",
       )}
       onClick={() => {
         onChange(!on);
@@ -111,7 +111,25 @@ export function AutoApproveButton({
   );
 }
 
-/** Asks once, when a new chat opens, whether to turn auto-approve on; closing the dialog counts as no. */
+const askedKey = "geomind.auto-approve.asked";
+
+function wasAsked(): boolean {
+  try {
+    return window.localStorage.getItem(askedKey) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function rememberAsked(): void {
+  try {
+    window.localStorage.setItem(askedKey, "1");
+  } catch {
+    return;
+  }
+}
+
+/** Asks once per browser, when a new chat opens, whether to turn auto-approve on; closing the dialog counts as no. */
 export function AutoApproveAsk({
   show,
   onAnswer,
@@ -119,8 +137,9 @@ export function AutoApproveAsk({
   show: boolean;
   onAnswer: (on: boolean) => void;
 }) {
-  const [asked, setAsked] = useState(false);
+  const [asked, setAsked] = useState(wasAsked);
   const answer = (on: boolean) => {
+    rememberAsked();
     setAsked(true);
     onAnswer(on);
   };
