@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.129 (2026-11-05)
+
+- QA-290: the Report page warns "Out of date" when its result ran on an older case or plant version than the project's current ones, and says to run the study again before sending the report.
+- QA-292: a new chat first asks in a small dialog whether to turn on auto-approve; the answer sets the chat's auto-approve (Esc counts as No).
+
 ## 1.1.128 (2026-11-05)
 
 - QA-291: each agent line of the busy list reads steps · tokens · cost · time, live (tokens and cost summed from that agent's step.finished usage); the totals line the same.

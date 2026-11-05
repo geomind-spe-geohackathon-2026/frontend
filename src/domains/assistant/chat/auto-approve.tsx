@@ -4,6 +4,15 @@ import { api, toData } from "@/shared/api/client";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { InputGroupButton } from "@/components/ui/input-group";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { RunRequest } from "@/shared/sse/types";
 
 function toKey(chatId: string | null) {
@@ -99,5 +108,55 @@ export function AutoApproveButton({
       <ShieldCheck aria-hidden="true" />
       Auto-approve
     </InputGroupButton>
+  );
+}
+
+/** Asks once, when a new chat opens, whether to turn auto-approve on; closing the dialog counts as no. */
+export function AutoApproveAsk({
+  show,
+  onAnswer,
+}: {
+  show: boolean;
+  onAnswer: (on: boolean) => void;
+}) {
+  const [asked, setAsked] = useState(false);
+  const answer = (on: boolean) => {
+    setAsked(true);
+    onAnswer(on);
+  };
+  return (
+    <Dialog
+      open={show && !asked}
+      onOpenChange={(open) => {
+        if (!open) answer(false);
+      }}
+    >
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Turn on auto-approve for this chat?</DialogTitle>
+          <DialogDescription>
+            The agents' write steps then run without approval cards. You can change it later with
+            the Auto-approve switch below the message box.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => {
+              answer(false);
+            }}
+          >
+            No
+          </Button>
+          <Button
+            onClick={() => {
+              answer(true);
+            }}
+          >
+            Yes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

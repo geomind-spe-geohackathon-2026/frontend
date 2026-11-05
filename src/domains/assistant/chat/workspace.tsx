@@ -9,7 +9,13 @@ import { Conversation } from "./conversation";
 import { RequestCard } from "./request-card";
 import { ChatStatus } from "./chat-status";
 import { PanelHints } from "./panel-hints";
-import { AutoApproveButton, saveAutoApprove, useApproveByItself, useAutoApprove } from "./auto-approve";
+import {
+  AutoApproveAsk,
+  AutoApproveButton,
+  saveAutoApprove,
+  useApproveByItself,
+  useAutoApprove,
+} from "./auto-approve";
 import { useRunView } from "./use-run-view";
 import { keepAnswer } from "./answers";
 import { toMessageWithFiles } from "@/shared/attach/upload";
@@ -115,6 +121,7 @@ export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
 
   return (
     <div className="flex h-full min-h-[420px] min-w-0 flex-col gap-3">
+      <AutoApproveAsk show={chatId === null && messages.length === 0} onAnswer={setAuto} />
       <DemoNotice />
       <CaseNotice projectId={projectId} />
       <div className="flex min-h-0 flex-1 flex-col">
