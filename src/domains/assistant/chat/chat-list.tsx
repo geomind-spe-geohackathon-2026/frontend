@@ -33,14 +33,13 @@ type Props = {
   toHref: (chatId: string) => string;
 };
 
+const liveDot = "bg-ok animate-pulse motion-reduce:animate-none";
+const idleDot = "bg-muted-foreground/40";
+
 const dots: Record<string, string> = {
-  running: "bg-muted-foreground animate-pulse",
-  approval: "bg-accent",
-  waiting: "bg-warn",
-  queued: "bg-border",
-  done: "bg-ok",
-  failed: "bg-bad",
-  cancelled: "bg-border",
+  running: liveDot,
+  approval: liveDot,
+  waiting: liveDot,
 };
 
 const words: Record<string, string> = {
@@ -50,10 +49,13 @@ const words: Record<string, string> = {
 
 function useDotState(projectId: string, chat: Chat): string {
   const active = useQuery(activeRunsQuery(projectId));
-  const last = chat.last_run;
+  const live = active.data?.items.find(
+    (run) => run.chat === chat.id && (run.status === "running" || run.status === "waiting"),
+  );
+  const last = live ?? chat.last_run;
   if (last === null) return "none";
   if (last.status !== "waiting") return last.status;
-  const request = active.data?.items.find((run) => run.id === last.id)?.request;
+  const request = live?.request ?? active.data?.items.find((run) => run.id === last.id)?.request;
   return request?.kind === "approval" ? "approval" : "waiting";
 }
 
@@ -143,7 +145,7 @@ function ChatLink({
       >
         <span
           aria-hidden="true"
-          className={`size-2 flex-none rounded-full ${dots[state] ?? "bg-border"}`}
+          className={`size-2 flex-none rounded-full ${dots[state] ?? idleDot}`}
         />
         <span className="min-w-0 flex-1 truncate">{chat.title}</span>
         <span className="sr-only">
