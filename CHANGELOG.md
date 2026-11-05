@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.139 (2026-11-05)
+
+- QA-336 (blocker, frontend part): a waiting run whose question never reached the chat shows its card from the run's stored `request`, so the user can answer and free it; an unfinished run with no card re-reads the run every 15 s.
+
 ## 1.1.138 (2026-11-05)
 
 - QA-328: the Plant dot's tooltip says how to clear 'Not saved' (save a design as the plant on the Plant page).
