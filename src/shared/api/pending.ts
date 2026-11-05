@@ -173,7 +173,27 @@ export type AgentRecord = {
   result: unknown;
 };
 
+/** One saved case version as GET /design/case returns the latest. */
+export type CaseVersionBody = {
+  project: string;
+  version: number;
+  content: Record<string, unknown>;
+  files: { name: string; size: number }[];
+  missing: unknown[];
+  problems: unknown[];
+};
+
 export type PendingPaths = {
+  "/design/case/versions/{number}": Omit<Route, "get"> & {
+    get: Read<CaseVersionBody, { project: string }, { number: number }>;
+  };
+  "/design/case/versions/{number}/restore": Omit<Route, "post"> & {
+    post: {
+      parameters: WithPath<{ number: number }>;
+      requestBody: Json<{ project: string; base: number | null }>;
+      responses: { 201: Json<CaseVersionBody> };
+    };
+  };
   "/design/study/{study_id}/agent-record": Omit<Route, "get"> & {
     get: Read<AgentRecord, never, { study_id: string }>;
   };

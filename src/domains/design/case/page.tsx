@@ -476,7 +476,14 @@ function CaseEditor({ projectId, saved, schema }: EditorProps) {
             canSave={canSave && !flow.save.isPending}
             history={
               <HistoryButton what="case" open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-                <HistoryPanel projectId={projectId} current={saved.version} />
+                <HistoryPanel
+                  projectId={projectId}
+                  current={saved.version}
+                  dirty={editor.dirty}
+                  onRestored={() => {
+                    setIsHistoryOpen(false);
+                  }}
+                />
               </HistoryButton>
             }
             onDiscard={flow.discard}

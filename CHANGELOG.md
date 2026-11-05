@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.97 (2026-11-05)
+
+- QA-110 (frontend part): case History: each version has Open; an opened version is read-only, shows its changes from the version before (path, change, old and new value, source; files included) and all its values, and has "Restore this version" (POST /design/case/versions/{n}/restore with the latest number as base; a 409 says the case was saved again; disabled while the form has unsaved changes). Saved by shows "Assistant" for versions the assistant saved. New endpoints typed in `shared/api/pending.ts`.
+
 ## 1.1.96 (2026-11-05)
 
 - QA-101: Overview, Recent chats: rows line up with the card title, the time column is as wide as its longest label, a long title stays on one line (ellipsis, full text on hover), the running badge stays inside the card, and the card is as tall as its rows.

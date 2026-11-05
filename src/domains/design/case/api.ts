@@ -9,6 +9,8 @@ export const caseKeys = {
   latest: (projectId: string) => [...caseKeys.all(projectId), "latest"] as const,
   schema: () => ["case", "schema"] as const,
   versions: (projectId: string) => [...caseKeys.all(projectId), "versions"] as const,
+  version: (projectId: string, number: number) =>
+    [...caseKeys.all(projectId), "versions", number] as const,
   validation: (projectId: string, content: CaseContent) =>
     ["case", "validation", projectId, content] as const,
 };
@@ -41,6 +43,38 @@ export const caseVersionsQuery = (projectId: string) =>
         }),
       ).items,
   });
+
+/** Query options for one saved case version; a saved version never changes. */
+export const caseVersionQuery = (projectId: string, number: number) =>
+  queryOptions({
+    queryKey: caseKeys.version(projectId, number),
+    queryFn: async ({ signal }) =>
+      toData(
+        await api.GET("/design/case/versions/{number}", {
+          params: { path: { number }, query: { project: projectId } },
+          signal,
+        }),
+      ),
+    staleTime: Infinity,
+  });
+
+/** Mutation that saves an older case version again as the newest one; base is the latest number the user saw. */
+export function useRestoreCase(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ number, base }: { number: number; base: number }) =>
+      toData(
+        await api.POST("/design/case/versions/{number}/restore", {
+          params: { path: { number } },
+          body: { project: projectId, base },
+        }),
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: caseKeys.all(projectId) });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+    },
+  });
+}
 
 /** Query options for the server check of a draft; it keeps the last answer while a new one loads. */
 export const caseValidationQuery = (projectId: string, content: CaseContent, enabled: boolean) =>
