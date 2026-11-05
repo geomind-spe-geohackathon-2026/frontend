@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.117 (2026-11-05)
+
+- QA-193: on the approval card only the request text and JSON scroll; the reason box and Approve/Deny stay visible below it. The "Accept case" approval says in one sentence what it does.
+
 ## 1.1.116 (2026-11-05)
 
 - QA-185: a value set as a file (such as the case economics in `economics.json`) switched to "Fill in here" now loads the file's content into the form instead of an empty `{}`; a file that cannot be read keeps the file and the view.

@@ -55,7 +55,7 @@ function RunRequest({ projectId, runId, view, auto }: RequestProps) {
   const { request } = view;
   return (
     <div
-      className="max-h-[45svh] min-h-0 shrink-0 overflow-y-auto overscroll-contain"
+      className="flex max-h-[45svh] min-h-0 shrink-0 flex-col overflow-y-auto overscroll-contain"
       ref={(element) => toInView(element, request.request)}
     >
       <RequestCard

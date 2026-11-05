@@ -127,11 +127,20 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
 
 const sendsMark = "What the call sends:";
 
+const toolEffects: Record<string, string> = {
+  accept_case:
+    "It keeps the case with the changes you approved as the case you gave, the base that later changes are compared with.",
+};
+
 function toAskText(text: string): string {
   const found = /^Allow (\S+) \((\w+)\)\?/.exec(text);
   if (found === null) return text;
+  const tool = found[1] ?? "";
   const effect = found[2] === "write" ? "change the project" : (found[2] ?? "");
-  return `${text.slice(0, found.index)}Allow "${toToolName(found[1] ?? "")}" to ${effect}?${text.slice(found.index + found[0].length)}`;
+  const rest = text.slice(found.index + found[0].length);
+  const said = toolEffects[tool];
+  const more = rest.trim() === "" && said !== undefined ? `\n${said}` : rest;
+  return `${text.slice(0, found.index)}Allow "${toToolName(tool)}" to ${effect}?${more}`;
 }
 
 const preClass =
@@ -177,7 +186,7 @@ function RequestMessage({ message }: { message: string }) {
   const ask = at < 0 ? message : message.slice(0, at).trimEnd();
   const sends = at < 0 ? null : message.slice(at + sendsMark.length).replace(/^\n+/, "");
   return (
-    <div className="max-h-[50vh] space-y-2 overflow-y-auto pr-1 text-[13.5px] leading-6">
+    <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain pr-1 text-[13.5px] leading-6">
       <p className="whitespace-pre-line [overflow-wrap:anywhere]">{toAskText(ask)}</p>
       {sends === null ? null : <Sends sends={sends} />}
     </div>
@@ -189,7 +198,7 @@ export function RequestCard({ request, pending, failure, onAnswer }: Props) {
   return (
     <section
       aria-label={request.kind === "approval" ? "Approval needed" : "Question"}
-      className="space-y-2 rounded-card border border-warn bg-warn-soft p-3"
+      className="flex max-h-full min-h-0 flex-col gap-2 rounded-card border border-warn bg-warn-soft p-3 [&>*]:shrink-0 [&>*:nth-child(2)]:shrink"
     >
       <h2>{request.kind === "approval" ? "Approval needed" : "The assistant asks"}</h2>
       <RequestMessage message={request.message} />
