@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.120 (2026-11-05)
+
+- QA-232: after a deploy, a tab that fails to load a lazy page chunk of the old build reloads itself once (at most once per 30 s) instead of showing "Something went wrong".
+
 ## 1.1.119 (2026-11-05)
 
 - QA-215 (frontend part): each Results tab shows its plant version (when known) and time, so repeats of one design can be told apart; the tab strip scrolls on its own instead of pushing the panel sideways.

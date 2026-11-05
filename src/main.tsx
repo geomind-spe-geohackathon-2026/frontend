@@ -10,6 +10,16 @@ import "@/styles/index.css";
 
 async function start(): Promise<void> {
   startTheme();
+  window.addEventListener("vite:preloadError", () => {
+    try {
+      const last = Number(sessionStorage.getItem("geomind-chunk-reload") ?? "0");
+      if (Date.now() - last < 30_000) return;
+      sessionStorage.setItem("geomind-chunk-reload", String(Date.now()));
+    } catch {
+      return;
+    }
+    window.location.reload();
+  });
   if (import.meta.env.DEV && toApiMode(import.meta.env.VITE_API_MODE, true) === "mock") {
     const { startMocking } = await import("@/mocks/browser");
     await startMocking();
