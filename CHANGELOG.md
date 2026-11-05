@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.100 (2026-11-05)
+
+- QA-127, QA-109: the Report opens on the best result, not the first: among design results whose checks all pass, the best on the objective of the newest minimise/maximise study, else the newest feasible result, else the newest result. Its Agent log shows the run that started the result's study, without Options; a result or run in the URL still wins.
+
 ## 1.1.99 (2026-11-05)
 
 - QA-102 (frontend part): Overview Activity: a "Saved case/plant version N" row with a link id opens that page with History on version N (`?version=N`; closing History drops the parameter); a study row opens the study's record; rows read in sentence case ("Assistant saved plant version 3"). Older rows without an id still open the page.

@@ -4,7 +4,7 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Notice } from "@/shared/ui/notice";
 import { resultsQuery } from "@/shared/api/results";
-import { partsQuery, reportRunsQuery } from "./api";
+import { partsQuery, reportRunsQuery, reportStudiesQuery } from "./api";
 import { ReportEditor } from "./report-editor";
 
 /** The Report page: loads the results and runs, then shows the report workspace. */
@@ -13,8 +13,15 @@ export function ReportPage() {
   const results = useQuery(resultsQuery(projectId));
   const runs = useQuery(reportRunsQuery(projectId));
   const parts = useQuery(partsQuery());
+  const studies = useQuery(reportStudiesQuery(projectId));
   if (parts.isError) return <Notice status="failed" error={parts.error} />;
-  if (parts.isPending || results.isPending || results.isError || results.data.length === 0) {
+  if (
+    parts.isPending ||
+    studies.isPending ||
+    results.isPending ||
+    results.isError ||
+    results.data.length === 0
+  ) {
     return (
       <>
         <PageHeader title="Report" />
@@ -37,6 +44,7 @@ export function ReportPage() {
       projectId={projectId}
       results={results.data}
       runs={runs.data?.items ?? []}
+      studies={studies.data ?? []}
       parts={parts.data}
     />
   );

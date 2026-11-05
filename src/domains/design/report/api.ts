@@ -1,10 +1,12 @@
 import { queryOptions, useMutation } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
+import { toAllItems } from "@/shared/api/pagination";
 import type { ReportExport, ReportRequest } from "@/shared/api/types";
 
 export const reportKeys = {
   all: (projectId: string) => ["projects", projectId, "report"] as const,
   runs: (projectId: string) => [...reportKeys.all(projectId), "runs"] as const,
+  studies: (projectId: string) => [...reportKeys.all(projectId), "studies"] as const,
   preview: (request: ReportRequest) =>
     [...reportKeys.all(request.project), "preview", request] as const,
 };
@@ -24,6 +26,21 @@ export const reportRunsQuery = (projectId: string) =>
     queryFn: async ({ signal }) =>
       toData(
         await api.GET("/assistant/runs", { params: { query: { project: projectId } }, signal }),
+      ),
+  });
+
+/** Query options for every study of the project: the report reads their objective and the run that started them. */
+export const reportStudiesQuery = (projectId: string) =>
+  queryOptions({
+    queryKey: reportKeys.studies(projectId),
+    queryFn: ({ signal }) =>
+      toAllItems(async (cursor) =>
+        toData(
+          await api.GET("/design/study", {
+            params: { query: { project: projectId, ...(cursor === undefined ? {} : { cursor }) } },
+            signal,
+          }),
+        ),
       ),
   });
 

@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
-import type { Report, ReportPart, ReportPartInfo, Result } from "@/shared/api/types";
+import type { Report, ReportPart, ReportPartInfo, Result, Study } from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
@@ -15,6 +15,7 @@ import { useFlowsheetSvg, type FlowsheetPictures } from "./use-flowsheet-svg";
 import { ReportDocument } from "./report-document";
 import { ReportOptions } from "./report-options";
 import { useReportExport } from "./use-export";
+import { toDefaultResult, toDefaultRun } from "./defaults";
 
 const compactParts: ReportPart[] = [
   "summary",
@@ -25,7 +26,13 @@ const compactParts: ReportPart[] = [
   "costs",
 ];
 
-type Props = { projectId: string; results: Result[]; runs: Run[]; parts: ReportPartInfo[] };
+type Props = {
+  projectId: string;
+  results: Result[];
+  runs: Run[];
+  studies: Study[];
+  parts: ReportPartInfo[];
+};
 
 function PreviewBody({
   include,
@@ -59,12 +66,17 @@ function OptionsButton({ children }: { children: ReactNode }) {
 }
 
 /** The report workspace: the live preview, with Options (design, agent log, sections) and export in the header. */
-export function ReportEditor({ projectId, results, runs, parts }: Props) {
+export function ReportEditor({ projectId, results, runs, studies, parts }: Props) {
   const order = parts.map((entry) => entry.key);
   const [params, setParams] = useSearchParams();
   const [chosen, setChosen] = useState<ReportPart[]>(order);
-  const result = params.get("result") ?? results[0]?.id ?? "";
-  const run = params.get("run") ?? "";
+  const result = params.get("result") ?? toDefaultResult(results, studies)?.id ?? "";
+  const run =
+    params.get("run") ??
+    toDefaultRun(
+      results.find((entry) => entry.id === result),
+      studies,
+    );
   const include = toOrderedParts(order, chosen);
   const request = { project: projectId, result, ...(run === "" ? {} : { run }), include };
   const preview = useQuery(previewQuery(request));
