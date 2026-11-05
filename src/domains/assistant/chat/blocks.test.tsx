@@ -141,7 +141,7 @@ describe("Blocks", () => {
       error: "size.doublets.range is missing",
     };
     const note = text("b0", 'design loop: {"round": 1}');
-    const { container } = render(<Blocks running={false} blocks={[note, failed]} />);
+    render(<Blocks running={false} blocks={[note, failed]} />);
     expect(screen.getByText("Worked through 1 step, 1 needed another try")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByText(/design loop/)).not.toBeInTheDocument();
