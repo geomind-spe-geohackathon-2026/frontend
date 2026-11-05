@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.75 (2026-11-05)
+
+- QA-073: the approval card says how to change a proposed value: write the change in "Reason or change" and press Deny; the assistant gets the words and proposes again. Editing the call's values in the card needs the approval answer to carry changed input (backend/geomind).
+
 ## 1.1.74 (2026-11-05)
 
 - QA-077: the chat shows Cancel run while either the run's events or the server's run row say the run is not finished (queued, running or waiting); a run whose row stayed waiting after its events ended can be cancelled, so the chat can go on.

@@ -20,14 +20,20 @@ function Approval({ pending, onAnswer }: Pick<Props, "pending" | "onAnswer">) {
   return (
     <div className="space-y-2">
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="approval-reason">Reason (optional)</FieldLabel>
+        <FieldLabel htmlFor="approval-reason">Reason or change (optional)</FieldLabel>
         <Input
           id="approval-reason"
           value={reason}
+          placeholder="e.g. use 0.06 for the discount rate"
+          aria-describedby="approval-hint"
           onChange={(event) => {
             setReason(event.target.value);
           }}
         />
+        <p id="approval-hint" className="text-[12px] text-muted">
+          To change a value, write what to change here and press Deny: the assistant gets your words
+          and proposes again.
+        </p>
       </Field>
       <div className="flex gap-2">
         <Button
