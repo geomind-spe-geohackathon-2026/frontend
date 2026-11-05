@@ -11,6 +11,7 @@ import { ChatStatus } from "./chat-status";
 import { PanelHints } from "./panel-hints";
 import { AutoApproveButton, useApproveByItself, useAutoApprove } from "./auto-approve";
 import { useRunView } from "./use-run-view";
+import { keepAnswer } from "./answers";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { useAttachments } from "@/shared/attach/use-attachments";
 import type { View } from "./view";
@@ -39,6 +40,7 @@ type RequestProps = { projectId: string; runId: string; view: View; auto: boolea
 function RunRequest({ projectId, runId, view, auto }: RequestProps) {
   const answer = useAnswerRun(projectId, runId);
   useApproveByItself(auto, view.request, (request) => {
+    keepAnswer(request, { approved: true });
     answer.mutate({ request, answer: { approved: true } });
   });
   if (view.request === null || (auto && view.request.kind === "approval")) return null;
@@ -50,6 +52,7 @@ function RunRequest({ projectId, runId, view, auto }: RequestProps) {
         pending={answer.isPending}
         failure={toFailure(answer.error)}
         onAnswer={(value) => {
+          keepAnswer(request.request, value);
           answer.mutate({ request: request.request, answer: value });
         }}
       />

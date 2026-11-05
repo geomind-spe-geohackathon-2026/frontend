@@ -17,6 +17,7 @@ import {
 import { fromPartialRoute, fromRoute } from "@/shared/sse/route";
 import { PacedMarkdown } from "./paced-markdown";
 import { BusyMark } from "./busy";
+import { toDecisionText } from "./answers";
 import { toDepth, toLabel } from "./agents";
 import type { Block, RecordedStudy } from "./view";
 
@@ -280,10 +281,14 @@ function toDoneLabel(work: Block[]): string {
 const WorkItem = memo(function WorkItem({ block }: { block: Block }) {
   if (block.kind === "tool") return <ToolCard block={block} />;
   if (block.kind === "request") {
-    return <p className="text-[12px] whitespace-pre-line text-muted [overflow-wrap:anywhere]">
-        {toRequestText(block.request.message)}
-      </p>;
+    const decision = toDecisionText(block.request.request, block.request.message);
+    return (
+      <p className="text-[12px] whitespace-pre-line text-muted [overflow-wrap:anywhere]">
+        {decision ?? toRequestText(block.request.message)}
+      </p>
+    );
   }
+
   if (block.kind !== "text") return null;
   return (
     <div className="text-muted">
@@ -291,6 +296,24 @@ const WorkItem = memo(function WorkItem({ block }: { block: Block }) {
     </div>
   );
 });
+
+function Decisions({ blocks }: { blocks: Block[] }) {
+  const lines = blocks.flatMap((block) => {
+    if (block.kind !== "request" || !block.resolved) return [];
+    const text = toDecisionText(block.request.request, block.request.message);
+    return text === null ? [] : [{ id: block.id, text }];
+  });
+  if (lines.length === 0) return null;
+  return (
+    <ul className="space-y-0.5 text-[12.5px] text-muted">
+      {lines.map((line) => (
+        <li key={line.id} className="[overflow-wrap:anywhere]">
+          {line.text}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function WorkLog({ work, label }: { work: Block[]; label: string }) {
   return (
@@ -332,6 +355,7 @@ export function Blocks({
       {work.length === 0 ? null : (
         <WorkLog work={work} label={running ? "Steps so far" : toDoneLabel(work)} />
       )}
+      <Decisions blocks={blocks} />
       {answer === null || last === null ? null : (
         <PacedMarkdown
           key={last.id}

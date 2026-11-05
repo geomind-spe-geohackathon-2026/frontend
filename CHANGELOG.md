@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.59 (2026-11-05)
+
+- QA-058: after an approval or a question, the chat shows the decision as a line (You approved "Set case" / You denied "Set case": <reason> / You answered: ...), in the run and in its steps. The tab remembers the answers it sent (sessionStorage); a lasting record for every browser needs the answer in the run's public events.
+
 ## 1.1.58 (2026-11-05)
 
 - QA-057: the approval card shows "What the call sends" as a monospace block that keeps the JSON's indentation and wraps long values, and asks with the tool's readable name (Allow "Set case" to change the project?).
