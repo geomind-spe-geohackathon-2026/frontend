@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useFieldContext, type SeriesSource } from "./field-context";
 import { expectedSteps, toPoints, toTable, valueColumns } from "./series-data";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { TableRow } from "@/components/ui/table";
+import { DataCell, DataHead, DataTable } from "@/shared/ui/data-table";
 
 type Props = { id: string; name: string; label: string; units: string[] };
 
@@ -233,6 +235,86 @@ function SourcedSeries({ id, name, label, units, source }: Props & { source: Ser
   );
 }
 
+type Fact = { key: string; value: string; source: string; url: string | undefined };
+
+const headerKeys = new Set(["about", "format", "kind", "name"]);
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function toText(value: unknown): string {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return JSON.stringify(value);
+}
+
+function toLeaves(node: unknown, path: string): { key: string; value: string }[] {
+  if (!isObject(node)) return [{ key: path, value: toText(node) }];
+  if ("value" in node) {
+    const unit = typeof node.unit === "string" ? ` ${node.unit}` : "";
+    return [{ key: path, value: `${toText(node.value)}${unit}` }];
+  }
+  return Object.entries(node).flatMap(([key, child]) =>
+    toLeaves(child, path === "" ? key : `${path}.${key}`),
+  );
+}
+
+function toSource(cited: unknown): { source: string; url: string | undefined } {
+  if (!isObject(cited)) return { source: cited === undefined ? "" : toText(cited), url: undefined };
+  const words = [cited.source, cited.year, cited.row, cited.status, cited.basis]
+    .filter((part) => part !== undefined && part !== null && part !== "")
+    .map(toText);
+  return { source: words.join(", "), url: typeof cited.url === "string" ? cited.url : undefined };
+}
+
+function toFacts(text: string): Fact[] | null {
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!isObject(data)) return null;
+  const about = isObject(data.about) ? data.about : {};
+  const sources = isObject(about.sources) ? about.sources : {};
+  return Object.entries(data)
+    .filter(([key]) => !headerKeys.has(key))
+    .flatMap(([key, node]) => toLeaves(node, key))
+    .map((leaf) => ({ ...leaf, ...toSource(sources[leaf.key]) }));
+}
+
+function FileFacts({ text, label }: { text: string; label: string }) {
+  const facts = toFacts(text);
+  if (facts === null || facts.length === 0) return null;
+  return (
+    <DataTable
+      caption={`Values of ${label} with their sources`}
+      className="max-h-[420px]"
+      head={["Key", "Value", "Source"].map((name) => (
+        <DataHead key={name}>{name}</DataHead>
+      ))}
+    >
+      {facts.map((fact) => (
+        <TableRow key={fact.key}>
+          <DataCell className="font-mono">{fact.key}</DataCell>
+          <DataCell className="tabular-nums">{fact.value}</DataCell>
+          <DataCell>
+            {fact.url === undefined ? (
+              fact.source || "-"
+            ) : (
+              <a href={fact.url} target="_blank" rel="noreferrer" className="text-accent">
+                {fact.source || fact.url}
+              </a>
+            )}
+          </DataCell>
+        </TableRow>
+      ))}
+    </DataTable>
+  );
+}
+
 /** Chooses a whole file of the case, with a look at what it holds. */
 export function FilePicker({ id, name, label }: Omit<Props, "units">) {
   const { series: source } = useFieldContext();
@@ -264,6 +346,7 @@ function SourcedFile({ id, name, label, source }: Omit<Props, "units"> & { sourc
         accept=".json,application/json"
         title="Upload JSON"
       />
+      {content.data === undefined ? null : <FileFacts text={content.data} label={label} />}
       {content.data === undefined ? null : (
         <pre className="max-h-[320px] overflow-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
           {content.data}

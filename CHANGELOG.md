@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.130 (2026-11-05)
+
+- QA-302: the study record of a sensitivity shows a table ranked by effect (rank, value, low, high, result at low and high, swing, feasible); the raw JSON is in a collapsed section.
+- QA-303: a case value set from a file (such as economics.json) shows a read-only Key / Value / Source table above the raw JSON, with the agents' sources from about.sources.
+
 ## 1.1.129 (2026-11-05)
 
 - QA-290: the Report page warns "Out of date" when its result ran on an older case or plant version than the project's current ones, and says to run the study again before sending the report.
