@@ -88,8 +88,20 @@ async function streamServerEvents(options: Options): Promise<void> {
   }
 }
 
-/** Reads a run's events over a WebSocket when it has a socket path, and over SSE when a socket cannot connect. */
-export async function streamEvents(options: Options): Promise<void> {
+function onceEach(onEvent: (event: RunEvent) => void): (event: RunEvent) => void {
+  const seen = new Set<number>();
+  return (event) => {
+    if (event.sequence !== null) {
+      if (seen.has(event.sequence)) return;
+      seen.add(event.sequence);
+    }
+    onEvent(event);
+  };
+}
+
+/** Reads a run's events over a WebSocket when it has a socket path, and over SSE when a socket cannot connect; a stored event that comes again (a reconnect replays from the start) is passed on once. */
+export async function streamEvents(given: Options): Promise<void> {
+  const options = { ...given, onEvent: onceEach(given.onEvent) };
   const { socketPath, lastEventId, ...rest } = options;
   const isReal = toApiMode(import.meta.env.VITE_API_MODE, import.meta.env.DEV) === "real";
   if (socketPath === undefined || !isReal) return streamServerEvents(options);

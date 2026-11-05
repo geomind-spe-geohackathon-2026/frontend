@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.77 (2026-11-05)
+
+- QA-081 (b): the run stream passes each stored event on once (by its event id), so a reconnect that replays the run from the start no longer counts steps, tool calls and text again (the live counter read 3757 for 261 steps). Live-only events without an id (text deltas, retry) pass as before.
+
 ## 1.1.76 (2026-11-05)
 
 - QA-079: an answered question or approval shows once, as its decision line; the steps log no longer repeats it. A request whose answer the chat does not know reads "The assistant asked: ..." instead of "You answered" (a step-limit question left open by a failed run read as answered).
