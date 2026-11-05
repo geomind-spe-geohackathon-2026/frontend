@@ -161,7 +161,18 @@ export type StudyStructures = {
   structures: StudyStructure[];
 };
 
+export type StructurePlant = { rank: number; structure: Record<string, unknown>; plant: unknown };
+export type SavedStructurePlant = { rank: number; plant_version: number };
+
 export type PendingPaths = {
+  "/design/study/{study_id}/structures/{rank}/plant": Omit<Route, "get" | "post"> & {
+    get: Read<StructurePlant, never, { study_id: string; rank: number }>;
+    post: {
+      parameters: WithPath<{ study_id: string; rank: number }>;
+      requestBody?: never;
+      responses: { 201: Json<SavedStructurePlant> };
+    };
+  };
   "/design/study/{study_id}/structures": Omit<Route, "get"> & {
     get: Read<StudyStructures, { limit?: number }, { study_id: string }>;
   };

@@ -1,4 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api, toData } from "@/shared/api/client";
@@ -77,6 +80,94 @@ function Feasible({ row }: { row: StudyStructure }) {
   );
 }
 
+const notStored = "Plant not stored for this structure yet";
+
+function hasPlant(row: StudyStructure): boolean {
+  return row.rank === 1 || row.on_front;
+}
+
+function RowActions({ studyId, row }: { studyId: string; row: StudyStructure }) {
+  const projectId = useRequiredParam("projectId");
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const path = { study_id: studyId, rank: row.rank };
+  const plant = useQuery({
+    queryKey: ["structure-plant", studyId, row.rank],
+    queryFn: async ({ signal }) =>
+      toData(await api.GET("/design/study/{study_id}/structures/{rank}/plant", { params: { path }, signal })),
+    enabled: open,
+    retry: false,
+  });
+  const save = useMutation({
+    mutationFn: async () =>
+      toData(await api.POST("/design/study/{study_id}/structures/{rank}/plant", { params: { path } })),
+    onSuccess: async (saved) => {
+      toast(`Saved as plant v${String(saved.plant_version)}`);
+      await queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
+    },
+    onError: (error) => {
+      toast(error instanceof Error ? error.message : "The plant could not be saved");
+    },
+  });
+  if (!hasPlant(row)) {
+    return (
+      <span className="flex flex-col gap-1" title={notStored}>
+        <Button size="sm" disabled aria-label={`Open rank ${String(row.rank)}: ${notStored}`}>
+          Open
+        </Button>
+        <Button size="sm" disabled aria-label={`Save rank ${String(row.rank)}: ${notStored}`}>
+          Save
+        </Button>
+      </span>
+    );
+  }
+  return (
+    <span className="flex flex-col gap-1">
+      <Button
+        size="sm"
+        onClick={() => {
+          setOpen(true);
+        }}
+      >
+        Open
+      </Button>
+      <Button
+        size="sm"
+        variant="default"
+        disabled={save.isPending}
+        onClick={() => {
+          save.mutate();
+        }}
+      >
+        Save as plant
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Rank {row.rank}: {toStructureText(row.structure)}</DialogTitle>
+            <DialogDescription>
+              The plant of this structure with the parameters the search found. Save it to make it the
+              project&apos;s next plant version.
+            </DialogDescription>
+          </DialogHeader>
+          {plant.isPending ? <Notice status="loading" what="the plant" /> : null}
+          {plant.isError ? <Notice status="failed" error={plant.error} /> : null}
+          {plant.data === undefined ? null : (
+            <pre className="max-h-[60vh] overflow-auto rounded-control bg-sunken p-2 font-mono text-[12px]">
+              {JSON.stringify(plant.data.plant, null, 2)}
+            </pre>
+          )}
+          {save.data === undefined ? null : (
+            <Link className="text-accent" to={`/projects/${projectId}/design/plant`}>
+              Open plant v{save.data.plant_version} on the Plant page
+            </Link>
+          )}
+        </DialogContent>
+      </Dialog>
+    </span>
+  );
+}
+
 function RankTable({
   data,
   chosen,
@@ -145,7 +236,9 @@ function RankTable({
                     .map(([name, value]) => `${toWords(name)} ${toValueText(value)}`)
                     .join(" · ") || "–"}
                 </TableCell>
-                <TableCell className="text-[12px] text-muted">Open and Save come soon</TableCell>
+                <TableCell>
+                  <RowActions studyId={data.study} row={row} />
+                </TableCell>
               </TableRow>
             );
           })}

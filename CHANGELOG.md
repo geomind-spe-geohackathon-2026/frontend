@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.71 (2026-11-05)
+
+- Compare structures: Open (the structure's plant in a dialog, backend 1.1.67 `GET /design/study/{id}/structures/{rank}/plant`) and Save as plant (`POST` the same path, saved as the project's next plant version, with a link to the Plant page) on rank 1 and Pareto-front rows; other rows show both disabled with "Plant not stored for this structure yet".
+
 ## 1.1.70 (2026-11-05)
 
 - Compare structures (spec evolve-structures-view-2026-11-05): a finished evolve study ("Find the best structure") has a "Compare structures" link that opens a new tab at `/projects/:id/design/study/:study/structures`, from backend 1.1.66 `GET /design/study/{study_id}/structures?limit=10`. The page lists up to 10 unique structures as gemini ranks them (rank, the structure in words, feasible with its reason, the objectives first then the other metrics, the parameters, a "front" mark when there are several objectives); tick 2 or 3 rows to see them side by side with the differing values highlighted. Open and Save per row wait for the backend's plant endpoint.
