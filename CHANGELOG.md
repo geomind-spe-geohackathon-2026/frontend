@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.78 (2026-11-05)
+
+- QA-088: a study the assistant ran shows in the study list what it found ("Sizing done", "3 runs, 2 feasible", "Best ...") from backend 1.1.80 `GET /design/study/{id}/agent-record`, with Open record (a page with its runs table: verdict and metrics; its sizing table; or its best design) and Open run. Without a record (page studies: 404) the row stays as before.
+
 ## 1.1.77 (2026-11-05)
 
 - QA-081 (b): the run stream passes each stored event on once (by its event id), so a reconnect that replays the run from the start no longer counts steps, tool calls and text again (the live counter read 3757 for 261 steps). Live-only events without an id (text deltas, retry) pass as before.

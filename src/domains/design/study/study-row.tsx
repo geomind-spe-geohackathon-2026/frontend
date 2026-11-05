@@ -1,4 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { agentRecordQuery, toRecordSummary } from "./agent-record";
 import { ProgressBar } from "@/shared/charts/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +50,25 @@ function ProgressCell({ study }: { study: Study }) {
   );
 }
 
+function AgentOutcome({ study, projectId, run }: { study: Study; projectId: string; run: string }) {
+  const record = useQuery(agentRecordQuery(study.id));
+  return (
+    <div className="flex flex-col gap-0.5">
+      {record.data === undefined ? null : (
+        <>
+          <span>{toRecordSummary(record.data.tool, record.data.result)}</span>
+          <Link to={`/projects/${projectId}/design/study/${study.id}/record`} className="text-accent">
+            Open record
+          </Link>
+        </>
+      )}
+      <Link to={`/projects/${projectId}/assistant/runs/${run}`} className="text-[12px] text-muted underline">
+        Open run
+      </Link>
+    </div>
+  );
+}
+
 function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) {
   const base = `/projects/${projectId}/design`;
   if (study.status === "done" && study.result !== null) {
@@ -58,14 +79,7 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
     );
   }
   if (study.status === "done" && study.started_by.run !== null) {
-    return (
-      <Link
-        to={`/projects/${projectId}/assistant/runs/${study.started_by.run}`}
-        className="text-accent"
-      >
-        Open run
-      </Link>
-    );
+    return <AgentOutcome study={study} projectId={projectId} run={study.started_by.run} />;
   }
   if (study.status === "blocked") {
     return (

@@ -164,7 +164,19 @@ export type StudyStructures = {
 export type StructurePlant = { rank: number; structure: Record<string, unknown>; plant: unknown };
 export type SavedStructurePlant = { rank: number; plant_version: number };
 
+export type AgentRecord = {
+  study: string;
+  name: string;
+  tool: string;
+  method: string;
+  designs: { read: unknown; wrote: unknown };
+  result: unknown;
+};
+
 export type PendingPaths = {
+  "/design/study/{study_id}/agent-record": Omit<Route, "get"> & {
+    get: Read<AgentRecord, never, { study_id: string }>;
+  };
   "/design/study/{study_id}/structures/{rank}/plant": Omit<Route, "get" | "post"> & {
     get: Read<StructurePlant, never, { study_id: string; rank: number }>;
     post: {

@@ -15,6 +15,10 @@ export const designRoutes: DomainRoutes = {
       lazy: () => import("./study/page").then((m) => ({ Component: m.StudyPage })),
     },
     {
+      path: "design/study/:studyId/record",
+      lazy: () => import("./study/record-page").then((m) => ({ Component: m.RecordPage })),
+    },
+    {
       path: "design/study/:studyId/structures",
       lazy: () => import("./study/structures-page").then((m) => ({ Component: m.StructuresPage })),
     },
