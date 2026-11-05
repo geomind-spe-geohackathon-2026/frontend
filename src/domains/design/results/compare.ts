@@ -1,3 +1,4 @@
+import { isInfeasible } from "@/shared/api/results";
 import type { Kpi, Result } from "@/shared/api/types";
 
 /** Lists the figures that every given result has with a value, in the order of the first result. */
@@ -38,13 +39,17 @@ export function toMergedPoints(points: ComparedPoint[]): ComparedPoint[] {
 export function toBestId(items: Result[], name: string): string | null {
   const ranked = items.flatMap((item) => {
     const value = findKpi(item, name)?.value ?? null;
-    return value === null || item.checks.failed > 0 ? [] : [{ id: item.id, value }];
+    return value === null || isInfeasible(item) || item.checks.failed > 0
+      ? []
+      : [{ id: item.id, value }];
   });
   return ranked.sort((first, second) => first.value - second.value)[0]?.id ?? null;
 }
 
 /** Says how a design's checks went: all passed only when every check was assessed and passed. */
-export function toChecksText({ checks }: Result): string {
+export function toChecksText(result: Result): string {
+  const { checks } = result;
+  if (isInfeasible(result)) return "infeasible: does not serve every demand";
   if (checks.failed > 0) return `${String(checks.failed)} failed`;
   if (checks.not_assessed > 0) return `${String(checks.not_assessed)} not assessed`;
   return "all passed";

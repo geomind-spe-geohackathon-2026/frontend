@@ -1,3 +1,4 @@
+import { isInfeasible } from "@/shared/api/results";
 import type { Result, Study } from "@/shared/api/types";
 
 type Goal = { objective: string; sense: "min" | "max" };
@@ -12,7 +13,12 @@ function toGoal(study: Study | undefined): Goal | null {
 }
 
 function isFeasible(result: Result): boolean {
-  return result.checks.failed === 0 && result.checks.not_assessed === 0 && result.checks.passed > 0;
+  return (
+    !isInfeasible(result) &&
+    result.checks.failed === 0 &&
+    result.checks.not_assessed === 0 &&
+    result.checks.passed > 0
+  );
 }
 
 function toNewest(results: Result[]): Result | undefined {

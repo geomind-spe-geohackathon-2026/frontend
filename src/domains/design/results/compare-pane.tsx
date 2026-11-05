@@ -1,3 +1,4 @@
+import { isInfeasible } from "@/shared/api/results";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { Scatter, type ScatterPoint } from "@/shared/charts/scatter";
@@ -154,7 +155,8 @@ function Controls({ results, kpis, xName, yName, chosen, onParam }: ControlsProp
 
 function ComparisonView({ comparison, x, y }: { comparison: ResultComparison; x: Kpi; y: Kpi }) {
   const points = toPoints(comparison, x, y);
-  const pareto = toParetoIds(points, comparison.pareto);
+  const infeasible = new Set(comparison.items.filter((item) => isInfeasible(item)).map((item) => item.id));
+  const pareto = toParetoIds(points, comparison.pareto).filter((id) => !infeasible.has(id));
   return (
     <>
       <Scatter

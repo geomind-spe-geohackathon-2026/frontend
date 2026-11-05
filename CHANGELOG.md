@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.123 (2026-11-05)
+
+- QA-239 (frontend part): reads the `feasible` field of backend 1.1.110; a result with `feasible: false` (a plant that does not serve every demand, such as a heating-only plant on a case with cooling) is never the best in Compare, never on the trade-off line, never the report's default, and its checks read "infeasible: does not serve every demand".
+
 ## 1.1.122 (2026-11-05)
 
 - QA-246: the chat stream no longer refetches on every event: refreshes it asks for (chats, agents, the project after the run) are collected and sent at most once per 2 s, without cancelling a request already on its way (that cancel-and-repeat made bursts of 20 identical calls, and a replay of a long run made hundreds). A 429 answer is retried with backoff (5, 10, 20, 40 s) instead of showing an error.

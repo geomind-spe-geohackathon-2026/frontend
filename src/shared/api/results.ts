@@ -36,3 +36,8 @@ export function isOutOfDate(
     isOlder(made.plant_version, project.plant_version)
   );
 }
+
+/** Whether the API marks a result infeasible (backend 1.1.110 `feasible: false`: it does not serve every demand). */
+export function isInfeasible(result: object): boolean {
+  return "feasible" in result && result.feasible === false;
+}

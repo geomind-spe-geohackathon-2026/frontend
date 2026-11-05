@@ -1,3 +1,4 @@
+import { isInfeasible } from "@/shared/api/results";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardAction, CardHeader } from "@/components/ui/card";
@@ -92,8 +93,8 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
       <CardHeader>
         <h2>Constraints</h2>
         <CardAction>
-          <Badge variant={result.checks.failed > 0 ? "bad" : "ok"}>
-            {toSummary(result.checks)}
+          <Badge variant={isInfeasible(result) || result.checks.failed > 0 ? "bad" : "ok"}>
+            {isInfeasible(result) ? "Infeasible: does not serve every demand" : toSummary(result.checks)}
           </Badge>
         </CardAction>
       </CardHeader>
