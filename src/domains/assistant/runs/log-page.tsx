@@ -19,32 +19,87 @@ import { Notice } from "@/shared/ui/notice";
 
 type StepListProps = { steps: LogStep[]; selected: number; onSelect: (position: number) => void };
 
+type AgentNode = { path: string; positions: number[]; children: AgentNode[] };
+
+function toTree(steps: LogStep[]): AgentNode[] {
+  const nodes = new Map<string, AgentNode>();
+  const roots: AgentNode[] = [];
+  const nodeOf = (path: string): AgentNode => {
+    const known = nodes.get(path);
+    if (known !== undefined) return known;
+    const node: AgentNode = { path, positions: [], children: [] };
+    nodes.set(path, node);
+    const cut = path.lastIndexOf(".");
+    if (cut < 0) roots.push(node);
+    else nodeOf(path.slice(0, cut)).children.push(node);
+    return node;
+  };
+  steps.forEach((step, position) => {
+    nodeOf(step.agent).positions.push(position);
+  });
+  return roots;
+}
+
+function toNodeTokens(node: AgentNode, steps: LogStep[]): number {
+  const own = node.positions.reduce((sum, position) => sum + toStepTokens(steps[position] as LogStep), 0);
+  return node.children.reduce((sum, child) => sum + toNodeTokens(child, steps), own);
+}
+
+function hasSelected(node: AgentNode, selected: number): boolean {
+  return node.positions.includes(selected) || node.children.some((child) => hasSelected(child, selected));
+}
+
+const rowClass = "flex w-full items-center justify-between gap-2 rounded-control px-2 py-1 text-left whitespace-nowrap";
+
+function AgentBranch({ node, steps, selected, onSelect }: StepListProps & { node: AgentNode }) {
+  const count = node.positions.length;
+  return (
+    <li>
+      <details open={hasSelected(node, selected)}>
+        <summary className={`${rowClass} cursor-pointer font-medium`}>
+          <span className="min-w-0 truncate">{toAgentName(node.path)}</span>
+          <span className="shrink-0 text-[11.5px] font-normal text-muted tabular-nums">
+            {count} {count === 1 ? "step" : "steps"} ·{" "}
+            <Quantity value={toNodeTokens(node, steps)} unit="" fractionDigits={0} />
+          </span>
+        </summary>
+        <ul className="ml-2 space-y-0.5 border-l border-border pl-1.5">
+          {node.positions.map((position) => {
+            const step = steps[position] as LogStep;
+            return (
+              <li key={position}>
+                <button
+                  type="button"
+                  aria-current={position === selected ? "step" : undefined}
+                  onClick={() => {
+                    onSelect(position);
+                  }}
+                  className={`${rowClass} ${position === selected ? "bg-accent-soft" : ""}`}
+                >
+                  <span>Step {step.index}</span>
+                  <Quantity value={toStepTokens(step)} unit="" fractionDigits={0} className="text-muted" />
+                </button>
+              </li>
+            );
+          })}
+          {node.children.map((child) => (
+            <AgentBranch key={child.path} node={child} steps={steps} selected={selected} onSelect={onSelect} />
+          ))}
+        </ul>
+      </details>
+    </li>
+  );
+}
+
 function StepList({ steps, selected, onSelect }: StepListProps) {
   return (
-    <nav aria-label="Steps" className="rounded-card border border-border bg-surface p-1.5">
+    <nav
+      aria-label="Steps"
+      className="max-h-[calc(100dvh-12rem)] self-start overflow-y-auto rounded-card border border-border bg-surface p-1.5 text-[12.5px] lg:sticky lg:top-3"
+    >
       <ul className="space-y-0.5">
-        {steps.map((step, position) => (
-          <li key={`${step.agent}/${String(step.index)}/${String(position)}`}>
-            <button
-              type="button"
-              aria-current={position === selected ? "step" : undefined}
-              onClick={() => {
-                onSelect(position);
-              }}
-              className={`flex w-full justify-between gap-2 rounded-control px-2 py-1.5 text-left ${position === selected ? "bg-accent-soft" : ""}`}
-              style={{ paddingLeft: `${String(8 + 12 * (step.agent.split(".").length - 1))}px` }}
-            >
-              <span className="min-w-0 [overflow-wrap:anywhere]">
-                {toAgentName(step.agent)} · step {step.index}
-              </span>
-              <Quantity
-                value={toStepTokens(step)}
-                unit=""
-                fractionDigits={0}
-                className="shrink-0 text-muted"
-              />
-            </button>
-          </li>
+        {toTree(steps).map((node) => (
+          <AgentBranch key={node.path} node={node} steps={steps} selected={selected} onSelect={onSelect} />
         ))}
       </ul>
     </nav>
@@ -130,7 +185,7 @@ export function RunLogPage() {
       {step === undefined ? (
         <p className="text-muted">This run has no recorded steps.</p>
       ) : (
-        <div className="grid grid-cols-[300px_minmax(0,1fr)] gap-3 max-[1000px]:grid-cols-1">
+        <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-3 max-[760px]:grid-cols-1">
           <StepList
             steps={steps}
             selected={selected}

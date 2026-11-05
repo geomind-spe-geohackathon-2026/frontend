@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.80 (2026-11-05)
+
+- QA-089 (Sahand): the run log's step list is a compact tree: agents under the agent that called them (Project lead > Design lead > Process engineer ...), each collapsed with its step count and tokens (its own and its helpers'), opening to its steps in order; the agent of the selected step is open. The list is 260 px, scrolls on its own and stays beside the step detail (stacked only under 760 px); labels no longer wrap ("step\n15").
+
 ## 1.1.79 (2026-11-05)
 
 - QA-074: while a nested agent works, the chat's tokens and cost come from the larger of the run's usage total and the sum of every finished step (nested agents included), so they grow live instead of showing 0; the collapsed "Steps so far" says how many steps it holds.
