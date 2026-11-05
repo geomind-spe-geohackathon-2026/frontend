@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.106 (2026-11-05)
+
+- QA-135 (frontend part): Overview and the sidebar judge "Out of date" by the newest result; they took the first of the list, which comes oldest first, so a project with a current result still read Study and Results "Out of date".
+
 ## 1.1.105 (2026-11-05)
 
 - QA-133, QA-134: a tall approval or question card no longer pushes the message box (and its Cancel run button) below the window: the card is at most 45 % of the window high and scrolls inside, so Cancel run stays reachable while a run waits for an answer.

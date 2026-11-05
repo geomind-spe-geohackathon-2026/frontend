@@ -17,7 +17,7 @@ export function OverviewPage() {
   const overview = useQuery(overviewQuery(projectId));
   const results = useQuery(resultsQuery(projectId));
   const stale =
-    project.data === undefined ? new Set<never>() : toStaleSteps(project.data, results.data?.[0]);
+    project.data === undefined ? new Set<never>() : toStaleSteps(project.data, results.data);
 
   return (
     <div className="flex flex-col gap-4">

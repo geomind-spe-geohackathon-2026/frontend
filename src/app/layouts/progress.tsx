@@ -17,7 +17,7 @@ const dotTone: Record<ProgressStep["state"], string> = {
 /** The progress of each design step, marking a step out of date when the newest result is older than its input. */
 export function useStepProgress(project: Project): (key: ProgressKey) => ProgressStep {
   const results = useQuery(resultsQuery(project.id));
-  const stale = toStaleSteps(project, results.data?.[0]);
+  const stale = toStaleSteps(project, results.data);
   return (key) =>
     stale.has(key) ? { state: "incomplete", label: "Out of date" } : project.progress[key];
 }
