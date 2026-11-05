@@ -6,6 +6,7 @@ import { toDateLabel } from "@/lib/datelabel";
 import type { Run } from "@/shared/api/types";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
+import { DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { InputGroupButton } from "@/components/ui/input-group";
 import {
-  Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -47,9 +46,8 @@ function toTotalCost(runs: Run[] | undefined, live: View, runId: string | null):
 function RunsTable({ projectId, runs }: { projectId: string; runs: Run[] }) {
   if (runs.length === 0) return null;
   return (
-    <Table>
-      <TableCaption className="sr-only">Runs of this chat</TableCaption>
-      <TableHeader>
+    <DataTableFrame caption="Runs of this chat" className="max-h-[50vh]">
+      <TableHeader className={dataTableClass.header}>
         <TableRow>
           <TableHead scope="col">Run</TableHead>
           <TableHead scope="col">Status</TableHead>
@@ -75,7 +73,7 @@ function RunsTable({ projectId, runs }: { projectId: string; runs: Run[] }) {
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+    </DataTableFrame>
   );
 }
 

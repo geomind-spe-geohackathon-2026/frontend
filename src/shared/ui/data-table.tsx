@@ -13,10 +13,11 @@ import { cn } from "@/lib/cn";
 
 const lineClass = "block max-w-60 truncate text-left";
 
-/** Classes of the shared data table: the bordered box whose table container scrolls both ways, with striped rows (odd on the page colour, even lightly sunken, hover stronger), and the header row that stays on top on its own sunken colour. */
+/** Classes of the shared data table: the bordered box whose table container scrolls both ways, with striped rows (odd on the page colour, even lightly sunken, hover stronger), the header row that stays on top on its own sunken colour, and the row-number column "#" (a CSS counter, no cells of its own). */
 export const dataTableClass = {
   box: "min-h-0 overflow-hidden rounded-md border [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:max-h-[inherit] [&>[data-slot=table-container]]:overflow-auto [&_tbody_tr:nth-child(even):not([data-state=selected]):not(.bg-accent-soft)]:bg-sunken/60 [&_tbody_tr:nth-child(n):hover:not([data-state=selected]):not(.bg-accent-soft)]:bg-sunken",
   header: "sticky top-0 z-10 bg-sunken shadow-[0_1px_0_var(--border)]",
+  numbered: "data-table-numbered",
 };
 
 /** A table cell that shows its content on one line, cut with an ellipsis, in a capped width; a click on a cut cell opens the full content beside it. */
@@ -77,18 +78,20 @@ export function DataHead({ children, className }: { children?: ReactNode; classN
   );
 }
 
-/** The box of the shared data table around an optional caption and the caller's own TableHeader (give it dataTableClass.header) and TableBody, for tables with row headers or several header rows. */
+/** The box of the shared data table (row numbers unless numbered is false) around an optional caption and the caller's own TableHeader (give it dataTableClass.header) and TableBody, for tables with row headers or several header rows. */
 export function DataTableFrame({
   caption,
   children,
   className,
+  numbered = true,
 }: {
   caption?: string | undefined;
+  numbered?: boolean;
   children: ReactNode;
   className?: string | undefined;
 }) {
   return (
-    <div className={cn(dataTableClass.box, className)}>
+    <div className={cn(dataTableClass.box, numbered && dataTableClass.numbered, className)}>
       <Table className="text-[12.5px]">
         {caption === undefined ? null : <TableCaption className="sr-only">{caption}</TableCaption>}
         {children}
@@ -97,20 +100,22 @@ export function DataTableFrame({
   );
 }
 
-/** The shared data table: compact one-line rows, a header row that stays on top while the body scrolls, and scrolling both ways inside its box. Rows are TableRows of DataCells (or plain TableCells for buttons and badges). */
+/** The shared data table: a row-number column "#" unless numbered is false (for tables with their own index), compact one-line rows, a header row that stays on top while the body scrolls, and scrolling both ways inside its box. Rows are TableRows of DataCells (or plain TableCells for buttons and badges). */
 export function DataTable({
   caption,
   head,
   children,
   className,
+  numbered = true,
 }: {
   caption: string;
   head: ReactNode;
   children: ReactNode;
   className?: string | undefined;
+  numbered?: boolean;
 }) {
   return (
-    <DataTableFrame caption={caption} className={className}>
+    <DataTableFrame caption={caption} className={className} numbered={numbered}>
       <TableHeader className={dataTableClass.header}>
         <TableRow>{head}</TableRow>
       </TableHeader>

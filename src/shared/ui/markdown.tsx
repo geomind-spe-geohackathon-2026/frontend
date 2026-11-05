@@ -16,7 +16,7 @@ const components = {
     <pre className="max-w-full overflow-x-auto rounded-control bg-sunken p-2">{children}</pre>
   ),
   table: ({ children }: { children?: React.ReactNode }) => (
-    <div className={`${dataTableClass.box} max-h-96`}>
+    <div className={`${dataTableClass.box} ${dataTableClass.numbered} max-h-96`}>
       <Table className="min-w-full text-[12.5px]">{children}</Table>
     </div>
   ),

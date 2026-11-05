@@ -60,6 +60,7 @@ export function AlternativesTable({
       )}
       <DataTable
         caption="Alternatives"
+        numbered={false}
         className="max-h-96"
         head={
           <>

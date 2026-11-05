@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.90 (2026-11-05)
+
+- QA-108 (user, addition): every table has a row-number column "#" (1, 2, 3 ..., narrow and muted), drawn by a CSS counter (`.data-table-numbered` in `styles/index.css`) so no table needs its own cells; on by default in DataTable and DataTableFrame (prop `numbered={false}` where a table has its own rank: Alternatives, evolve structures) and in Markdown tables. The chat's runs window now uses the shared table too, so every table in the app has the three backgrounds and the numbers.
+
 ## 1.1.89 (2026-11-05)
 
 - QA-111 (user): one project menu (`domains/workspace/settings/project-menu.tsx`) for the sidebar and the project cards: Pin, Rename (dialog), Settings (the settings window) and Delete (a destructive confirmation naming the project; after it, back to Projects). The routes hand the menu to the Projects page, so features keep their import boundaries.

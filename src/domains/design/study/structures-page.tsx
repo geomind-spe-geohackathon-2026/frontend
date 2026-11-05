@@ -182,7 +182,7 @@ function RankTable({
   const shownMetrics = [...objectiveKeys.filter((key) => metricKeys.includes(key)), ...metricKeys.filter((key) => !objectiveKeys.includes(key))];
   const several = data.objectives.length > 1;
   return (
-    <DataTableFrame caption="Best structures" className="max-h-[70vh]">
+    <DataTableFrame caption="Best structures" className="max-h-[70vh]" numbered={false}>
         <TableHeader className={dataTableClass.header}>
           <TableRow>
             <DataHead>Compare</DataHead>
@@ -264,7 +264,7 @@ function CompareTable({ rows }: { rows: StudyStructure[] }) {
   return (
     <section aria-label="Side by side" className="space-y-2">
       <h2>Side by side</h2>
-      <DataTableFrame caption="Structures side by side" className="max-h-[70vh]">
+      <DataTableFrame caption="Structures side by side" className="max-h-[70vh]" numbered={false}>
           <TableHeader className={dataTableClass.header}>
             <TableRow>
               <DataHead>Value</DataHead>
