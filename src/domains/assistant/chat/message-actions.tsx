@@ -32,6 +32,14 @@ function CopyAction({ text }: { text: string }) {
   );
 }
 
+function MessageTime({ created }: { created: string }) {
+  return (
+    <time dateTime={created} className="px-1 text-[12px] text-muted-foreground">
+      {toDateTimeLabel(created)}
+    </time>
+  );
+}
+
 /** Like Claude's: quiet buttons under a message, shown on hover or focus; copy for every message, the time, and the run log under answers. */
 export function MessageButtons({ projectId, message }: { projectId: string; message: Message }) {
   const isUser = message.role === "user";
@@ -39,11 +47,7 @@ export function MessageButtons({ projectId, message }: { projectId: string; mess
     <MessageActions
       className={`opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 ${isUser ? "justify-end" : ""}`}
     >
-      {isUser ? (
-        <time dateTime={message.created} className="px-1 text-[12px] text-muted-foreground">
-          {toDateTimeLabel(message.created)}
-        </time>
-      ) : null}
+      {isUser ? <MessageTime created={message.created} /> : null}
       <CopyAction text={message.content} />
       {isUser || message.run === null ? null : (
         <Button asChild variant="ghost" size="icon-sm" className="size-7 text-muted-foreground">
@@ -56,6 +60,7 @@ export function MessageButtons({ projectId, message }: { projectId: string; mess
           </Link>
         </Button>
       )}
+      {isUser ? null : <MessageTime created={message.created} />}
     </MessageActions>
   );
 }
