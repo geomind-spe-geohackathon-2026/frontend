@@ -4,7 +4,7 @@ The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0
 
 ## 1.1.132 (2026-11-05)
 
-- QA-316: the auto-approve question shows at most once per browser (remembered after any answer or dismissal); the toggle is quiet when off (no blue).
+- QA-316: the auto-approve question shows at most once per browser (remembered after any answer or dismissal); the toggle is quiet when off (no blue). The Study table fits its pane with the chat open: names wrap (full name on hover), Compare structures / Cancel / Run again sit in a '...' menu.
 
 ## 1.1.131 (2026-11-05)
 

@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import { agentRecordQuery, toRecordSummary } from "./agent-record";
 import { ProgressBar } from "@/shared/charts/progress-bar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toProgress } from "./progress";
 import { wideColumnClass } from "./columns";
@@ -126,12 +133,68 @@ function OutcomeCell({ study, projectId }: { study: Study; projectId: string }) 
   return <span className="text-muted">-</span>;
 }
 
+type ActionsProps = Omit<Props, "onStart"> & { active: boolean };
+
+function StudyActions({ study, projectId, busy, active, onCancel, onRunAgain }: ActionsProps) {
+  const structures = study.kind === "evolve" && study.status === "done";
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Actions for ${study.name}`}
+          title="Actions"
+        >
+          <MoreHorizontal aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {structures ? (
+          <DropdownMenuItem asChild>
+            <a
+              href={`/projects/${projectId}/design/study/${study.id}/structures`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Compare structures
+            </a>
+          </DropdownMenuItem>
+        ) : null}
+        {active ? (
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={busy}
+            onSelect={() => {
+              onCancel(study.id);
+            }}
+          >
+            Cancel
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onSelect={() => {
+              onRunAgain(study);
+            }}
+          >
+            Run again
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /** One study row: kind, who started it, status, progress, and its result link or what is missing. */
 export function StudyRow({ study, projectId, busy, onStart, onCancel, onRunAgain }: Props) {
   const active = study.status === "queued" || study.status === "running";
   return (
     <TableRow>
-      <TableHead scope="row" className="text-left font-medium whitespace-normal">
+      <TableHead
+        scope="row"
+        title={study.name}
+        className="text-left font-medium whitespace-normal [overflow-wrap:anywhere]"
+      >
         {study.name}
       </TableHead>
       <TableCell className={wideColumnClass}>{kindLabels[study.kind] ?? study.kind}</TableCell>
@@ -142,22 +205,13 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel, onRunAgain
       <TableCell>
         <Badge variant={tones[study.status]}>{study.status}</Badge>
       </TableCell>
-      <TableCell className="min-w-[9rem] [overflow-wrap:anywhere]">
+      <TableCell className="min-w-[7rem] [overflow-wrap:anywhere]">
         <OutcomeCell study={study} projectId={projectId} />
       </TableCell>
-      <TableCell>
-        {study.kind === "evolve" && study.status === "done" ? (
-          <a
-            className="text-accent"
-            href={`/projects/${projectId}/design/study/${study.id}/structures`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Compare structures
-          </a>
-        ) : null}
+      <TableCell className="text-right whitespace-nowrap">
         {study.status === "blocked" ? (
           <Button
+            size="sm"
             aria-label={`Start ${study.name}`}
             disabled={busy}
             onClick={() => {
@@ -167,28 +221,7 @@ export function StudyRow({ study, projectId, busy, onStart, onCancel, onRunAgain
             Start
           </Button>
         ) : null}
-        {active ? (
-          <Button
-            aria-label={`Cancel ${study.name}`}
-            variant="destructive"
-            disabled={busy}
-            onClick={() => {
-              onCancel(study.id);
-            }}
-          >
-            Cancel
-          </Button>
-        ) : null}
-        {active ? null : (
-          <Button
-            aria-label={`Run ${study.name} again`}
-            onClick={() => {
-              onRunAgain(study);
-            }}
-          >
-            Run again
-          </Button>
-        )}
+        <StudyActions {...{ study, projectId, busy, active, onCancel, onRunAgain }} />
       </TableCell>
     </TableRow>
   );
