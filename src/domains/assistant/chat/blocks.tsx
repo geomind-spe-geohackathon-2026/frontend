@@ -244,6 +244,11 @@ function toLiveText(text: string): string | null {
   return isHiddenText(text) || partialLoopNote.test(text.trim()) ? null : text;
 }
 
+function toSpeaker(actor: string): string {
+  const [agent = actor, instance] = actor.split("|");
+  return instance ?? toAgentName(agent);
+}
+
 function toLiveBlock(blocks: Block[]): TextBlock | null {
   const last = blocks.findLast((block) => block.kind === "text" && toLiveText(block.text) !== null);
   return last?.kind === "text" ? last : null;
@@ -779,6 +784,9 @@ export function Blocks({
         />
       )}
       <Decisions blocks={blocks} />
+      {answer === null || last === null || !running ? null : (
+        <p className="text-[12.5px] font-medium">{toSpeaker(last.agent)}</p>
+      )}
       {answer === null || last === null ? null : (
         <PacedMarkdown
           key={last.id}
