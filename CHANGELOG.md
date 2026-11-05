@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.114 (2026-11-05)
+
+- QA-164: the Search dialog sends the typed term to the projects API (debounced), so it finds every project, not only the first page of 50.
+
 ## 1.1.113 (2026-11-05)
 
 - Plan E2: each agent line in the busy list shows a stage timer (time since its first step, from the server `ts` of backend 1.1.99), next to its step count.

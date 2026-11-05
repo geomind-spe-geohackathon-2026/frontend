@@ -1,8 +1,10 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useMatch, useNavigate } from "react-router-dom";
 import { FolderOpen, MessageSquare } from "lucide-react";
 import { projectsQuery } from "@/domains/workspace/projects/api";
 import { toItems } from "@/shared/api/pagination";
+import { useDebouncedValue } from "@/shared/forms/use-debounced-value";
 import { chatsQuery } from "@/shared/sse/chats";
 import {
   CommandDialog,
@@ -38,7 +40,10 @@ function ChatsGroup({ projectId, onOpen }: { projectId: string; onOpen: (to: str
 export function SearchDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const projectId = useMatch("/projects/:projectId/*")?.params.projectId;
-  const projects = useInfiniteQuery(projectsQuery(""));
+  const [term, setTerm] = useState("");
+  // The server searches every project; a browser-side filter would see only the first page.
+  const search = useDebouncedValue(term.trim(), 250);
+  const projects = useInfiniteQuery({ ...projectsQuery(search), placeholderData: keepPreviousData });
   const open = (to: string) => {
     onClose();
     void navigate(to);
@@ -53,6 +58,8 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
       description="Search projects and chats"
     >
       <CommandInput
+        value={term}
+        onValueChange={setTerm}
         placeholder="Search projects and chats…"
         aria-label="Search projects and chats"
       />
