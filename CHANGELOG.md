@@ -5,6 +5,7 @@ The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0
 ## 1.1.131 (2026-11-05)
 
 - QA-307: the busy list ends with a Total row laid out like the agent rows (Total · N agents working · steps · tokens · cost · time); it replaces the 'Steps so far' line and opens the steps window.
+- QA-311: the Results tab strip shows no scrollbar when the tabs fit; it still scrolls sideways when they do not.
 
 ## 1.1.130 (2026-11-05)
 

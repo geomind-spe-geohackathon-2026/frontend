@@ -53,7 +53,10 @@ export function ResultsPage() {
         value={selected}
         onValueChange={(value) => void navigate(`/projects/${projectId}/design/results/${value}`)}
       >
-        <TabsList aria-label="Results" className="max-w-full justify-start overflow-x-auto">
+        <TabsList
+          aria-label="Results"
+          className="max-w-full justify-start overflow-x-auto overflow-y-hidden group-data-[orientation=horizontal]/tabs:h-auto"
+        >
           {results.data.map((entry) => (
             <TabsTrigger key={entry.id} value={entry.id} title={toTabNote(entry)}>
               {entry.name}
