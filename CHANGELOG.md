@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.96 (2026-11-05)
+
+- QA-101: Overview, Recent chats: rows line up with the card title, the time column is as wide as its longest label, a long title stays on one line (ellipsis, full text on hover), the running badge stays inside the card, and the card is as tall as its rows.
+
 ## 1.1.95 (2026-11-05)
 
 - QA-100: Runs and logs, the "Per agent" and "Per model" titles are section titles (larger, semibold), no longer the size of the column headers.
