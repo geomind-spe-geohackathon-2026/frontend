@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.145 (2026-11-05)
+
+- QA-339: with auto-approve on, a waiting question shows a quiet 'Answering the agents' question automatically…' line for up to 60 s instead of flashing the card; after 60 s the card appears.
+- QA-350: Projects sort by date created, newest first, by default; the choice (created, updated, name) is remembered; each card shows created and updated dates.
+
 ## 1.1.144 (2026-11-05)
 
 - QA-345 (reopened): the agent's name is an inline bold prefix with a colon on the same line as the live text ('Case lead: The PDF is fully read ...').
