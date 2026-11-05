@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.147 (2026-11-05)
+
+- QA-358: knowledge and file tools are named by what they read (geomind names unchanged): a project file 'Read inputs' (busy list 'Reading inputs'), a knowledge/* document 'Read knowledge', a Knowledge search 'Search knowledge'.
+
 ## 1.1.146 (2026-11-05)
 
 - QA-355 (frontend part): the empty Plant tab offers 'Use this design as the plant' when the newest result holds a design not saved as a plant (`progress.plant.result`, backend 1.1.133); it adopts that result.
