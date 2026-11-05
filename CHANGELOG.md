@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.93 (2026-11-05)
+
+- QA-115: every group of a schema form (Case, Plant, Economics ...) starts collapsed; a group holding a form error, a gemini problem or a value gemini reports missing opens and shows a warning mark; a group the user opened or closed keeps that state while the page stays loaded (also across the form's tabs).
+
 ## 1.1.92 (2026-11-05)
 
 - QA-107 (b): Days covered shows a short day that still got part of its demand as "Partly short" (amber), with its unmet share on hover and the mean share in the legend ("Partly short: 243 days, 5% unmet on average"); "Short" is left for days that got none. The legend states the rule: a day counts as short when any of its demand is unmet.

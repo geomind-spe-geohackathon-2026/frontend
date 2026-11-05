@@ -1,10 +1,11 @@
 import { Plus, Trash2, TriangleAlert } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useEffect, useState, type ReactNode } from "react";
+import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toChildPath, toFullPath, useFieldContext } from "./field-context";
 import { FieldFrame, isReported } from "./field-frame";
+import { getAt } from "./document";
 import {
   boundsOf,
   formEntries,
@@ -305,21 +306,58 @@ function ChoiceListField({ name, path, label, schema }: NodeProps) {
   );
 }
 
-function hasContent(value: unknown): boolean {
-  return isRecord(value) ? Object.keys(value).length > 0 : value !== undefined;
+const openGroups = new Map<string, boolean>();
+
+function useNeedsAttention(name: string, path: string): boolean {
+  const { control } = useFormContext();
+  const { errors } = useFormState({ control, name });
+  const { prefix, missing, problems } = useFieldContext();
+  const full = toFullPath(prefix, path);
+  return (
+    getAt(errors, name) !== undefined ||
+    isReported(missing, full) ||
+    problems.some((problem) => problem.path === full || problem.path.startsWith(`${full}.`))
+  );
 }
 
-function OptionalGroup({ name, path, label, children }: NodeProps & { children: ReactNode }) {
-  const { control } = useFormContext();
-  const { prefix, missing, problems } = useFieldContext();
-  const value: unknown = useWatch({ control, name });
-  const full = toFullPath(prefix, path);
-  const needsAttention =
-    isReported(missing, full) || problems.some((problem) => problem.path.startsWith(full));
+function CollapsibleGroup({
+  name,
+  path,
+  label,
+  strong,
+  children,
+}: {
+  name: string;
+  path: string;
+  label: string;
+  strong: boolean;
+  children: ReactNode;
+}) {
+  const { prefix } = useFieldContext();
+  const key = toFullPath(prefix, path);
+  const needsAttention = useNeedsAttention(name, path);
+  const [open, setOpen] = useState(() => openGroups.get(key) ?? needsAttention);
+  useEffect(() => {
+    if (needsAttention) setOpen(true);
+  }, [needsAttention]);
+  const titleClass = strong ? "font-medium text-text" : "font-medium text-muted-foreground";
   return (
-    <details open={hasContent(value) || needsAttention || !path.includes(".")}>
-      <summary className="cursor-pointer text-[13px] font-medium text-muted-foreground">
+    <details
+      open={open}
+      onToggle={(event) => {
+        const next = event.currentTarget.open;
+        openGroups.set(key, next);
+        setOpen(next);
+      }}
+    >
+      <summary className={`cursor-pointer text-[13px] ${titleClass}`}>
         {label}
+        {needsAttention ? (
+          <TriangleAlert
+            aria-label="Needs a value or has a problem"
+            className="ml-1.5 inline size-3.5 align-[-2px] text-warn"
+          />
+        ) : null}
       </summary>
       <div className={`mt-2.5 ${branchClass}`}>{children}</div>
     </details>
@@ -384,12 +422,10 @@ function GroupFields(props: NodeProps) {
     </>
   );
   if (path === "") return <div className="flex flex-col gap-3">{body}</div>;
-  if (optional) return <OptionalGroup {...props}>{body}</OptionalGroup>;
   return (
-    <fieldset className="flex flex-col gap-2.5">
-      <legend className="mb-2.5 text-[13px] font-medium text-text">{label}</legend>
-      <div className={branchClass}>{body}</div>
-    </fieldset>
+    <CollapsibleGroup name={name} path={path} label={label} strong={!optional}>
+      {body}
+    </CollapsibleGroup>
   );
 }
 
