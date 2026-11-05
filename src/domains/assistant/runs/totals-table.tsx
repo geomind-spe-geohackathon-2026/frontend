@@ -17,7 +17,7 @@ type Props = { caption: string; label: string; rows: Total[] };
 export function TotalsTable({ caption, label, rows }: Props) {
   return (
     <DataTableFrame className="max-h-[50vh]">
-        <TableCaption className="mt-0 caption-top px-4 py-3 text-left font-medium text-foreground">
+        <TableCaption className="mt-0 caption-top px-4 py-3 text-left text-base font-semibold text-foreground">
           {caption}
         </TableCaption>
         <TableHeader className={dataTableClass.header}>

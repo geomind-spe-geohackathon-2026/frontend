@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.95 (2026-11-05)
+
+- QA-100: Runs and logs, the "Per agent" and "Per model" titles are section titles (larger, semibold), no longer the size of the column headers.
+
 ## 1.1.94 (2026-11-05)
 
 - QA-117: a question card's option buttons wrap their text inside the card (left aligned, as tall as the text) instead of running past its edge.
