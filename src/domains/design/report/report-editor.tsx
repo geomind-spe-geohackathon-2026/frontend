@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { projectQuery } from "@/shared/api/projects";
-import { isOutOfDate } from "@/shared/api/results";
+import { toCaseText, toPlantNote } from "@/shared/ui/out-of-date";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSearchParams } from "react-router-dom";
@@ -59,20 +59,21 @@ function PreviewBody({
   return <ReportDocument preview={preview.data} flowsheet={flowsheet} />;
 }
 
-function toVersion(value: number | null): string {
-  return value === null ? "-" : String(value);
-}
-
 function OutOfDate({ project, made }: { project: Project | undefined; made: Result | undefined }) {
-  if (project === undefined || made === undefined || !isOutOfDate(project, made)) return null;
+  if (project === undefined || made === undefined) return null;
+  const text = toCaseText(project, made);
+  const note = toPlantNote(project, made);
   return (
-    <Alert className="border-warn bg-warn-soft">
-      <TriangleAlert aria-hidden="true" className="text-warn" />
-      <AlertTitle>Out of date</AlertTitle>
-      <AlertDescription>
-        {`This result ran on case version ${toVersion(made.case_version)}, plant version ${toVersion(made.plant_version)}; the project now has case version ${toVersion(project.case_version)}, plant version ${toVersion(project.plant_version)}. Run the study again before you send this report.`}
-      </AlertDescription>
-    </Alert>
+    <>
+      {text === null ? null : (
+        <Alert className="border-warn bg-warn-soft">
+          <TriangleAlert aria-hidden="true" className="text-warn" />
+          <AlertTitle>Out of date</AlertTitle>
+          <AlertDescription>{`${text} Do this before you send this report.`}</AlertDescription>
+        </Alert>
+      )}
+      {note === null ? null : <p className="text-[12.5px] text-muted">{note}</p>}
+    </>
   );
 }
 

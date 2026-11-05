@@ -13,7 +13,7 @@ function toNewest<T extends { created: string }>(items: readonly T[]): T | undef
   );
 }
 
-/** The steps whose outcome was made on an older problem or plant than the project has now, judged by the newest result (the list comes oldest first). */
+/** The steps whose outcome was made on an older case than the project has now, judged by the newest result; a newer plant version does not count (it may be another plant). */
 export function toStaleSteps(
   project: Versions,
   results: readonly (Made & { created: string })[] | undefined,

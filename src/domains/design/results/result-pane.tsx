@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { projectQuery } from "@/shared/api/projects";
-import { isOutOfDate } from "@/shared/api/results";
+import { toCaseText, toPlantNote } from "@/shared/ui/out-of-date";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/shared/ui/notice";
 import { toast } from "sonner";
@@ -56,14 +56,16 @@ export function ResultPane({ projectId, resultId }: Props) {
   if (result.isPending) return <Notice status="loading" what="the result" />;
   if (result.isError) return <Notice status="failed" error={result.error} />;
   const data = result.data;
+  const caseText = project.data === undefined ? null : toCaseText(project.data, data);
+  const plantNote = project.data === undefined ? null : toPlantNote(project.data, data);
   return (
     <>
-      {project.data !== undefined && isOutOfDate(project.data, data) ? (
+      {caseText === null ? null : (
         <p role="status" className="mb-3.5 rounded-control border border-warn bg-sunken px-3 py-2">
-          The Case or the Plant changed after this result.{" "}
-          <Link to={`/projects/${projectId}/design/study`}>Run a new study</Link> to update it.
+          {caseText} <Link to={`/projects/${projectId}/design/study`}>Run a new study</Link>
         </p>
-      ) : null}
+      )}
+      {plantNote === null ? null : <p className="mb-3.5 text-[12.5px] text-muted">{plantNote}</p>}
       <div className="mb-3.5 flex justify-end gap-2">
         <AdoptButton projectId={projectId} resultId={data.id} />
         <Button asChild variant="default">

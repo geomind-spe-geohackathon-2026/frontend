@@ -26,15 +26,23 @@ function isOlder(made: number | null, current: number | null): boolean {
   return made !== null && current !== null && made < current;
 }
 
-/** True when a result was made on an older case or plant than the project has now. */
+/** Which inputs moved on since a result: a newer case makes it stale; a newer plant version is only noted, since it may be another plant. */
+export function toStaleness(
+  project: Pick<Project, "case_version" | "plant_version">,
+  made: Pick<Result, "case_version" | "plant_version">,
+): { caseChanged: boolean; newerPlant: boolean } {
+  return {
+    caseChanged: isOlder(made.case_version, project.case_version),
+    newerPlant: isOlder(made.plant_version, project.plant_version),
+  };
+}
+
+/** True when a result was made on an older case than the project has now; a newer plant version does not make it out of date. */
 export function isOutOfDate(
   project: Pick<Project, "case_version" | "plant_version">,
   made: Pick<Result, "case_version" | "plant_version">,
 ): boolean {
-  return (
-    isOlder(made.case_version, project.case_version) ||
-    isOlder(made.plant_version, project.plant_version)
-  );
+  return toStaleness(project, made).caseChanged;
 }
 
 /** Whether the API marks a result infeasible (backend 1.1.110 `feasible: false`: it does not serve every demand). */
