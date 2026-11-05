@@ -15,19 +15,30 @@ export function isFractionGroup(schema: JsonSchema): boolean {
   return children.length > 1 && children.every(isFraction);
 }
 
-function toTotal(value: unknown): number | null {
+function isPercentUnit(unit: unknown): boolean {
+  return typeof unit === "string" && unit.replaceAll(" ", "").endsWith("%");
+}
+
+function toScale(value: unknown): number {
+  if (!isRecord(value)) return percent;
+  const units = Object.values(value).flatMap((item) => (isRecord(item) ? [item.unit] : []));
+  return units.some(isPercentUnit) ? 1 : percent;
+}
+
+function toTotal(value: unknown, scale: number): number | null {
   if (!isRecord(value)) return null;
   const shares = Object.values(value).flatMap((item) =>
     isRecord(item) && typeof item.value === "number" ? [item.value] : [],
   );
-  return shares.length === 0 ? null : shares.reduce((sum, share) => sum + share, 0) * percent;
+  return shares.length === 0 ? null : shares.reduce((sum, share) => sum + share, 0) * scale;
 }
 
 /** A composition as one table of mol %, with its total; uncertainty stays under Advanced. */
 export function FractionGroup({ name, label, schema }: Props) {
   const { control } = useFormContext();
   const value: unknown = useWatch({ control, name });
-  const total = toTotal(value);
+  const scale = toScale(value);
+  const total = toTotal(value, scale);
   const entries = Object.entries(schema.properties ?? {});
   return (
     <fieldset className="flex flex-col gap-2">
@@ -44,7 +55,7 @@ export function FractionGroup({ name, label, schema }: Props) {
                 invalid={false}
                 describedBy={undefined}
                 label={`${labelOf(key, child)} in mol %`}
-                scale={percent}
+                scale={scale}
               />
             </div>
           ))}

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.62 (2026-11-05)
+
+- QA-063: a composition stored in a percent unit (`mol%`) shows as stored (CH4 80, total 100 %) instead of x100 (8000); only shares without a percent unit are read as fractions. A long number that is float noise of a short one (0.800000011920929) shows as 0.8.
+
 ## 1.1.61 (2026-11-05)
 
 - QA-062: while a run waits for the user, the chat's status line reads "Waiting for your answer below" (not "Thinking"), and the question or approval card scrolls into view when it appears, also after a reload or coming back to the chat.

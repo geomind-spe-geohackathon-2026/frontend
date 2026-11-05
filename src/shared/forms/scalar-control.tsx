@@ -34,9 +34,18 @@ function optionLabel(option: unknown): string {
   return typeof option === "string" || typeof option === "number" ? String(option) : "";
 }
 
+const singleDigits = 7;
+
+function toClean(value: number): string {
+  const text = String(value);
+  if (text.length <= 12) return text;
+  const rounded = Number(value.toPrecision(singleDigits));
+  return Math.abs(rounded - value) <= Math.abs(value) * 1e-7 ? String(rounded) : text;
+}
+
 function toShown(current: unknown, scale: number): string {
   if (typeof current !== "number") return "";
-  if (scale === 1) return String(current);
+  if (scale === 1) return toClean(current);
   return String(Number((current * scale).toPrecision(scaledDigits)));
 }
 
