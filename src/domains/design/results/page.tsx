@@ -24,11 +24,13 @@ export function ResultsPage() {
     if (first === undefined) {
       return (
         <Notice status="empty">
-          No results yet.{" "}
-          <Link className="text-accent" to={`/projects/${projectId}/design/study`}>
-            Run a study
-          </Link>{" "}
-          to get one.
+          <span>
+            No results yet.{" "}
+            <Link className="text-accent" to={`/projects/${projectId}/design/study`}>
+              Run a study
+            </Link>{" "}
+            to get one.
+          </span>
         </Notice>
       );
     }

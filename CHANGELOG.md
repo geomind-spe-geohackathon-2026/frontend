@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.64 (2026-11-05)
+
+- QA-064: the empty Results page reads as one sentence ("No results yet. Run a study to get one."), not three centred lines.
+
 ## 1.1.63 (2026-11-05)
 
 - QA-066: every dialog is at most the window's height less 2 rem and scrolls inside, so on a short window (1280x577, or zoom 125-150 %) the New project dialog's title and Create/Cancel stay reachable.
