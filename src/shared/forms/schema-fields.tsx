@@ -475,8 +475,18 @@ function VariantBody(props: NodeProps) {
   return <FieldNode {...props} />;
 }
 
+function fromFileContent(text: string): unknown {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return isRecord(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function VariantField(props: NodeProps) {
   const { control, setValue } = useFormContext();
+  const { series: source } = useFieldContext();
   const current: unknown = useWatch({ control, name: props.name });
   const [chosen, setChosen] = useState<number | null>(null);
   const variants = variantsOf(props.schema);
@@ -493,6 +503,17 @@ function VariantField(props: NodeProps) {
       <Tabs
         value={String(active)}
         onValueChange={(next) => {
+          const target = variants[Number(next)] ?? {};
+          if (typeof current === "string" && current !== "" && target.type !== "string") {
+            if (source === undefined || !source.files.includes(current)) return;
+            void source.read(current).then((text) => {
+              const inline = fromFileContent(text);
+              if (inline === undefined) return;
+              setChosen(Number(next));
+              setValue(props.name, inline, { shouldDirty: true, shouldValidate: true });
+            });
+            return;
+          }
           setChosen(Number(next));
           setValue(props.name, undefined, { shouldDirty: true, shouldValidate: true });
         }}

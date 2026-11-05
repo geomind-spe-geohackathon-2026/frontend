@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.116 (2026-11-05)
+
+- QA-185: a value set as a file (such as the case economics in `economics.json`) switched to "Fill in here" now loads the file's content into the form instead of an empty `{}`; a file that cannot be read keeps the file and the view.
+
 ## 1.1.115 (2026-11-05)
 
 - QA-170: an event that names no agent (run-level) no longer adds a busy-list line; the phantom "Coordinator · Thinking · 0 steps" with a running timer is gone.
