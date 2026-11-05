@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 export type DaySource = "geothermal" | "backup" | "short";
 type Energy = { value: number; unit: string };
 export type Day = {
@@ -16,21 +18,25 @@ const gap = 2;
 const pitch = cell + gap;
 type Shown = "geothermal" | "topped" | "backup" | "partly" | "short";
 
-const sources: { source: Shown; label: (main: string) => string; fill: string }[] = [
-  { source: "geothermal", label: (main) => `${main} only`, fill: "var(--ok)" },
-  {
-    source: "topped",
-    label: (main) => `${main} topped up by backup`,
-    fill: "color-mix(in oklab, var(--ok) 25%, var(--gas))",
-  },
-  {
-    source: "backup",
-    label: (main) => `Backup only (no ${main.toLowerCase()} heat to this demand)`,
-    fill: "var(--gas)",
-  },
-  { source: "partly", label: () => "Partly short", fill: "var(--warn)" },
-  { source: "short", label: () => "Short", fill: "var(--bad)" },
-];
+const toppedSwatch = "repeating-linear-gradient(135deg, var(--ok) 0 3px, var(--gas) 3px 5px)";
+
+const sources: { source: Shown; label: (main: string) => string; fill: string; swatch?: string }[] =
+  [
+    { source: "geothermal", label: (main) => `${main} only`, fill: "var(--ok)" },
+    {
+      source: "topped",
+      label: (main) => `${main} topped up by backup`,
+      fill: "var(--ok)",
+      swatch: toppedSwatch,
+    },
+    {
+      source: "backup",
+      label: (main) => `Backup only (no ${main.toLowerCase()} heat to this demand)`,
+      fill: "var(--gas)",
+    },
+    { source: "partly", label: () => "Partly short", fill: "var(--warn)" },
+    { source: "short", label: () => "Short", fill: "var(--bad)" },
+  ];
 
 const offShare = 1e-3;
 
@@ -118,13 +124,36 @@ function toDayTitle(day: Day): string {
   return [head, ...parts].join(", ");
 }
 
+/** Stripes of the main source over the backup, so a topped-up day reads as mostly main, not as backup only. */
+function ToppedPattern({ id }: { id: string }) {
+  return (
+    <defs>
+      <pattern
+        id={id}
+        width={5}
+        height={5}
+        patternUnits="userSpaceOnUse"
+        patternTransform="rotate(45)"
+      >
+        <rect width={5} height={5} fill="var(--ok)" />
+        <rect width={2} height={5} fill="var(--gas)" />
+      </pattern>
+    </defs>
+  );
+}
+
+function toFill(shown: Shown, patternId: string): string {
+  if (shown === "topped") return `url(#${patternId})`;
+  return sources.find((entry) => entry.source === shown)?.fill ?? "var(--gas)";
+}
+
 /** One cell per day, coloured by how it was covered (main source only, main source topped up by backup, backup only, partly short, short), with a legend, day counts, the backup's share of the delivered energy and the rules as text. */
 export function DaysStrip({ days, title, mainLabel }: Props) {
+  const patternId = `days-topped-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const first = days[0];
   if (first === undefined) return null;
   const firstDay = toDayNumber(first.date);
-  const last = toPosition(days[days.length - 1]?.date ?? first.date, firstDay);
-  const width = last.x + cell;
+  const width = toPosition(days[days.length - 1]?.date ?? first.date, firstDay).x + cell;
   const main = mainLabel ?? "Geothermal";
   const yearShare = toYearShare(days, main);
   const counts = sources.map((entry) => ({
@@ -144,9 +173,10 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
         className="w-full max-w-[860px]"
       >
         <title>{title}</title>
+        <ToppedPattern id={patternId} />
         {days.map((day) => {
           const { x, y } = toPosition(day.date, firstDay);
-          const fill = sources.find((entry) => entry.source === toShown(day))?.fill ?? "var(--gas)";
+          const fill = toFill(toShown(day), patternId);
           return (
             <rect key={day.date} x={x} y={y} width={cell} height={cell} rx={2} fill={fill}>
               <title>{toDayTitle(day)}</title>
@@ -160,7 +190,7 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
             <span
               aria-hidden="true"
               className="inline-block size-3 rounded-[2px]"
-              style={{ background: entry.fill }}
+              style={{ background: entry.swatch ?? entry.fill }}
             />
             {entry.label}: {entry.count} days
             {entry.extra}
@@ -168,7 +198,7 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
         ))}
         {yearShare === null ? null : <span className="basis-full text-text">{yearShare.text}</span>}
         <span className="basis-full">
-          {yearShare === null || !yearShare.hasBackup
+          {!yearShare?.hasBackup
             ? null
             : `Backup is the plant's boilers (gas, CHP or electric) covering what ${main.toLowerCase()} cannot. `}
           A day counts as short when any of its demand is unmet; partly short days got part of it
