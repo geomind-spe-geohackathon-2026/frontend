@@ -100,7 +100,6 @@ type ActionsProps = {
   canSave: boolean;
   history: ReactNode;
   add: ReactNode;
-  onTemplate: () => void;
   onDiscard: () => void;
   onSave: () => void;
 };
@@ -111,15 +110,11 @@ function PlantActions({
   history,
   add,
   ...handlers
-}: Pick<
-  ActionsProps,
-  "dirty" | "canSave" | "history" | "add" | "onTemplate" | "onDiscard" | "onSave"
->) {
+}: Pick<ActionsProps, "dirty" | "canSave" | "history" | "add" | "onDiscard" | "onSave">) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {dirty ? <span className="text-[12.5px] text-muted">unsaved changes</span> : null}
       {add}
-      <Button onClick={handlers.onTemplate}>Start from template</Button>
       {history}
       <Button disabled={!dirty} onClick={handlers.onDiscard}>
         Discard changes
@@ -135,21 +130,10 @@ type DialogsProps = {
   saved: Flowsheet;
   editor: Editor;
   flow: PlantSaveFlow;
-  isPickingTemplate: boolean;
-  onPickingTemplate: (value: boolean) => void;
   onDiscard: () => void;
-  onTemplated: () => void;
 };
 
-function PlantDialogs({
-  saved,
-  editor,
-  flow,
-  isPickingTemplate,
-  onPickingTemplate,
-  onDiscard,
-  onTemplated,
-}: DialogsProps) {
+function PlantDialogs({ saved, editor, flow, onDiscard }: DialogsProps) {
   return (
     <>
       <NoteDialog
@@ -163,22 +147,6 @@ function PlantDialogs({
         }}
         onClose={() => {
           flow.setIsNoting(false);
-        }}
-      />
-      <TemplatesDialog
-        open={isPickingTemplate}
-        pending={flow.pending}
-        replaces
-        onClose={() => {
-          onPickingTemplate(false);
-        }}
-        onPick={(name) => {
-          const note = `Started from template ${name}`;
-          flow.submit({ base: saved.version, note, template: name }, () => {
-            onPickingTemplate(false);
-            onDiscard();
-            onTemplated();
-          });
         }}
       />
       <ConflictDialog
@@ -366,7 +334,6 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
   const params = usePlantParams();
   const { selected, setParam } = params;
   const [draft, setDraft] = useState<ParameterDraft | null>(null);
-  const [isPickingTemplate, setIsPickingTemplate] = useState(false);
   const flow = useSaveFlow(projectId);
   const { editing, setEditing, select, open, edit } = useModuleWindow(selected, setParam);
   const actions = usePlantActions(projectId, saved, editor, select);
@@ -392,9 +359,6 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
         }
         history={<PlantHistory projectId={projectId} current={saved.version} onRestore={restore} />}
         onSelect={open}
-        onTemplate={() => {
-          setIsPickingTemplate(true);
-        }}
         onDiscard={discard}
         onSave={() => {
           flow.setIsNoting(true);
@@ -410,11 +374,7 @@ function PlantEditor({ projectId, saved, palette, catalog }: EditorProps) {
           flow.setHasConflict(true);
         }}
       />
-      <PlantDialogs
-        {...{ saved, editor, flow, isPickingTemplate, onDiscard: discard }}
-        onPickingTemplate={setIsPickingTemplate}
-        onTemplated={params.follow}
-      />
+      <PlantDialogs {...{ saved, editor, flow, onDiscard: discard }} />
       <UnsavedChangesDialog blocker={blocker} />
     </>
   );
