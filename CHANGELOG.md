@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.143 (2026-11-05)
+
+- QA-341 follow-up: a finished run's summary reads per-agent totals from the run's `instances` (backend 45c4ce2), so the frozen busy list survives a reload; nothing shows until the backend field is live.
+
 ## 1.1.142 (2026-11-05)
 
 - QA-292: the auto-approve question shows only when the user has never chosen; the choice is stored per user in the backend (GET/PUT /assistant/preferences) instead of the browser; until the backend route is live the question stays hidden.
