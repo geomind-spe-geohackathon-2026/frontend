@@ -38,6 +38,11 @@ function Totals({ projectId }: { projectId: string }) {
   );
 }
 
+function toPrompt(run: object): string | null {
+  if (!("prompt" in run) || typeof run.prompt !== "string" || run.prompt.trim() === "") return null;
+  return run.prompt.length > 120 ? `${run.prompt.slice(0, 120)}…` : run.prompt;
+}
+
 function RunRow({
   projectId,
   run,
@@ -60,7 +65,12 @@ function RunRow({
           {toShortId(run.id)}
         </Link>
       </TableCell>
-      <DataCell className="px-3">{title ?? run.chat}</DataCell>
+      <DataCell className="px-3">
+        <span className="line-clamp-2">{toPrompt(run) ?? title ?? run.chat}</span>
+        {toPrompt(run) === null ? null : (
+          <span className="block text-[12px] text-muted">{title ?? run.chat}</span>
+        )}
+      </DataCell>
       <TableCell className="px-3 py-2">
         <RunStatusChip status={run.status} />
       </TableCell>

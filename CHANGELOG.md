@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.124 (2026-11-05)
+
+- QA-249: each Runs and logs row shows the user message that started the run (`prompt`, backend 1.1.111; first 120 characters), with the chat title below it.
+
 ## 1.1.123 (2026-11-05)
 
 - QA-239 (frontend part): reads the `feasible` field of backend 1.1.110; a result with `feasible: false` (a plant that does not serve every demand, such as a heating-only plant on a case with cooling) is never the best in Compare, never on the trade-off line, never the report's default, and its checks read "infeasible: does not serve every demand".
