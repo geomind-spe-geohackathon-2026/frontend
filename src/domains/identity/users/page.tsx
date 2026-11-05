@@ -11,7 +11,6 @@ import { AddUserDialog } from "./add-user-dialog";
 import { useUpdateUser, usersQuery } from "./api";
 import { RoleSelect } from "./role-select";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -20,8 +19,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
-import { tableCardClass } from "@/shared/ui/table-card";
-import { Card } from "@/components/ui/card";
+import { DataCell, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 
 function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
   const update = useUpdateUser();
@@ -39,8 +37,8 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
 
   return (
     <TableRow className="border-t border-border">
-      <TableCell className="px-3 py-2">{user.name}</TableCell>
-      <TableCell className="px-3 py-2">{user.email}</TableCell>
+      <DataCell className="px-3">{user.name}</DataCell>
+      <DataCell className="px-3">{user.email}</DataCell>
       <TableCell className="px-3 py-2">
         <RoleSelect
           label={`Role of ${user.name}`}
@@ -75,10 +73,9 @@ function UserRow({ user, isSelf }: { user: User; isSelf: boolean }) {
 
 function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefined }) {
   return (
-    <Card className={tableCardClass}>
-      <Table className="w-full text-left">
+    <DataTableFrame className="max-h-[70vh]">
         <TableCaption className="sr-only">Users</TableCaption>
-        <TableHeader className="text-muted">
+        <TableHeader className={`${dataTableClass.header} text-muted`}>
           <TableRow>
             <TableHead scope="col" className="px-3 py-2 font-medium">
               Name
@@ -102,8 +99,7 @@ function UsersTable({ users, selfId }: { users: User[]; selfId: string | undefin
             <UserRow key={user.id} user={user} isSelf={user.id === selfId} />
           ))}
         </TableBody>
-      </Table>
-    </Card>
+      </DataTableFrame>
   );
 }
 

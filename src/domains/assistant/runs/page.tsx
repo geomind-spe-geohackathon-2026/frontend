@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import type { Run } from "@/shared/api/types";
 import { runsQuery, usageQuery } from "./api";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -22,8 +21,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
-import { tableCardClass } from "@/shared/ui/table-card";
-import { Card } from "@/components/ui/card";
+import { DataCell, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 
 function Totals({ projectId }: { projectId: string }) {
   const usage = useQuery(usageQuery(projectId));
@@ -65,7 +63,7 @@ function RunRow({
           {toShortId(run.id)}
         </Link>
       </TableCell>
-      <TableCell className="px-3 py-2">{title ?? run.chat}</TableCell>
+      <DataCell className="px-3">{title ?? run.chat}</DataCell>
       <TableCell className="px-3 py-2">
         <RunStatusChip status={run.status} />
       </TableCell>
@@ -96,10 +94,9 @@ function RunsTable({
   titles: Map<string, string>;
 }) {
   return (
-    <Card className={tableCardClass}>
-      <Table className="w-full border-collapse text-left">
+    <DataTableFrame className="max-h-[70vh]">
         <TableCaption className="sr-only">Runs of this project, newest first</TableCaption>
-        <TableHeader>
+        <TableHeader className={dataTableClass.header}>
           <TableRow className="text-muted">
             {["Run", "Chat", "Status", "Tokens", "Cost", "Started"].map((name) => (
               <TableHead
@@ -117,8 +114,7 @@ function RunsTable({
             <RunRow key={run.id} projectId={projectId} run={run} title={titles.get(run.chat)} />
           ))}
         </TableBody>
-      </Table>
-    </Card>
+      </DataTableFrame>
   );
 }
 

@@ -1,7 +1,6 @@
 import { Quantity } from "@/shared/quantity/quantity";
 import type { Total } from "./totals";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -9,20 +8,18 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { tableCardClass } from "@/shared/ui/table-card";
+import { DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 
 type Props = { caption: string; label: string; rows: Total[] };
 
 /** A footer table of LLM calls with tokens and cost, per agent or per model. */
 export function TotalsTable({ caption, label, rows }: Props) {
   return (
-    <Card className={tableCardClass}>
-      <Table className="w-full border-collapse text-left">
+    <DataTableFrame className="max-h-[50vh]">
         <TableCaption className="mt-0 caption-top px-4 py-3 text-left font-medium text-foreground">
           {caption}
         </TableCaption>
-        <TableHeader>
+        <TableHeader className={dataTableClass.header}>
           <TableRow className="text-muted">
             {[label, "Calls", "Tokens in", "Tokens out", "Cost"].map((name) => (
               <TableHead
@@ -54,7 +51,6 @@ export function TotalsTable({ caption, label, rows }: Props) {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </Card>
+      </DataTableFrame>
   );
 }

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.85 (2026-11-05)
+
+- QA-096 step 4: the lists use the shared data table too: studies, runs and their totals, project Library, users, case and plant history (sticky header, scrolling inside the box; names, notes and e-mails one line, open in full on a click). The chat's usage popover keeps its small table.
+
 ## 1.1.84 (2026-11-05)
 
 - QA-096 step 3: Results (compare, constraints with the module in its own column, sensitivity, spread) and the evolve structures (ranked and side by side) use the shared data table; `DataTableFrame` holds tables that build their own header.

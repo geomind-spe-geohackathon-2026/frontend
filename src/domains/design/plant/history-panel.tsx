@@ -2,13 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { tableCardClass } from "@/shared/ui/table-card";
+import { DataCell, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { plantVersionsQuery } from "./api";
 import type { Version } from "@/shared/api/types";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -34,10 +32,9 @@ export function HistoryPanel({ projectId, current, onRestore }: Props) {
     );
   }
   return (
-    <Card className={tableCardClass}>
-      <Table className="w-full border-collapse">
+    <DataTableFrame className="max-h-[60vh]">
         <TableCaption className="sr-only">Saved versions of the plant</TableCaption>
-        <TableHeader>
+        <TableHeader className={dataTableClass.header}>
           <TableRow className="text-left text-muted">
             <TableHead scope="col" className="p-2.5">
               Version
@@ -66,8 +63,7 @@ export function HistoryPanel({ projectId, current, onRestore }: Props) {
             />
           ))}
         </TableBody>
-      </Table>
-    </Card>
+      </DataTableFrame>
   );
 }
 
@@ -83,8 +79,8 @@ function VersionRow({
   return (
     <TableRow className="border-t border-border">
       <TableCell className="p-2.5 tabular-nums">v{version.number}</TableCell>
-      <TableCell className="p-2.5">{version.note}</TableCell>
-      <TableCell className="p-2.5">{version.author.name}</TableCell>
+      <DataCell className="px-3">{version.note}</DataCell>
+      <DataCell className="px-3">{version.author.name}</DataCell>
       <TableCell className="p-2.5 tabular-nums">{toDisplayTime(version.created)}</TableCell>
       <TableCell className="p-2.5">
         {version.number === current ? (

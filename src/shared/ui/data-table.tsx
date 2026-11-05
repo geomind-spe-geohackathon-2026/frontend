@@ -77,20 +77,20 @@ export function DataHead({ children, className }: { children?: ReactNode; classN
   );
 }
 
-/** The box of the shared data table around a caption and the caller's own TableHeader (give it dataTableClass.header) and TableBody, for tables with row headers or several header rows. */
+/** The box of the shared data table around an optional caption and the caller's own TableHeader (give it dataTableClass.header) and TableBody, for tables with row headers or several header rows. */
 export function DataTableFrame({
   caption,
   children,
   className,
 }: {
-  caption: string;
+  caption?: string | undefined;
   children: ReactNode;
   className?: string | undefined;
 }) {
   return (
     <div className={cn(dataTableClass.box, className)}>
       <Table className="text-[12.5px]">
-        <TableCaption className="sr-only">{caption}</TableCaption>
+        {caption === undefined ? null : <TableCaption className="sr-only">{caption}</TableCaption>}
         {children}
       </Table>
     </div>

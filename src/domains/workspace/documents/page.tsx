@@ -26,7 +26,6 @@ import { toSizeLabel } from "./format";
 import { FileViewer } from "./viewer";
 import type { Document } from "@/shared/api/types";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -35,9 +34,8 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
-import { tableCardClass } from "@/shared/ui/table-card";
+import { DataCell, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 import { DropZone } from "@/shared/attach/drop-zone";
-import { Card } from "@/components/ui/card";
 
 const searchableText: Record<Document["searchable"], string> = {
   pending: "indexing",
@@ -176,10 +174,9 @@ function DocumentsTable({
   onView: (document: Document) => void;
 }) {
   return (
-    <Card className={tableCardClass}>
-      <Table className="w-full text-left">
+    <DataTableFrame className="max-h-[70vh]">
         <TableCaption className="sr-only">Files in the Library</TableCaption>
-        <TableHeader className="text-muted">
+        <TableHeader className={`${dataTableClass.header} text-muted`}>
           <TableRow>
             <TableHead scope="col" className="px-3 py-2 font-medium">
               Name
@@ -201,7 +198,7 @@ function DocumentsTable({
         <TableBody>
           {documents.map((document) => (
             <TableRow key={document.id} className="border-t border-border">
-              <TableCell className="px-3 py-2">{document.name}</TableCell>
+              <DataCell className="px-3">{document.name}</DataCell>
               <TableCell className="px-3 py-2">{toSizeLabel(document.size)}</TableCell>
               <TableCell className="px-3 py-2">
                 <Badge variant={searchableTone[document.searchable]}>
@@ -213,8 +210,7 @@ function DocumentsTable({
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </Card>
+      </DataTableFrame>
   );
 }
 

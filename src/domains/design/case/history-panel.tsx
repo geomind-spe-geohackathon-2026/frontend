@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { toDisplayTime } from "@/shared/forms/display-time";
 import { LoadError } from "@/shared/forms/load-error";
 import { caseVersionsQuery } from "./api";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -14,7 +12,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Notice } from "@/shared/ui/notice";
-import { tableCardClass } from "@/shared/ui/table-card";
+import { DataCell, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 
 /** The table of saved case versions, newest first. */
 export function HistoryPanel({ projectId, current }: { projectId: string; current: number }) {
@@ -30,10 +28,9 @@ export function HistoryPanel({ projectId, current }: { projectId: string; curren
     );
   }
   return (
-    <Card className={tableCardClass}>
-      <Table className="w-full border-collapse">
+    <DataTableFrame className="max-h-[60vh]">
         <TableCaption className="sr-only">Saved versions of the case</TableCaption>
-        <TableHeader>
+        <TableHeader className={dataTableClass.header}>
           <TableRow className="text-left text-muted">
             <TableHead scope="col" className="p-2.5">
               Version
@@ -56,13 +53,12 @@ export function HistoryPanel({ projectId, current }: { projectId: string; curren
                 v{version.number}{" "}
                 {version.number === current ? <Badge variant="ok">current</Badge> : null}
               </TableCell>
-              <TableCell className="p-2.5">{version.note}</TableCell>
-              <TableCell className="p-2.5">{version.author.name}</TableCell>
+              <DataCell className="px-3">{version.note}</DataCell>
+              <DataCell className="px-3">{version.author.name}</DataCell>
               <TableCell className="p-2.5 tabular-nums">{toDisplayTime(version.created)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </Card>
+      </DataTableFrame>
   );
 }
