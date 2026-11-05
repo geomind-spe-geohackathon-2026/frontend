@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.76 (2026-11-05)
+
+- QA-079: an answered question or approval shows once, as its decision line; the steps log no longer repeats it. A request whose answer the chat does not know reads "The assistant asked: ..." instead of "You answered" (a step-limit question left open by a failed run read as answered).
+
 ## 1.1.75 (2026-11-05)
 
 - QA-073: the approval card says how to change a proposed value: write the change in "Reason or change" and press Deny; the assistant gets the words and proposes again. Editing the call's values in the card needs the approval answer to carry changed input (backend/geomind).

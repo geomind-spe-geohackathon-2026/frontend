@@ -249,7 +249,9 @@ function toAnswerText(block: TextBlock): string | null {
 
 function isWork(block: Block): boolean {
   if (block.kind === "tool") return block.tool !== finishTool || block.error !== null;
-  if (block.kind === "request") return block.resolved;
+  if (block.kind === "request") {
+    return block.resolved && toDecisionText(block.request.request, block.request.message, block.answer) === null;
+  }
   return block.kind === "text" && toShownText(block) !== null;
 }
 

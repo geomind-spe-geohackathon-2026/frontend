@@ -207,11 +207,11 @@ export function toRoundedText(text: string): string {
   );
 }
 
-/** Writes a permission question as what was asked for; any other question as the question itself. */
+/** Writes a request whose answer is not known as what the assistant asked: a permission as the tool and its effect, any other question as itself. */
 export function toRequestText(message: string): string {
   const found = /^Allow (\S+) \((\w+)\)\?$/.exec(message);
-  if (found === null) return `You answered this question:\n${toRoundedText(message)}`;
+  if (found === null) return `The assistant asked:\n${toRoundedText(message)}`;
   const tool = (found[1] ?? "").replaceAll("_", " ");
   const effect = found[2] === "write" ? "writes to the project" : found[2];
-  return `You answered: ${tool} (${effect ?? ""})`;
+  return `The assistant asked to run ${tool} (${effect ?? ""})`;
 }
