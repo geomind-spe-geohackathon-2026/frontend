@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.138 (2026-11-05)
+
+- QA-328: the Plant dot's tooltip says how to clear 'Not saved' (save a design as the plant on the Plant page).
+
 ## 1.1.137 (2026-11-05)
 
 - QA-290 (reopened): only a newer case makes a result 'Out of date' (Report, Results, Study, Design tab dots, Overview); a newer plant version is a muted note ('A newer plant version exists (v2); this result is for plant version 1'), since it may be another plant.
