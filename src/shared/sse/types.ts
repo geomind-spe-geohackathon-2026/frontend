@@ -70,6 +70,15 @@ export type RunEventBody =
       by: string;
     }
   | {
+      type: "question.auto_answered";
+      index: number;
+      request_id: string | null;
+      call_id: string | null;
+      tool: string | null;
+      point: string;
+      answer: string;
+    }
+  | {
       type: "run.finished";
       status: RunStatus;
       stop_reason: string;

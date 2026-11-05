@@ -367,6 +367,8 @@ function reduce(view: View, event: RunEvent): View {
       return { ...view, retry: toRetryText(event) };
     case "answer":
       return noteAnswer(view, event);
+    case "question.auto_answered":
+      return noteAutoAnswer(view, event);
     case "run.finished":
       return reduceFinished(view, event);
   }
@@ -432,6 +434,43 @@ function noteAnswer(view: View, event: RunEvent & { type: "answer" }): View {
         : block,
     ),
   };
+}
+
+function noteAutoAnswer(view: View, event: RunEvent & { type: "question.auto_answered" }): View {
+  const id = event.request_id ?? `auto-${String(event.index)}-${event.call_id ?? event.point}`;
+  if (view.blocks.some((block) => block.kind === "request" && block.request.request === id)) {
+    return noteAnswer(view, {
+      ...event,
+      type: "answer",
+      request: id,
+      decision: "answer",
+      reason: null,
+      text: event.answer,
+      tool: event.tool,
+      by: "auto",
+    });
+  }
+  const request: RunRequest = {
+    request: id,
+    kind: "question",
+    message: event.point,
+    ...(event.call_id === null ? {} : { call_id: event.call_id }),
+  };
+  const answer = {
+    decision: "answer",
+    reason: null,
+    text: event.answer,
+    tool: event.tool,
+    by: "auto",
+  };
+  return addBlock(view, {
+    kind: "request",
+    id: nextId(view),
+    agent: toActor(event),
+    request,
+    resolved: true,
+    answer,
+  });
 }
 
 function toRetryText(event: RunEvent & { type: "retry" }): string {

@@ -141,7 +141,8 @@ function toStepStarted(fields: Fields): RunEventBody {
     model: requireString(fields, "model", type),
   };
   const size = fields.context_window;
-  const stamped = typeof fields.ts === "string" && fields.ts !== "" ? { ...body, ts: fields.ts } : body;
+  const stamped =
+    typeof fields.ts === "string" && fields.ts !== "" ? { ...body, ts: fields.ts } : body;
   return typeof size === "number" && size > 0 ? { ...stamped, context_window: size } : stamped;
 }
 
@@ -216,11 +217,27 @@ function toStateBody(type: string, fields: Fields): RunEventBody | null {
       return toRetry(fields);
     case "answer":
       return toAnswerEvent(fields);
+    case "question.auto_answered":
+      return toAutoAnswered(fields);
     case "run.finished":
       return toFinished(fields);
     default:
       return null;
   }
+}
+
+function toAutoAnswered(fields: Fields): RunEventBody | null {
+  const answer = optionalString(fields, "answer");
+  if (answer === null || typeof fields.index !== "number") return null;
+  return {
+    type: "question.auto_answered",
+    index: fields.index,
+    request_id: optionalString(fields, "request_id"),
+    call_id: optionalString(fields, "call_id"),
+    tool: optionalString(fields, "tool"),
+    point: optionalString(fields, "point") ?? "tool",
+    answer,
+  };
 }
 
 function toAnswerEvent(fields: Fields): RunEventBody | null {

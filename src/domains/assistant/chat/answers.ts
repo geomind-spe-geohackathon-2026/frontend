@@ -30,9 +30,20 @@ function toName(tool: string | null, message: string): string {
 export function toDecisionText(
   request: string,
   message: string,
-  note: { decision: string; reason: string | null; text: string | null; tool: string | null; by: string } | undefined = undefined,
+  note:
+    | {
+        decision: string;
+        reason: string | null;
+        text: string | null;
+        tool: string | null;
+        by: string;
+      }
+    | undefined = undefined,
 ): string | null {
   if (note !== undefined) {
+    if (note.by === "auto" && note.decision === "answer") {
+      return `Answered automatically: ${note.text ?? ""}`;
+    }
     const who = note.by === "user" ? "You" : "Auto-approve";
     if (note.decision === "answer") return `${who} answered: ${note.text ?? ""}`;
     const verb = note.decision === "allow" ? "approved" : "denied";
