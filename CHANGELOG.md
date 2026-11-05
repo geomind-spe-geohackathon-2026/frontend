@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.92 (2026-11-05)
+
+- QA-107 (b): Days covered shows a short day that still got part of its demand as "Partly short" (amber), with its unmet share on hover and the mean share in the legend ("Partly short: 243 days, 5% unmet on average"); "Short" is left for days that got none. The legend states the rule: a day counts as short when any of its demand is unmet.
+
 ## 1.1.91 (2026-11-05)
 
 - QA-113 (user): the shared drop zone (`shared/attach/drop-zone.tsx`, used by Knowledge, the project Library and New project) is about three times taller (128 px under a list, 192 px when empty), icon and text centred; while files are dragged over it the border turns solid accent with a soft accent fill and ring, and it reads "Drop to add the files" (no flicker when the pointer crosses its text).
