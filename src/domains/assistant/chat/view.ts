@@ -448,3 +448,41 @@ export function loadProblem(view: View, problem: ProblemState): View {
   if (problem.version < view.problem.version) return { ...view, problemStale: false };
   return { ...view, problem, problemStale: false };
 }
+
+function toStoredRequest(stored: Record<string, unknown>): RunRequest | null {
+  const { request, kind, message, call_id: callId, options } = stored;
+  if (typeof request !== "string" || typeof message !== "string") return null;
+  if (kind !== "approval" && kind !== "question") return null;
+  const choices = Array.isArray(options)
+    ? options.flatMap((option: unknown) => {
+        if (typeof option !== "object" || option === null) return [];
+        const value = "value" in option ? option.value : undefined;
+        const label = "label" in option ? option.label : undefined;
+        return typeof value === "string"
+          ? [{ value, label: typeof label === "string" ? label : value }]
+          : [];
+      })
+    : undefined;
+  return {
+    request,
+    kind,
+    message,
+    ...(typeof callId === "string" ? { call_id: callId } : {}),
+    ...(choices === undefined ? {} : { options: choices }),
+  };
+}
+
+/** The view with the request a waiting run stores, when no request event reached the view (QA-336). */
+export function withStoredRequest(
+  view: View,
+  run: { status: string; request?: Record<string, unknown> | null } | undefined,
+): View {
+  if (view.request !== null || run?.status !== "waiting" || run.request == null) return view;
+  const request = toStoredRequest(run.request);
+  if (request === null) return view;
+  const settled = view.blocks.some(
+    (block) =>
+      block.kind === "request" && block.request.request === request.request && block.resolved,
+  );
+  return settled ? view : { ...view, request, status: "waiting" };
+}

@@ -20,7 +20,7 @@ import { useRunView } from "./use-run-view";
 import { keepAnswer } from "./answers";
 import { toMessageWithFiles } from "@/shared/attach/upload";
 import { useAttachments } from "@/shared/attach/use-attachments";
-import type { View } from "./view";
+import { withStoredRequest, type View } from "./view";
 
 type Props = {
   projectId: string;
@@ -108,10 +108,20 @@ function useSendToChat(projectId: string, chatId: string | null, auto: boolean) 
   return { handleSend, send, pending: send.isPending || create.isPending };
 }
 
+function useShownRun(projectId: string, chatId: string | null, runId: string | null) {
+  const { view: live, failure } = useRunView(projectId, chatId, runId);
+  const run = useQuery({
+    ...runQuery(projectId, runId ?? ""),
+    enabled: runId !== null,
+    refetchInterval:
+      runId !== null && live.request === null && isUnfinished(live.status) ? 15_000 : false,
+  });
+  return { view: withStoredRequest(live, run.data), failure, run };
+}
+
 /** The conversation of one chat and its message box, whose log window shares the live view of the last run. */
 export function ChatWorkspace({ projectId, chatId, runId, messages }: Props) {
-  const { view, failure } = useRunView(projectId, chatId, runId);
-  const run = useQuery({ ...runQuery(projectId, runId ?? ""), enabled: runId !== null });
+  const { view, failure, run } = useShownRun(projectId, chatId, runId);
   const [auto, setAuto] = useAutoApprove(chatId);
   const { handleSend, send, pending } = useSendToChat(projectId, chatId, auto);
   const files = useAttachments(projectId);
