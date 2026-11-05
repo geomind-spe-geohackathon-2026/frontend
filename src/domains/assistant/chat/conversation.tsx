@@ -14,6 +14,7 @@ import type { Message as ChatMessage } from "@/shared/api/types";
 import { Blocks, finishTool } from "./blocks";
 import { MessageButtons } from "./message-actions";
 import { PastRun } from "./past-run";
+import { RunSummary } from "./run-summary";
 import { toWorkingAgents } from "./busy";
 import { fromCalculations } from "@/shared/sse/tool-views";
 import { MarkdownText } from "@/shared/ui/markdown-text";
@@ -159,6 +160,9 @@ export function Conversation({
               ) : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (
                 <PastRun projectId={projectId} runId={message.run} />
+              ) : null}
+              {!isLive && message.run !== null && answered.has(message.run) ? (
+                <RunSummary projectId={projectId} runId={message.run} />
               ) : null}
             </div>
           );
