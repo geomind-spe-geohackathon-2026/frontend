@@ -13,10 +13,10 @@ import { cn } from "@/lib/cn";
 
 const lineClass = "block max-w-60 truncate text-left";
 
-/** Classes of the shared data table: the bordered box whose table container scrolls both ways, and the header row that stays on top. */
+/** Classes of the shared data table: the bordered box whose table container scrolls both ways, with striped rows (odd on the page colour, even lightly sunken, hover stronger), and the header row that stays on top on its own sunken colour. */
 export const dataTableClass = {
-  box: "min-h-0 overflow-hidden rounded-md border [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:max-h-[inherit] [&>[data-slot=table-container]]:overflow-auto",
-  header: "sticky top-0 z-10 bg-background shadow-[0_1px_0_var(--border)]",
+  box: "min-h-0 overflow-hidden rounded-md border [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:max-h-[inherit] [&>[data-slot=table-container]]:overflow-auto [&_tbody_tr:nth-child(even):not([data-state=selected]):not(.bg-accent-soft)]:bg-sunken/60 [&_tbody_tr:nth-child(n):hover:not([data-state=selected]):not(.bg-accent-soft)]:bg-sunken",
+  header: "sticky top-0 z-10 bg-sunken shadow-[0_1px_0_var(--border)]",
 };
 
 /** A table cell that shows its content on one line, cut with an ellipsis, in a capped width; a click on a cut cell opens the full content beside it. */
@@ -38,7 +38,7 @@ export function DataCell({ children, className }: { children?: ReactNode; classN
       ref={line}
       role="button"
       tabIndex={0}
-      className={cn(lineClass, "cursor-pointer rounded-sm hover:bg-sunken")}
+      className={cn(lineClass, "cursor-pointer rounded-sm")}
       onClick={openIfCut}
       onKeyDown={onKey}
     >

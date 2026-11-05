@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.88 (2026-11-05)
+
+- QA-108 (user): the shared data table has three backgrounds from the theme tokens: the sticky header on `sunken`, odd rows on the page colour, even rows on `sunken` at 60 %; the hovered row turns full `sunken`. Selected and recommended rows keep their own colour. Works in light and dark, everywhere the DataTable (and Markdown tables) is used.
+
 ## 1.1.87 (2026-11-05)
 
 - QA-103 (user): one shared formatter (`shared/quantity/usage.tsx`: formatDuration, formatTokens, Duration, Tokens) writes durations as h/min/s ("7 h 43 min 58 s", "4 min 12 s", "38 s", "1.2 s") and token counts with K/M ("2.91 M tokens in · 90.6 K tokens out"); the exact number shows on hover. Used in the run header, run list and project total, the step tree, LLM and tool calls, the per-agent and per-model totals, the chat's usage ring, agent usage, activity durations, run_python cards and the chat timer.
