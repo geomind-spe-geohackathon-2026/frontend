@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.94 (2026-11-05)
+
+- QA-117: a question card's option buttons wrap their text inside the card (left aligned, as tall as the text) instead of running past its edge.
+
 ## 1.1.93 (2026-11-05)
 
 - QA-115: every group of a schema form (Case, Plant, Economics ...) starts collapsed; a group holding a form error, a gemini problem or a value gemini reports missing opens and shows a warning mark; a group the user opened or closed keeps that state while the page stays loaded (also across the form's tabs).

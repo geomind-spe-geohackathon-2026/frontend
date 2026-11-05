@@ -83,6 +83,7 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
           <Button
             key={option.value}
             disabled={pending}
+            className="h-auto max-w-full py-1.5 text-left whitespace-normal"
             onClick={() => {
               onAnswer({ text: option.value });
             }}
