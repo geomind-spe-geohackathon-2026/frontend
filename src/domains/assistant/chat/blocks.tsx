@@ -2,6 +2,7 @@ import { Duration, formatDuration, Tokens } from "@/shared/quantity/usage";
 import { Quantity } from "@/shared/quantity/quantity";
 import { memo, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { runQuery } from "./api";
 import { api, toData } from "@/shared/api/client";
 import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -397,19 +398,37 @@ function toWorkUsage(work: Block[]): { tokens: number; cost: number } {
 }
 
 /** One line per working agent run (each parallel instance its own, IMP-025): name, what it does, its steps; it opens to its own work. */
+function RowMark({ done }: { done: boolean }) {
+  return done ? <span aria-hidden="true" className="size-3.5 shrink-0" /> : <BusyMark />;
+}
+
+function AgentTime({ agent, done }: { agent: AgentNode; done: boolean }) {
+  if (!done) return <StageTimer since={agent.startedAt} />;
+  if (agent.lastAt === null) return null;
+  return (
+    <span className="shrink-0 tabular-nums">
+      · {formatDuration(Math.max(0, agent.lastAt - agent.startedAt) / 1000)}
+    </span>
+  );
+}
+
+type AgentsProps = {
+  blocks: Block[];
+  agents: AgentNode[];
+  work: Block[];
+  calculations: Calculation[];
+  runId: string | null;
+  done?: boolean;
+};
+
 function WorkingAgents({
   blocks,
   agents,
   work: runWork,
   calculations,
   runId,
-}: {
-  blocks: Block[];
-  agents: AgentNode[];
-  work: Block[];
-  calculations: Calculation[];
-  runId: string | null;
-}) {
+  done = false,
+}: AgentsProps) {
   return (
     <ul className="space-y-0.5">
       {agents.map((agent) => {
@@ -432,14 +451,14 @@ function WorkingAgents({
                   type="button"
                   className="flex min-w-0 cursor-pointer items-center gap-1.5 text-left"
                 >
-                  <BusyMark />
+                  <RowMark done={done} />
                   <span className="shrink-0 font-medium text-foreground">
                     {toAgentTitle(agent)}
                   </span>
-                  <DoingLine text={toDoing(own, agents)} />
+                  <DoingLine text={done ? "done" : toDoing(own, agents)} />
                   <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
                   <UsageParts tokens={agent.tokens} cost={agent.cost} />
-                  <StageTimer since={agent.startedAt} />
+                  <AgentTime agent={agent} done={done} />
                 </button>
               }
             />
@@ -452,6 +471,7 @@ function WorkingAgents({
         work={runWork}
         calculations={calculations}
         runId={runId}
+        done={done}
       />
     </ul>
   );
@@ -591,18 +611,26 @@ function toAgentCount(count: number): string {
   return `${String(count)} ${count === 1 ? "agent" : "agents"} working`;
 }
 
+function toTotalDoing(work: Block[], agents: number, done: boolean): string {
+  if (!done) return toAgentCount(agents);
+  const failed = toFailedCount(work);
+  return failed === 0 ? "done" : `done, ${String(failed)} needed another try`;
+}
+
 function TotalRow({
   blocks,
   agents,
   work,
   calculations,
   runId,
+  done,
 }: {
   blocks: Block[];
   agents: AgentNode[];
   work: Block[];
   calculations: Calculation[];
   runId: string | null;
+  done: boolean;
 }) {
   const usage = toWorkUsage(blocks);
   const since = Math.min(...agents.map((agent) => agent.startedAt));
@@ -610,7 +638,7 @@ function TotalRow({
   return (
     <li className="min-w-0 text-muted">
       <StepsWindow
-        title={toRunningLabel(work)}
+        title={done ? toDoneLabel(work) : toRunningLabel(work)}
         work={work}
         calculations={calculations}
         runId={runId}
@@ -622,10 +650,16 @@ function TotalRow({
           >
             <span aria-hidden="true" className="size-3.5 shrink-0" />
             <span className="shrink-0 font-medium text-foreground">Total</span>
-            <DoingLine text={toAgentCount(agents.length)} />
+            <DoingLine text={toTotalDoing(work, agents.length, done)} />
             <span className="shrink-0 tabular-nums">· {toStepCount(steps)}</span>
             <UsageParts tokens={usage.tokens} cost={usage.cost} />
-            {Number.isFinite(since) ? <StageTimer since={since} /> : null}
+            {done ? (
+              runId === null ? null : (
+                <RunTime runId={runId} />
+              )
+            ) : Number.isFinite(since) ? (
+              <StageTimer since={since} />
+            ) : null}
           </button>
         }
       />
@@ -633,7 +667,31 @@ function TotalRow({
   );
 }
 
-function RunTotals({ blocks, agents }: { blocks: Block[]; agents: AgentNode[] }) {
+function toRunSeconds(
+  run: { started: string | null; ended: string | null } | undefined,
+): number | null {
+  if (run?.started == null || run.ended == null) return null;
+  const seconds = (Date.parse(run.ended) - Date.parse(run.started)) / 1000;
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
+}
+
+function RunTime({ runId }: { runId: string }) {
+  const { projectId = "" } = useParams();
+  const run = useQuery({ ...runQuery(projectId, runId), enabled: projectId !== "" });
+  const seconds = toRunSeconds(run.data);
+  if (seconds === null) return null;
+  return <span className="shrink-0 tabular-nums">· {formatDuration(seconds)}</span>;
+}
+
+function RunTotals({
+  blocks,
+  agents,
+  runId,
+}: {
+  blocks: Block[];
+  agents: AgentNode[];
+  runId: string | null;
+}) {
   const usage = toWorkUsage(blocks);
   const since = Math.min(...agents.map((agent) => agent.startedAt));
   if (usage.tokens === 0 && agents.length === 0) return null;
@@ -641,7 +699,26 @@ function RunTotals({ blocks, agents }: { blocks: Block[]; agents: AgentNode[] })
     <>
       <UsageParts tokens={usage.tokens} cost={usage.cost} />
       {Number.isFinite(since) ? <StageTimer since={since} /> : null}
+      {agents.length === 0 && runId !== null ? <RunTime runId={runId} /> : null}
     </>
+  );
+}
+
+/** The busy list of a finished run, frozen at its final values; it folds away but stays. */
+function FinishedAgents(props: {
+  blocks: Block[];
+  agents: AgentNode[];
+  work: Block[];
+  calculations: Calculation[];
+  runId: string | null;
+}) {
+  return (
+    <details open className="text-muted">
+      <summary className="cursor-pointer text-[12px]">
+        {props.agents.length} {props.agents.length === 1 ? "agent" : "agents"}
+      </summary>
+      <WorkingAgents {...props} done />
+    </details>
   );
 }
 
@@ -689,13 +766,16 @@ export function Blocks({
           {retry === null ? null : <p className="text-warn">{retry}</p>}
         </div>
       ) : null}
-      {work.length === 0 || (running && !waiting && agents.length > 0) ? null : (
+      {!running && agents.length > 0 ? (
+        <FinishedAgents {...{ blocks, agents, work, calculations, runId }} />
+      ) : null}
+      {work.length === 0 || (agents.length > 0 && (!running || !waiting)) ? null : (
         <WorkLog
           work={work}
           label={running ? toRunningLabel(work) : toDoneLabel(work)}
           calculations={calculations}
           runId={runId}
-          totals={<RunTotals blocks={blocks} agents={running ? agents : []} />}
+          totals={<RunTotals blocks={blocks} agents={running ? agents : []} runId={runId} />}
         />
       )}
       <Decisions blocks={blocks} />

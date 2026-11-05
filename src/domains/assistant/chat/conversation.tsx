@@ -38,6 +38,10 @@ function isActive(view: View): boolean {
   return view.status === "queued" || view.status === "running" || view.status === "waiting";
 }
 
+function toShownAgents(view: View) {
+  return isActive(view) ? toWorkingAgents(view) : Object.values(view.agents);
+}
+
 function UserBubble({ projectId, message }: { projectId: string; message: ChatMessage }) {
   return (
     <Message from="user" className="gap-1">
@@ -142,15 +146,17 @@ export function Conversation({
           return (
             <div key={message.id} className="space-y-3">
               <UserBubble projectId={projectId} message={message} />
-              {isLive ? <Blocks
+              {isLive ? (
+                <Blocks
                   blocks={view.blocks}
                   running={isActive(view)}
                   retry={view.retry}
                   waiting={view.status === "waiting"}
-                  agents={toWorkingAgents(view)}
+                  agents={toShownAgents(view)}
                   calculations={fromCalculations(view.problem.document)}
                   runId={liveRunId}
-                /> : null}
+                />
+              ) : null}
               {!isLive && message.run !== null && !answered.has(message.run) ? (
                 <PastRun projectId={projectId} runId={message.run} />
               ) : null}

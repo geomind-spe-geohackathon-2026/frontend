@@ -59,6 +59,8 @@ export type AgentNode = {
   tokens: number;
   /** Cost in USD of the run's finished steps. */
   cost: number;
+  /** Server time (ms) of this run's last event that carried one, or null; a done run's time ends there. */
+  lastAt: number | null;
   /** Browser clock (ms) when the view first saw this run; the stage timer counts from it. */
   startedAt: number;
 };
@@ -144,6 +146,7 @@ function touchAgent(view: View, event: RunEvent): View {
     tools: 0,
     tokens: 0,
     cost: 0,
+    lastAt: null,
     startedAt: Date.now(),
   };
   // The server's time of the agent's first step (backend 1.1.99), else the time this view first saw it.
@@ -157,7 +160,9 @@ function touchAgent(view: View, event: RunEvent): View {
   const cost = base.cost + (used === null ? 0 : used.cost);
   const finished = event.type === "run.finished" && event.parent !== null;
   const state = finished ? "done" : base.state;
-  const node: AgentNode = { ...base, steps, tools, tokens, cost, startedAt, state };
+  const at = "ts" in event ? Date.parse(event.ts ?? "") : NaN;
+  const lastAt = Number.isNaN(at) ? base.lastAt : at;
+  const node: AgentNode = { ...base, steps, tools, tokens, cost, lastAt, startedAt, state };
   return { ...view, agents: { ...view.agents, [key]: node } };
 }
 

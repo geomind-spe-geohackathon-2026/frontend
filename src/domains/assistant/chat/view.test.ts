@@ -15,7 +15,7 @@ function toShape(view: View): View {
   const agents = Object.fromEntries(
     Object.entries(view.agents).map(([key, agent]) => [
       key,
-      { ...agent, startedAt: 0, tokens: 0, cost: 0 },
+      { ...agent, startedAt: 0, tokens: 0, cost: 0, lastAt: null },
     ]),
   );
   return { ...view, blocks, agents };
