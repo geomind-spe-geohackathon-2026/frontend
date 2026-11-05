@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.146 (2026-11-05)
+
+- QA-355 (frontend part): the empty Plant tab offers 'Use this design as the plant' when the newest result holds a design not saved as a plant (`progress.plant.result`, backend 1.1.133); it adopts that result.
+
 ## 1.1.145 (2026-11-05)
 
 - QA-339: with auto-approve on, a waiting question shows a quiet 'Answering the agents' question automatically…' line for up to 60 s instead of flashing the card; after 60 s the card appears.
