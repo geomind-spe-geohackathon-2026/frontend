@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.89 (2026-11-05)
+
+- QA-111 (user): one project menu (`domains/workspace/settings/project-menu.tsx`) for the sidebar and the project cards: Pin, Rename (dialog), Settings (the settings window) and Delete (a destructive confirmation naming the project; after it, back to Projects). The routes hand the menu to the Projects page, so features keep their import boundaries.
+
 ## 1.1.88 (2026-11-05)
 
 - QA-108 (user): the shared data table has three backgrounds from the theme tokens: the sticky header on `sunken`, odd rows on the page colour, even rows on `sunken` at 60 %; the hovered row turns full `sunken`. Selected and recommended rows keep their own colour. Works in light and dark, everywhere the DataTable (and Markdown tables) is used.

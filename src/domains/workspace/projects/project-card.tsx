@@ -3,15 +3,7 @@ import { toDateLabel } from "@/lib/datelabel";
 import type { Project } from "@/shared/api/types";
 import { ProgressBar } from "./progress-bar";
 import { stepNames } from "./steps";
-import { Ellipsis } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { isPinned, togglePin, usePins } from "@/shared/layout/pins";
+import type { ComponentType } from "react";
 
 function toSummary(progress: Project["progress"]): string {
   const next = stepNames.find((step) => progress[step.key].state !== "done");
@@ -23,41 +15,11 @@ function toCount(count: number, name: string): string {
   return `${String(count)} ${name}${count === 1 ? "" : "s"}`;
 }
 
-function PinMenu({ project }: { project: Project }) {
-  const pins = usePins();
-  const pinned = isPinned(pins, "project", project.id);
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`Actions of ${project.name}`}
-          className="relative z-10 text-muted-foreground"
-        >
-          <Ellipsis aria-hidden="true" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => {
-            togglePin({
-              kind: "project",
-              id: project.id,
-              projectId: project.id,
-              title: project.name,
-            });
-          }}
-        >
-          {pinned ? "Unpin" : "Pin"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+/** The project's "…" menu a card shows; the routes pass the one the sidebar uses. */
+export type ProjectMenuComponent = ComponentType<{ project: Project }>;
 
-/** One project card: name, owner, last change, its chats and runs, the five-step progress bar, the step to work on next, and a menu to pin it. */
-export function ProjectCard({ project }: { project: Project }) {
+/** One project card: name, owner, last change, its chats and runs, the five-step progress bar, the step to work on next, and the project menu (Pin, Rename, Settings, Delete). */
+export function ProjectCard({ project, menu: Menu }: { project: Project; menu: ProjectMenuComponent }) {
   return (
     <div
       data-slot="project-card"
@@ -72,7 +34,7 @@ export function ProjectCard({ project }: { project: Project }) {
             {project.name}
           </Link>
         </h2>
-        <PinMenu project={project} />
+        <Menu project={project} />
       </div>
       <p className="text-muted">
         Owner {project.owner.name} · updated {toDateLabel(project.updated)}

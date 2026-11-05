@@ -17,7 +17,7 @@ import { openMainDialog } from "@/shared/layout/main-dialog";
 import type { Project } from "@/shared/api/types";
 import { toast } from "sonner";
 import { projectsQuery, useImportProject } from "./api";
-import { ProjectCard } from "./project-card";
+import { ProjectCard, type ProjectMenuComponent } from "./project-card";
 import { Notice } from "@/shared/ui/notice";
 
 function ImportButton() {
@@ -121,8 +121,8 @@ function SortMenu({ sort, onSort }: { sort: Sort; onSort: (sort: Sort) => void }
   );
 }
 
-/** The projects home: the Search dialog and sort icons, import zip, New project, and one card per project. */
-export function ProjectsPage() {
+/** The projects home: the Search dialog and sort icons, import zip, New project, and one card per project with the project menu the routes give it. */
+export function ProjectsPage({ menu }: { menu: ProjectMenuComponent }) {
   const projects = useInfiniteQuery(projectsQuery(""));
   const [sort, setSort] = useState<Sort>("updated");
   const items = toSorted(toItems(projects.data?.pages), sort);
@@ -156,7 +156,7 @@ export function ProjectsPage() {
       ) : null}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
         {items.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard key={project.id} project={project} menu={menu} />
         ))}
       </div>
       {projects.hasNextPage ? (

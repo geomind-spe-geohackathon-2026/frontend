@@ -1,10 +1,16 @@
+import { createElement } from "react";
 import type { DomainRoutes } from "@/shared/layout/routes";
 
 export const workspaceRoutes: DomainRoutes = {
   home: [
     {
       path: "/projects",
-      lazy: () => import("./projects/page").then((m) => ({ Component: m.ProjectsPage })),
+      lazy: () =>
+        Promise.all([import("./projects/page"), import("./settings/project-menu")]).then(
+          ([page, menu]) => ({
+            Component: () => createElement(page.ProjectsPage, { menu: menu.ProjectMenu }),
+          }),
+        ),
     },
     {
       path: "/knowledge",

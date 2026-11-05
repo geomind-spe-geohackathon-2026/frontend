@@ -39,7 +39,8 @@ import {
 import { Logo } from "@/shared/ui/logo";
 import { useShownChat } from "./shown-chat";
 import { UserMenu } from "./user-menu";
-import { ProjectMenu, SidebarSection } from "./sidebar-section";
+import { ProjectMenu } from "@/domains/workspace/settings/project-menu";
+import { SidebarSection } from "./sidebar-section";
 
 const NewProjectDialog = lazy(() =>
   import("@/domains/workspace/projects/new-project-dialog").then((module) => ({
@@ -252,7 +253,7 @@ function ProjectItems({ project }: Props) {
   const designOpen = toDesignItem(rest) !== undefined;
   return (
     <>
-      <SidebarSection title={project.name} action={<ProjectMenu project={project} />}>
+      <SidebarSection title={project.name} action={<ProjectMenu project={project} place="sidebar" />}>
         <nav aria-label="Project">
           {projectNav.map((group) => (
             <SidebarMenu key={group.label ?? "pages"}>
