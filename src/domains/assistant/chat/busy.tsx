@@ -16,3 +16,9 @@ export function toWorkingAgents(view: View): AgentNode[] {
   if (view.status !== "running") return [];
   return Object.values(view.agents).filter((agent) => agent.state === "running");
 }
+
+/** Every agent of an active run, the finished ones too (they stay in the busy list with a done mark); none while the run waits for the user. */
+export function toBusyListAgents(view: View): AgentNode[] {
+  if (view.status !== "running") return [];
+  return Object.values(view.agents);
+}

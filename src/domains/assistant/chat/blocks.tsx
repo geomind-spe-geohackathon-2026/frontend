@@ -7,7 +7,7 @@ import { api, toData } from "@/shared/api/client";
 import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarkdownText } from "@/shared/ui/markdown-text";
-import { Copy } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -407,7 +407,15 @@ function toWorkUsage(work: Block[]): { tokens: number; cost: number } {
 
 /** One line per working agent run (each parallel instance its own, IMP-025): name, what it does, its steps; it opens to its own work. */
 function RowMark({ done }: { done: boolean }) {
-  return done ? <span aria-hidden="true" className="size-3.5 shrink-0" /> : <BusyMark />;
+  if (!done) return <BusyMark />;
+  return (
+    <span
+      aria-label="done"
+      className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-ok"
+    >
+      <Check aria-hidden="true" className="size-2.5 text-white" strokeWidth={3.5} />
+    </span>
+  );
 }
 
 function AgentTime({ agent, done }: { agent: AgentNode; done: boolean }) {
@@ -442,6 +450,7 @@ function WorkingAgents({
       {agents.map((agent) => {
         const own = blocks.filter((block) => block.agent === agent.key);
         const work = own.filter(isWork);
+        const finished = done || agent.state === "done";
         return (
           <li
             key={agent.key}
@@ -459,14 +468,14 @@ function WorkingAgents({
                   type="button"
                   className="flex min-w-0 cursor-pointer items-center gap-1.5 text-left"
                 >
-                  <RowMark done={done} />
+                  <RowMark done={finished} />
                   <span className="shrink-0 font-medium text-foreground">
                     {toAgentTitle(agent)}
                   </span>
-                  <DoingLine text={done ? "done" : toDoing(own, agents)} />
+                  <DoingLine text={finished ? "done" : toDoing(own, agents)} />
                   <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
                   <UsageParts tokens={agent.tokens} cost={agent.cost} />
-                  <AgentTime agent={agent} done={done} />
+                  <AgentTime agent={agent} done={finished} />
                 </button>
               }
             />
@@ -658,7 +667,7 @@ function TotalRow({
           >
             <span aria-hidden="true" className="size-3.5 shrink-0" />
             <span className="shrink-0 font-medium text-foreground">Total</span>
-            <DoingLine text={toTotalDoing(work, agents.length, done)} />
+            <DoingLine text={toTotalDoing(work, agents.filter((agent) => agent.state !== "done").length, done)} />
             <span className="shrink-0 tabular-nums">· {toStepCount(steps)}</span>
             <UsageParts tokens={usage.tokens} cost={usage.cost} />
             {done ? (

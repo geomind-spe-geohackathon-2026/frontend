@@ -15,7 +15,7 @@ import { Blocks, finishTool } from "./blocks";
 import { MessageButtons } from "./message-actions";
 import { PastRun } from "./past-run";
 import { RunSummary } from "./run-summary";
-import { toWorkingAgents } from "./busy";
+import { toBusyListAgents } from "./busy";
 import { fromCalculations } from "@/shared/sse/tool-views";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { PacedMarkdown } from "./paced-markdown";
@@ -40,7 +40,7 @@ function isActive(view: View): boolean {
 }
 
 function toShownAgents(view: View) {
-  return isActive(view) ? toWorkingAgents(view) : Object.values(view.agents);
+  return isActive(view) ? toBusyListAgents(view) : Object.values(view.agents);
 }
 
 function UserBubble({ projectId, message }: { projectId: string; message: ChatMessage }) {
