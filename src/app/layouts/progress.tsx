@@ -41,15 +41,18 @@ const actions: Partial<Record<ProgressStep["state"], string>> = {
   running: "It turns green when the work finishes.",
 };
 
+const labelActions: [string, string][] = [
+  [" missing", "Fill in the missing values on this page."],
+  [" blocked", "Fill in the values the blocked studies wait for, then start them."],
+  ["Not saved", "Save a design as the plant on the Plant page."],
+];
+
 function toDotText(step: ProgressStep): string {
   if (step.label.startsWith("Out of date")) return step.label;
   const head =
     step.label === stateWords[step.state] ? step.label : `${stateWords[step.state]}: ${step.label}`;
-  const action = step.label.includes(" missing")
-    ? "Fill in the missing values on this page."
-    : step.label.includes(" blocked")
-      ? "Fill in the values the blocked studies wait for, then start them."
-      : (actions[step.state] ?? "");
+  const action =
+    labelActions.find(([part]) => step.label.includes(part))?.[1] ?? actions[step.state] ?? "";
   return `${head}.${action === "" ? "" : ` ${action}`} Green is done or ready, amber needs attention, grey is not started.`;
 }
 
