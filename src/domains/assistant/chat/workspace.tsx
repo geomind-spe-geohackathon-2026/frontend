@@ -14,6 +14,7 @@ import {
   AutoApproveButton,
   saveAutoApprove,
   useApproveByItself,
+  useAutoAnswerWait,
   useAutoApprove,
 } from "./auto-approve";
 import { useRunView } from "./use-run-view";
@@ -57,7 +58,13 @@ function RunRequest({ projectId, runId, view, auto }: RequestProps) {
     keepAnswer(request, { approved: true });
     answer.mutate({ request, answer: { approved: true } });
   });
+  const waiting = useAutoAnswerWait(auto, view.request);
   if (view.request === null || (auto && view.request.kind === "approval")) return null;
+  if (waiting) {
+    return (
+      <p className="text-[12.5px] text-muted">Answering the agents' question automatically…</p>
+    );
+  }
   const { request } = view;
   return (
     <div

@@ -104,6 +104,24 @@ export function useApproveByItself(
   }, [on, request, approve]);
 }
 
+const autoAnswerWaitMs = 60_000;
+
+/** True while auto-approve is on and a question is younger than a minute: the engine answers it by itself (QA-339), so no card should flash; after that the card shows, in case nothing answered it. */
+export function useAutoAnswerWait(on: boolean, request: RunRequest | null): boolean {
+  const [late, setLate] = useState<string | null>(null);
+  const id = on && request?.kind === "question" ? request.request : null;
+  useEffect(() => {
+    if (id === null) return;
+    const timer = setTimeout(() => {
+      setLate(id);
+    }, autoAnswerWaitMs);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [id]);
+  return id !== null && late !== id;
+}
+
 /** The switch next to the usage ring: on, the assistant's tool calls are approved without asking. */
 export function AutoApproveButton({
   on,
