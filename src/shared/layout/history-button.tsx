@@ -17,7 +17,7 @@ type Props = {
   children: ReactNode;
 };
 
-/** A History button beside Save version that opens the saved versions in a window that fills most of the screen. */
+/** A History button beside Save version that opens the saved versions in a wide window whose height follows its content (at most the screen). */
 export function HistoryButton({ what, open, onOpenChange, children }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -27,7 +27,7 @@ export function HistoryButton({ what, open, onOpenChange, children }: Props) {
           History
         </Button>
       </DialogTrigger>
-      <DialogContent className="flex h-[calc(100svh-4rem)] max-w-[calc(100vw-4rem)] flex-col sm:max-w-[calc(100vw-4rem)]">
+      <DialogContent className="flex max-h-[calc(100svh-4rem)] max-w-[calc(100vw-4rem)] flex-col sm:max-w-[calc(100vw-4rem)]">
         <DialogHeader>
           <DialogTitle>History</DialogTitle>
           <DialogDescription>Saved versions of the {what}, newest first.</DialogDescription>

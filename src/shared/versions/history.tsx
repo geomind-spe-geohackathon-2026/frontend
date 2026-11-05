@@ -30,7 +30,7 @@ export function VersionList({ what, versions, current, onOpen }: ListProps) {
   return (
     <DataTable
       caption={`Saved versions of the ${what}`}
-      className="max-h-[60vh]"
+      className="max-h-[calc(100svh-13rem)]"
       numbered={false}
       head={
         <>
@@ -87,12 +87,15 @@ type DetailProps = {
   current: number;
   restore: ReactNode;
   notice?: ReactNode;
+  /** More views of the version beside its changes and values, such as the plant's flowsheet. */
+  views?: { value: string; label: string; content: ReactNode }[];
   onBack: () => void;
 };
 
 /** One saved version, read-only: its changes from the version before and all its values, with a restore action. */
 export function VersionDetail(props: DetailProps) {
   const { what, queryKey, load, version, previous, current, restore, notice, onBack } = props;
+  const views = props.views ?? [];
   const shown = useQuery({
     queryKey: [...queryKey, version.number, "entries"],
     queryFn: () => load(version.number),
@@ -136,7 +139,17 @@ export function VersionDetail(props: DetailProps) {
               <TabsTrigger value="changes">Changes from version {previous}</TabsTrigger>
             )}
             <TabsTrigger value="values">All values</TabsTrigger>
+            {views.map((view) => (
+              <TabsTrigger key={view.value} value={view.value}>
+                {view.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
+          {views.map((view) => (
+            <TabsContent key={view.value} value={view.value}>
+              {view.content}
+            </TabsContent>
+          ))}
           {previous === undefined ? null : (
             <TabsContent value="changes">
               {before.isPending ? (
@@ -162,7 +175,7 @@ export function VersionDetail(props: DetailProps) {
           <TabsContent value="values">
             <DataTable
               caption={`Values of ${what} ${label}`}
-              className="max-h-[55vh]"
+              className="max-h-[calc(100svh-20rem)]"
               head={
                 <>
                   <TableHead scope="col">Path</TableHead>
@@ -213,7 +226,7 @@ function ChangesTable({
   return (
     <DataTable
       caption={`Changes of the ${what} from version ${String(previous)} to ${String(number)}`}
-      className="max-h-[55vh]"
+      className="max-h-[calc(100svh-20rem)]"
       head={
         <>
           <TableHead scope="col">Path</TableHead>

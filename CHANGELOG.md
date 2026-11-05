@@ -2,6 +2,14 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.109 (2026-11-05)
+
+- QA-137, QA-139: the Plant and Case History window's height follows its content (at most the screen), so a short list or a two-row change no longer sits over a large empty area; the tables use the room there is and scroll inside. A plant version has a third view, "Flowsheet": the diagram of that version (every module and connection), with the modules added or changed from the version before named above it.
+
+## 1.1.108 (2026-11-05)
+
+- QA-138: the Plant toolbar no longer has "Start from template" (user decision: no templates, IMP-023 rejected).
+
 ## 1.1.107 (2026-11-05)
 
 - IMP-025 (frontend part): parallel instances of one agent ("Geoscientist I", "Geoscientist II") each get their own line in the chat while a run works, under their lead, with what they do and their own step count ("Geoscientist I · Thinking · 12 steps"); each line opens that instance's own steps. Lines, steps and counts are keyed by agent and `instance`, so two instances never mix (stream events carry no run id). The run panel's agent list and the chat's per-agent usage show the instance name.
