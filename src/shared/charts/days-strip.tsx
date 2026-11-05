@@ -14,14 +14,25 @@ type Props = { days: Day[]; title: string; mainLabel?: string };
 const cell = 12;
 const gap = 2;
 const pitch = cell + gap;
-type Shown = DaySource | "partly";
+type Shown = "geothermal" | "topped" | "backup" | "partly" | "short";
 
-const sources: { source: Shown; label: string; fill: string }[] = [
-  { source: "geothermal", label: "Geothermal", fill: "var(--ok)" },
-  { source: "backup", label: "Backup", fill: "var(--gas)" },
-  { source: "partly", label: "Partly short", fill: "var(--warn)" },
-  { source: "short", label: "Short", fill: "var(--bad)" },
+const sources: { source: Shown; label: (main: string) => string; fill: string }[] = [
+  { source: "geothermal", label: (main) => `${main} only`, fill: "var(--ok)" },
+  {
+    source: "topped",
+    label: (main) => `${main} topped up by backup`,
+    fill: "color-mix(in oklab, var(--ok) 25%, var(--gas))",
+  },
+  {
+    source: "backup",
+    label: (main) => `Backup only (${main.toLowerCase()} off)`,
+    fill: "var(--gas)",
+  },
+  { source: "partly", label: () => "Partly short", fill: "var(--warn)" },
+  { source: "short", label: () => "Short", fill: "var(--bad)" },
 ];
+
+const offShare = 1e-3;
 
 const percent = new Intl.NumberFormat("en", { style: "percent", maximumFractionDigits: 1 });
 
@@ -31,7 +42,12 @@ function toUnmetShare(day: Day): number | null {
 }
 
 function toShown(day: Day): Shown {
-  if (day.source !== "short") return day.source;
+  if (day.source === "geothermal") return "geothermal";
+  if (day.source === "backup") {
+    const main = day.geothermal?.value ?? 0;
+    const demand = day.demand?.value ?? 0;
+    return demand > 0 && main > offShare * demand ? "topped" : "backup";
+  }
   const share = toUnmetShare(day);
   return share !== null && share < 0.999 ? "partly" : "short";
 }
@@ -41,6 +57,17 @@ function toMeanShare(days: Day[]): string {
   if (shares.length === 0) return "";
   const mean = shares.reduce((sum, share) => sum + share, 0) / shares.length;
   return `, ${percent.format(mean)} unmet on average`;
+}
+
+function toYearShare(days: Day[], main: string): string | null {
+  const sum = (pick: (day: Day) => Energy | undefined) =>
+    days.reduce((total, day) => total + (pick(day)?.value ?? 0), 0);
+  const backup = sum((day) => day.backup);
+  const delivered = sum((day) => day.geothermal) + backup;
+  const unit = days.find((day) => day.backup !== undefined)?.backup?.unit;
+  if (delivered <= 0 || backup <= 0 || unit === undefined) return null;
+  const off = days.filter((day) => toShown(day) === "backup").length;
+  return `Backup gave ${percent.format(backup / delivered)} of the delivered energy (${backup.toFixed(0)} of ${delivered.toFixed(0)} ${unit}); ${main.toLowerCase()} was off on ${String(off)} days.`;
 }
 
 function toDayNumber(date: string): number {
@@ -69,25 +96,32 @@ function toDayTitle(day: Day): string {
   ];
   const share = toUnmetShare(day);
   const shown = toShown(day);
+  const backupShare =
+    day.backup !== undefined && day.demand !== undefined && day.demand.value > 0
+      ? `, backup ${percent.format(day.backup.value / day.demand.value)} of the demand`
+      : "";
   const head =
     shown === "partly" && share !== null
       ? `${day.date}: partly short, ${percent.format(share)} of the demand unmet`
-      : `${day.date}: ${day.source}`;
+      : `${day.date}: ${shown === "topped" ? "topped up by backup" : day.source}${shown === "topped" ? backupShare : ""}`;
   return [head, ...parts].join(", ");
 }
 
-/** One cell per day, coloured by the source that covers it (a short day that got part of its demand is "partly short", with its unmet share), with a legend, day counts and the shortness rule as text. */
+/** One cell per day, coloured by how it was covered (main source only, main source topped up by backup, backup only, partly short, short), with a legend, day counts, the backup's share of the delivered energy and the rules as text. */
 export function DaysStrip({ days, title, mainLabel }: Props) {
   const first = days[0];
   if (first === undefined) return null;
   const firstDay = toDayNumber(first.date);
   const last = toPosition(days[days.length - 1]?.date ?? first.date, firstDay);
   const width = last.x + cell;
+  const main = mainLabel ?? "Geothermal";
+  const yearShare = toYearShare(days, main);
   const counts = sources.map((entry) => ({
     ...entry,
-    label: entry.source === "geothermal" ? (mainLabel ?? entry.label) : entry.label,
+    label: entry.label(main),
     count: days.filter((day) => toShown(day) === entry.source).length,
-    extra: entry.source === "partly" ? toMeanShare(days.filter((day) => toShown(day) === "partly")) : "",
+    extra:
+      entry.source === "partly" ? toMeanShare(days.filter((day) => toShown(day) === "partly")) : "",
   }));
   const summary = counts.map((entry) => `${entry.label} ${String(entry.count)} days`).join(", ");
   return (
@@ -121,7 +155,11 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
             {entry.extra}
           </span>
         ))}
+        {yearShare === null ? null : <span className="basis-full text-text">{yearShare}</span>}
         <span className="basis-full">
+          {yearShare === null
+            ? null
+            : `Backup is the plant's boilers (gas, CHP or electric) covering what ${main.toLowerCase()} cannot. `}
           A day counts as short when any of its demand is unmet; partly short days got part of it
           (hover a day for the unmet share), short days got none.
         </span>

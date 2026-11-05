@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.101 (2026-11-05)
+
+- QA-126: Days covered tells apart "Geothermal only", "Geothermal topped up by backup" and "Backup only (geothermal off)" (plus partly short and short), states the backup's share of the delivered energy and the days the main source was off, explains what backup is, and gives each topped-up day its backup share on hover.
+
 ## 1.1.100 (2026-11-05)
 
 - QA-127, QA-109: the Report opens on the best result, not the first: among design results whose checks all pass, the best on the objective of the newest minimise/maximise study, else the newest feasible result, else the newest result. Its Agent log shows the run that started the result's study, without Options; a result or run in the URL still wins.
