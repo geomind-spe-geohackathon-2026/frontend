@@ -28,8 +28,12 @@ function ContextLine({ agent }: { agent: AgentSession }) {
   );
 }
 
+function isFailed(call: AgentSession["tool_calls"][number]): boolean {
+  return call.error === true || (typeof call.error === "string" && call.error !== "");
+}
+
 function AgentRow({ agent }: { agent: AgentSession }) {
-  const failed = agent.tool_calls.filter((call) => call.error !== null).length;
+  const failed = agent.tool_calls.filter(isFailed).length;
   return (
     <Collapsible asChild>
       <li className="rounded-md border px-2 py-1.5">
@@ -61,7 +65,7 @@ function AgentRow({ agent }: { agent: AgentSession }) {
               <li className="text-muted-foreground">No tool calls.</li>
             ) : null}
             {agent.tool_calls.map((call) => (
-              <li key={call.call_id} className={call.error === null ? "" : "text-bad"}>
+              <li key={call.call_id} className={isFailed(call) ? "text-bad" : ""}>
                 {toToolName(call.tool)}
                 {call.duration === null ? null : (
                   <span className="text-muted-foreground"> · {call.duration.toFixed(1)} s</span>

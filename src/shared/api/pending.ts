@@ -78,7 +78,7 @@ type ConnectorPath = { connector_id: string };
 export type AgentToolCall = {
   call_id: string;
   tool: string;
-  error: string | null;
+  error: string | boolean | null;
   duration: number | null;
 };
 
