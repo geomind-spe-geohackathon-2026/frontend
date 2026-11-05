@@ -15,7 +15,7 @@ type Props = {
   scale?: number | undefined;
 };
 
-const scaledDigits = 6;
+const scaledDigits = 15;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const selectClass = "aria-invalid:border-warn";
 

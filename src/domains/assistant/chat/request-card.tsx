@@ -1,4 +1,4 @@
-import { toRoundedText, toToolName } from "@/shared/sse/pretty";
+import { toToolName } from "@/shared/sse/pretty";
 import { withLinks } from "@/shared/sse/tool-views";
 import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -192,7 +192,7 @@ export function RequestCard({ request, pending, failure, onAnswer }: Props) {
       className="space-y-2 rounded-card border border-warn bg-warn-soft p-3"
     >
       <h2>{request.kind === "approval" ? "Approval needed" : "The assistant asks"}</h2>
-      <RequestMessage message={toRoundedText(request.message)} />
+      <RequestMessage message={request.message} />
       {request.kind === "approval" ? (
         <Approval pending={pending} onAnswer={onAnswer} />
       ) : (

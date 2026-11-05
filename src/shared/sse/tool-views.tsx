@@ -30,10 +30,15 @@ function list(value: unknown): Fields[] {
   return Array.isArray(value) ? value.filter(isFields) : [];
 }
 
-const numberFormat = new Intl.NumberFormat("en", { maximumSignificantDigits: 6 });
+const integerFormat = new Intl.NumberFormat("en", { maximumFractionDigits: 0 });
 
 function toFigure(value: unknown, unit: unknown): string {
-  const shown = typeof value === "number" ? numberFormat.format(value) : (text(value) ?? "?");
+  const shown =
+    typeof value === "number"
+      ? Number.isInteger(value)
+        ? integerFormat.format(value)
+        : String(value)
+      : (text(value) ?? "?");
   const suffix = text(unit);
   return suffix === null || suffix === "-" ? shown : `${shown} ${suffix}`;
 }
@@ -67,7 +72,12 @@ export function toResultId(summary: string): string | null {
 
 function WebLink({ url, label }: { url: string; label?: string | null }) {
   return (
-    <a href={url} target="_blank" rel="noreferrer" className="text-accent underline [overflow-wrap:anywhere]">
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="text-accent underline [overflow-wrap:anywhere]"
+    >
       {label ?? url}
     </a>
   );
@@ -77,8 +87,11 @@ function Source({ source }: { source: unknown }) {
   if (!isFields(source)) return null;
   const kind = text(source.kind) ?? "";
   const url = text(source.url);
-  const parts = [text(source.publisher), text(source.year), text(source.page) === null ? null : `p. ${text(source.page) ?? ""}`]
-    .filter((part): part is string => part !== null);
+  const parts = [
+    text(source.publisher),
+    text(source.year),
+    text(source.page) === null ? null : `p. ${text(source.page) ?? ""}`,
+  ].filter((part): part is string => part !== null);
   if (kind === "number") return <Badge variant="outline">plain</Badge>;
   if (kind === "constant") return <span className="text-muted">constant {text(source.name)}</span>;
   if (kind === "case") return <span className="text-muted">case {text(source.path) ?? ""}</span>;
@@ -91,10 +104,18 @@ function Source({ source }: { source: unknown }) {
     );
   }
   if (kind === "calculation") {
-    return <span className="text-muted">calculation {text(source.id)} {text(source.label)}</span>;
+    return (
+      <span className="text-muted">
+        calculation {text(source.id)} {text(source.label)}
+      </span>
+    );
   }
   if (kind === "stored") {
-    return <span className="text-muted">stored {text(source.reference)} {text(source.path)}</span>;
+    return (
+      <span className="text-muted">
+        stored {text(source.reference)} {text(source.path)}
+      </span>
+    );
   }
   return (
     <span className="text-muted">
@@ -131,10 +152,14 @@ function CalculationView({ calculation }: { calculation: Calculation }) {
     <div className="space-y-1">
       <p>
         <span className="font-medium">{calculation.label}</span> ={" "}
-        <span className="font-mono font-medium">{toFigure(calculation.value, calculation.unit)}</span>
+        <span className="font-mono font-medium">
+          {toFigure(calculation.value, calculation.unit)}
+        </span>
       </p>
       {calculation.expression === "" ? null : (
-        <p className="font-mono text-[12px] text-muted [overflow-wrap:anywhere]">{calculation.expression}</p>
+        <p className="font-mono text-[12px] text-muted [overflow-wrap:anywhere]">
+          {calculation.expression}
+        </p>
       )}
       <Operands operands={calculation.operands} />
     </div>
@@ -158,25 +183,45 @@ function Output({ label, value, tone }: { label: string; value: unknown; tone?: 
   return (
     <details>
       <summary className="cursor-pointer text-[12.5px] text-muted">{label}</summary>
-      <pre className={`mt-1 max-h-[320px] overflow-auto rounded-control bg-sunken p-2 font-mono text-[12px] whitespace-pre-wrap ${tone ?? ""}`}>
+      <pre
+        className={`mt-1 max-h-[320px] overflow-auto rounded-control bg-sunken p-2 font-mono text-[12px] whitespace-pre-wrap ${tone ?? ""}`}
+      >
         {shown}
       </pre>
     </details>
   );
 }
 
-const statusTones: Record<string, "ok" | "bad" | "warn"> = { ok: "ok", failed: "bad", timed_out: "warn" };
+const statusTones: Record<string, "ok" | "bad" | "warn"> = {
+  ok: "ok",
+  failed: "bad",
+  timed_out: "warn",
+};
 
-function PythonView({ input, output, calculations }: { input: unknown; output: Fields | null; calculations: Calculation[] }) {
+function PythonView({
+  input,
+  output,
+  calculations,
+}: {
+  input: unknown;
+  output: Fields | null;
+  calculations: Calculation[];
+}) {
   const given = isFields(input) ? input : {};
   const status = text(output?.status);
   const code = text(output?.code) ?? text(given.code);
   return (
     <div className="space-y-1.5">
       <p className="flex flex-wrap items-center gap-2">
-        <span className="font-medium">{text(output?.purpose) ?? text(given.purpose) ?? "Python code"}</span>
-        {status === null ? null : <Badge variant={statusTones[status] ?? "info"}>{status.replace("_", " ")}</Badge>}
-        {typeof output?.duration === "number" ? <Duration seconds={output.duration} className="text-muted" /> : null}
+        <span className="font-medium">
+          {text(output?.purpose) ?? text(given.purpose) ?? "Python code"}
+        </span>
+        {status === null ? null : (
+          <Badge variant={statusTones[status] ?? "info"}>{status.replace("_", " ")}</Badge>
+        )}
+        {typeof output?.duration === "number" ? (
+          <Duration seconds={output.duration} className="text-muted" />
+        ) : null}
       </p>
       {code === null ? null : <Code code={code} />}
       <Operands operands={list(output?.inputs)} />
@@ -186,7 +231,11 @@ function PythonView({ input, output, calculations }: { input: unknown; output: F
       <Output label="Output (stdout)" value={output?.stdout} />
       <Output label="Errors (stderr)" value={output?.stderr} tone="text-bad" />
       {list(output?.outputs).map((file) => (
-        <Output key={text(file.path) ?? ""} label={`File ${text(file.path) ?? ""}`} value={file.text} />
+        <Output
+          key={text(file.path) ?? ""}
+          label={`File ${text(file.path) ?? ""}`}
+          value={file.text}
+        />
       ))}
       {calculations.map((calculation) => (
         <CalculationView key={calculation.id} calculation={calculation} />
@@ -214,12 +263,18 @@ function SearchView({ input, output }: { input: unknown; output: Fields | null }
           const url = text(result.url);
           return (
             <li key={position} className="rounded-control border border-border p-2">
-              {url === null ? <p className="font-medium">{text(result.title)}</p> : <WebLink url={url} label={text(result.title)} />}
+              {url === null ? (
+                <p className="font-medium">{text(result.title)}</p>
+              ) : (
+                <WebLink url={url} label={text(result.title)} />
+              )}
               <p className="text-[12px] text-muted">
                 {url === null ? null : toHost(url)}
                 {text(result.date) === null ? null : ` · ${text(result.date) ?? ""}`}
               </p>
-              {text(result.snippet) === null ? null : <p className="text-[12.5px]">{text(result.snippet)}</p>}
+              {text(result.snippet) === null ? null : (
+                <p className="text-[12.5px]">{text(result.snippet)}</p>
+              )}
             </li>
           );
         })}
@@ -230,8 +285,12 @@ function SearchView({ input, output }: { input: unknown; output: Fields | null }
 
 function PageView({ input, output }: { input: unknown; output: Fields | null }) {
   const url = text(output?.url) ?? (isFields(input) ? text(input.url) : null);
-  const facts = [text(output?.publisher), text(output?.author), text(output?.date), text(output?.kind)]
-    .filter((part): part is string => part !== null);
+  const facts = [
+    text(output?.publisher),
+    text(output?.author),
+    text(output?.date),
+    text(output?.kind),
+  ].filter((part): part is string => part !== null);
   return (
     <div className="space-y-1.5 rounded-control border border-border p-2">
       <p className="font-medium">{text(output?.title) ?? "Web page"}</p>
@@ -239,7 +298,9 @@ function PageView({ input, output }: { input: unknown; output: Fields | null }) 
       {url === null ? null : <WebLink url={url} label={text(output?.site) ?? url} />}
       <Output label="Text read" value={output?.text} />
       {typeof output?.next_start === "number" ? (
-        <p className="text-[12px] text-muted">More text follows from character {String(output.next_start)}.</p>
+        <p className="text-[12px] text-muted">
+          More text follows from character {String(output.next_start)}.
+        </p>
       ) : null}
     </div>
   );
@@ -253,12 +314,16 @@ function PlantsNeed({ output }: { output: Fields | null }) {
       <p className="font-medium text-warn">Plants still need:</p>
       <ul className="list-inside list-disc">
         {needs.map((need, position) => {
-          const plants = Array.isArray(need.plants) ? need.plants.filter((plant) => typeof plant === "string") : [];
+          const plants = Array.isArray(need.plants)
+            ? need.plants.filter((plant) => typeof plant === "string")
+            : [];
           return (
             <li key={position} className="[overflow-wrap:anywhere]">
               <span className="font-mono">{text(need.path)}</span>
               {text(need.message) === null ? null : ` · ${text(need.message) ?? ""}`}
-              {plants.length === 0 ? null : <span className="text-muted"> ({plants.join(", ")})</span>}
+              {plants.length === 0 ? null : (
+                <span className="text-muted"> ({plants.join(", ")})</span>
+              )}
             </li>
           );
         })}
@@ -285,18 +350,22 @@ export function ToolResultView({
     return own.length === 0 ? null : <CalculationView calculation={own[0] as Calculation} />;
   }
   if (tool === "run_python") {
-    const derived = full === null ? calculations : fromCalculations({ calculations: full.calculations });
+    const derived =
+      full === null ? calculations : fromCalculations({ calculations: full.calculations });
     return <PythonView input={input} output={full} calculations={derived} />;
   }
   if (tool === "web_search") return <SearchView input={input} output={full} />;
   if (tool === "read_web_page") return <PageView input={input} output={full} />;
-  if (tool === "set_case") return list(full?.plants_need).length === 0 ? null : <PlantsNeed output={full} />;
+  if (tool === "set_case")
+    return list(full?.plants_need).length === 0 ? null : <PlantsNeed output={full} />;
   return null;
 }
 
 /** Splits a text into plain parts and links for every http(s) address in it. */
 export function withLinks(value: string): ReactNode[] {
-  return value.split(/(https?:\/\/[^\s"'<>)]+)/g).map((part, position) =>
-    /^https?:\/\//.test(part) ? <WebLink key={position} url={part} /> : part,
-  );
+  return value
+    .split(/(https?:\/\/[^\s"'<>)]+)/g)
+    .map((part, position) =>
+      /^https?:\/\//.test(part) ? <WebLink key={position} url={part} /> : part,
+    );
 }

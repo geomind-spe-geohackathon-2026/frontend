@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.102 (2026-11-05)
+
+- QA-118: no silent rounding of values: approval and question cards show the assistant's numbers as sent (they were cut to 4 significant digits), tool cards show decimals in full (were 6 digits), and form fields shown in another scale (mol %) show 15 significant digits (were 6), the most a scaled value can carry without float noise.
+
 ## 1.1.101 (2026-11-05)
 
 - QA-126: Days covered tells apart "Geothermal only", "Geothermal topped up by backup" and "Backup only (geothermal off)" (plus partly short and short), states the backup's share of the delivered energy and the days the main source was off, explains what backup is, and gives each topped-up day its backup share on hover.

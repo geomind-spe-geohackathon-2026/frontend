@@ -200,17 +200,10 @@ export function toBudgetStop(message: string): string | null {
   return `Stopped: this project reached its budget of ${found[3] ?? ""}${unit} (spent ${String(spent)}${unit}). Raise the budget in project settings to continue.`;
 }
 
-/** Rounds long decimals in a text (48.699029126213595 becomes 48.7), so a question reads well. */
-export function toRoundedText(text: string): string {
-  return text.replace(/\d+\.\d{5,}(e[+-]?\d+)?/gi, (number) =>
-    String(Number(Number(number).toPrecision(4))),
-  );
-}
-
 /** Writes a request whose answer is not known as what the assistant asked: a permission as the tool and its effect, any other question as itself. */
 export function toRequestText(message: string): string {
   const found = /^Allow (\S+) \((\w+)\)\?$/.exec(message);
-  if (found === null) return `The assistant asked:\n${toRoundedText(message)}`;
+  if (found === null) return `The assistant asked:\n${message}`;
   const tool = (found[1] ?? "").replaceAll("_", " ");
   const effect = found[2] === "write" ? "writes to the project" : found[2];
   return `The assistant asked to run ${tool} (${effect ?? ""})`;
