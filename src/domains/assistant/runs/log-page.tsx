@@ -1,3 +1,4 @@
+import { toAgentName } from "@/shared/sse/agent-names";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { toShortId } from "@/lib/shortid";
@@ -34,7 +35,7 @@ function StepList({ steps, selected, onSelect }: StepListProps) {
               style={{ paddingLeft: `${String(8 + 12 * (step.agent.split(".").length - 1))}px` }}
             >
               <span className="min-w-0 [overflow-wrap:anywhere]">
-                {step.agent} · step {step.index}
+                {toAgentName(step.agent)} · step {step.index}
               </span>
               <Quantity
                 value={toStepTokens(step)}

@@ -22,6 +22,7 @@ import { BusyMark } from "./busy";
 import { toDecisionText } from "./answers";
 import { ToolResultView, toResultId, type Calculation } from "@/shared/sse/tool-views";
 import { toDepth, toLabel } from "./agents";
+import { toAgentName } from "@/shared/sse/agent-names";
 import type { Block, RecordedStudy } from "./view";
 
 type ToolBlock = Extract<Block, { kind: "tool" }>;
@@ -309,7 +310,7 @@ function toDoing(blocks: Block[], agent: string, agents: string[]): string {
     return url === null ? "Reading a web page" : `Reading ${url}`;
   }
   if (agents.some((path) => toLabel(path).split(".").at(-1) === tool) || /_(lead|engineer)$/.test(tool)) {
-    return `Asking the ${toToolName(tool).toLowerCase()}`;
+    return `Asking the ${toAgentName(tool).toLowerCase()}`;
   }
   return doingTexts[tool] ?? toToolName(tool);
 }
@@ -332,7 +333,7 @@ function WorkingAgents({ blocks, agents }: { blocks: Block[]; agents: string[] }
           style={{ paddingLeft: `${String(toDepth(agent) * 12)}px` }}
         >
           <BusyMark />
-          <span className="shrink-0 font-medium text-foreground">{toToolName(toLabel(agent))}</span>
+          <span className="shrink-0 font-medium text-foreground">{toAgentName(agent)}</span>
           <DoingLine text={toDoing(blocks, agent, agents)} />
         </li>
       ))}

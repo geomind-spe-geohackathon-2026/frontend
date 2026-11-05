@@ -3,7 +3,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import type { AgentSession, RunAgents } from "@/shared/api/pending";
 import { Quantity } from "@/shared/quantity/quantity";
 import { toToolName } from "@/shared/sse/pretty";
-import { toLabel } from "./agents";
+import { toAgentName } from "@/shared/sse/agent-names";
 import { Ring } from "./ring";
 
 function toShare(agent: AgentSession): number | null {
@@ -40,7 +40,7 @@ function AgentRow({ agent }: { agent: AgentSession }) {
         <CollapsibleTrigger className="group flex w-full items-center gap-2 text-left">
           <Ring share={toShare(agent)} />
           <span className="min-w-0 flex-1 truncate font-medium" title={agent.agent}>
-            {toLabel(agent.agent)}
+            {toAgentName(agent.agent)}
           </span>
           <span className="text-muted-foreground tabular-nums">
             <Quantity value={agent.cost} unit="USD" fractionDigits={3} />

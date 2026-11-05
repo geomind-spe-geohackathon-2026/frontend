@@ -10,7 +10,8 @@ import type { Run } from "@/shared/api/types";
 import { RunStatusChip } from "@/shared/sse/status-chip";
 import { UsageLine } from "@/shared/sse/usage-line";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { toDepth, toLabel } from "./agents";
+import { toDepth } from "./agents";
+import { toAgentName } from "@/shared/sse/agent-names";
 import { ProblemView } from "./problem";
 import { BusyMark, toWorkingAgents } from "./busy";
 import type { View } from "./view";
@@ -56,7 +57,7 @@ function AgentTree({ view }: { view: View }) {
           style={{ paddingLeft: `${String(toDepth(agent.path) * 12)}px` }}
         >
           {working.includes(agent.path) ? <BusyMark /> : <span className="size-3.5 shrink-0" />}
-          {toLabel(agent.path)} <span className="text-muted">· {agent.state}</span>
+          {toAgentName(agent.path)} <span className="text-muted">· {agent.state}</span>
         </li>
       ))}
     </ul>
