@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.111 (2026-11-05)
+
+- QA-139 follow-up: the Flowsheet tab of a plant version is the Plant page's own diagram, read-only: zoom, fit, Arrange (view only), minimap, stream legend, group frames; modules added or changed from the version before are outlined and marked "changed".
+
 ## 1.1.110 (2026-11-05)
 
 - QA-141: no templates anywhere: the empty-plant card no longer offers "Start from template" (it points to the chat); the templates dialog is removed.

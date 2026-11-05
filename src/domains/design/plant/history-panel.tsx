@@ -1,14 +1,19 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { Flowsheet } from "@/shared/api/types";
+import type { Flowsheet, ModulePorts, Palette } from "@/shared/api/types";
+import { fromLayout, type Layout } from "@/shared/api/layout";
 import { LoadError } from "@/shared/forms/load-error";
 import { Notice } from "@/shared/ui/notice";
-import { ThemedImage } from "@/shared/ui/themed-image";
-import { toFullFlowsheetSvg } from "@/shared/plant/flowsheet-svg";
 import { toVersionEntries } from "@/shared/versions/diff";
 import { VersionDetail, VersionList } from "@/shared/versions/history";
-import { plantKeys, plantVersionQuery, plantVersionsQuery } from "./api";
+import { Canvas } from "./canvas";
+import { useAutoLayout, usePlantGraph } from "./use-auto-layout";
+import { paletteQuery, plantKeys, plantVersionQuery, plantVersionsQuery, portsQuery } from "./api";
+
+function noop() {
+  return undefined;
+}
 
 type Props = {
   projectId: string;
@@ -50,6 +55,46 @@ function toChangedModules(before: Flowsheet, after: Flowsheet): string[] {
   return [...toModuleTexts(after)].flatMap(([id, text]) => (old.get(id) === text ? [] : [id]));
 }
 
+function VersionCanvas({
+  flowsheet,
+  palette,
+  catalog,
+  changed,
+}: {
+  flowsheet: Flowsheet;
+  palette: Palette[];
+  catalog: ModulePorts[];
+  changed: Set<string>;
+}) {
+  const [layout, setLayout] = useState<Layout>(() => fromLayout(flowsheet.layout));
+  const graph = usePlantGraph(flowsheet.structure, catalog, palette);
+  const place = useCallback((placed: Layout) => {
+    setLayout((previous) => ({ ...previous, ...placed }));
+  }, []);
+  useAutoLayout(graph, layout, place);
+  return (
+    <Canvas
+      graph={graph}
+      layout={layout}
+      palette={palette}
+      issues={new Map()}
+      selected={null}
+      readOnly
+      changed={changed}
+      onSelect={noop}
+      onMove={noop}
+      onMoved={noop}
+      onArrange={setLayout}
+      onConnect={noop}
+      onRemoveModule={noop}
+      onRemoveConnection={noop}
+      onDropModule={noop}
+      suggested={new Map()}
+      onDragPort={noop}
+    />
+  );
+}
+
 /** The plant diagram of one saved version (every module and connection), with the modules changed from the version before. */
 function VersionFlowsheet({
   projectId,
@@ -65,28 +110,27 @@ function VersionFlowsheet({
     ...plantVersionQuery(projectId, previous ?? 0),
     enabled: previous !== undefined,
   });
-  const [svg, setSvg] = useState<string | null>(null);
-  useEffect(() => {
-    if (shown.data === undefined) return undefined;
-    let active = true;
-    const modules = shown.data.modules.map(({ id, type, category }) => ({ id, type, category }));
-    const connections = shown.data.connections.map(({ source, target, stream }) => ({
-      source,
-      target,
-      stream,
-    }));
-    void toFullFlowsheetSvg(modules, connections).then((picture) => {
-      if (active) setSvg(picture);
-    });
-    return () => {
-      active = false;
-    };
-  }, [shown.data]);
+  const palette = useQuery(paletteQuery());
+  const ports = useQuery(portsQuery());
   const label = `the flowsheet of version ${String(number)}`;
   if (shown.isError) {
     return <LoadError error={shown.error} what={label} onRetry={() => void shown.refetch()} />;
   }
-  if (shown.data === undefined || svg === null) return <Notice status="loading" what={label} />;
+  if (palette.isError || ports.isError) {
+    return (
+      <LoadError
+        error={palette.error ?? ports.error}
+        what="the module palette"
+        onRetry={() => {
+          void palette.refetch();
+          void ports.refetch();
+        }}
+      />
+    );
+  }
+  if (shown.data === undefined || palette.data === undefined || ports.data === undefined) {
+    return <Notice status="loading" what={label} />;
+  }
   if (shown.data.modules.length === 0) {
     return <p className="py-3 text-[13px] text-muted">Version {number} has no modules.</p>;
   }
@@ -100,9 +144,12 @@ function VersionFlowsheet({
             : `Modules added or changed from version ${String(previous)}: ${changed.join(", ")}.`}
         </p>
       )}
-      <div className="max-h-[calc(100svh-22rem)] overflow-auto rounded-control border border-border bg-white">
-        <ThemedImage svg={svg} alt={`Flowsheet of plant version ${String(number)}`} zoom />
-      </div>
+      <VersionCanvas
+        flowsheet={shown.data}
+        palette={palette.data}
+        catalog={ports.data}
+        changed={new Set(changed ?? [])}
+      />
     </div>
   );
 }

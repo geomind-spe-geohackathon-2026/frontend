@@ -11,6 +11,7 @@ export type ModuleNodeData = {
   ports: PortKinds;
   issue: "none" | "missing" | "invalid";
   suggested: Map<string, "exact" | "loose">;
+  changed?: boolean;
 };
 
 export type ModuleFlowNode = Node<ModuleNodeData, "module">;
@@ -73,6 +74,7 @@ export function ModuleNode({ data, selected }: NodeProps<ModuleFlowNode>) {
       className={cn(
         "size-full rounded-card border bg-surface shadow-sm",
         issueClass[data.issue],
+        data.changed === true && "border-accent",
         selected && "outline-2 outline-accent",
       )}
     >
@@ -82,6 +84,7 @@ export function ModuleNode({ data, selected }: NodeProps<ModuleFlowNode>) {
         </p>
         <p className="truncate font-mono text-[13px] leading-5 text-muted" title={data.moduleId}>
           {data.moduleId}
+          {data.changed === true ? <span className="text-accent"> · changed</span> : null}
           {data.issue === "none" ? null : (
             <span className={data.issue === "missing" ? " text-warn" : " text-bad"}>
               {data.issue === "missing" ? " · missing values" : " · has problems"}

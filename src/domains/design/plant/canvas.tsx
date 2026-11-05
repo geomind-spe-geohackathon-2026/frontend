@@ -66,6 +66,8 @@ type Props = {
   onDropModule: (type: string, x: number, y: number) => void;
   suggested: Suggested;
   onDragPort: (port: string | null) => void;
+  readOnly?: boolean;
+  changed?: Set<string>;
 };
 
 function toModuleNodes(props: Props): ModuleFlowNode[] {
@@ -84,6 +86,7 @@ function toModuleNodes(props: Props): ModuleFlowNode[] {
       ports: ports.get(module.id) ?? empty,
       issue: props.issues.get(module.id) ?? "none",
       suggested: props.suggested.get(module.id) ?? noSuggestions,
+      changed: props.changed?.has(module.id) ?? false,
     },
   }));
 }
@@ -318,6 +321,9 @@ function FlowCanvas(props: Props) {
           proOptions={{ hideAttribution: true }}
           minZoom={overviewZoom}
           isValidConnection={(connection) => isAllowed(props, connection)}
+          nodesDraggable={props.readOnly !== true}
+          nodesConnectable={props.readOnly !== true}
+          deleteKeyCode={props.readOnly === true ? null : "Backspace"}
           {...toFlowHandlers(props)}
         >
           <Background />
