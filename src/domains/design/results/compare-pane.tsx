@@ -164,7 +164,7 @@ function ComparisonView({ comparison, x, y }: { comparison: ResultComparison; x:
         yTitle={toAxisTitle(y)}
         title="Comparison of designs"
       />
-      {pareto.length === 0 ? null : (
+      {points.filter((point) => pareto.includes(point.id)).length < 2 ? null : (
         <p
           className="text-[12.5px] text-muted"
           title="No other design here is better on both figures."

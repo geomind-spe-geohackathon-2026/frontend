@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.121 (2026-11-05)
+
+- QA-244: Compare rounds the depth (3,282 m, not 3281.98316...); point labels of designs close together are moved apart; "The dashed line is the trade-off line" shows only when the line is drawn (two or more designs on it).
+
 ## 1.1.120 (2026-11-05)
 
 - QA-232: after a deploy, a tab that fails to load a lazy page chunk of the old build reloads itself once (at most once per 30 s) instead of showing "Something went wrong".

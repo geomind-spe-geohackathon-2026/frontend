@@ -1,3 +1,4 @@
+import { formatFigure } from "@/shared/quantity/figure";
 import { Missing } from "@/shared/quantity/missing";
 import { Quantity } from "@/shared/quantity/quantity";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,7 @@ function Checks({ item }: { item: Result }) {
 }
 
 function toDepth(item: Result): string {
-  return item.depth === null ? "-" : `${String(item.depth)} ${item.depth_unit ?? ""}`;
+  return item.depth === null ? "-" : `${formatFigure(item.depth)} ${item.depth_unit ?? ""}`;
 }
 
 /** The compared designs as a table: the two figures, what sets them apart, and their checks. */
