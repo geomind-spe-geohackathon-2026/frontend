@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.105 (2026-11-05)
+
+- QA-133, QA-134: a tall approval or question card no longer pushes the message box (and its Cancel run button) below the window: the card is at most 45 % of the window high and scrolls inside, so Cancel run stays reachable while a run waits for an answer.
+
 ## 1.1.104 (2026-11-05)
 
 - IMP-024: "Run again" on every study that is not running opens New study filled with its kind, name ("<name> again"), the settings its kind knows and its plant version (empty runs on the current plant); everything stays editable before Create study.

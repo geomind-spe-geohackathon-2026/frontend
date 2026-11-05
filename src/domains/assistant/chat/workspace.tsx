@@ -54,7 +54,10 @@ function RunRequest({ projectId, runId, view, auto }: RequestProps) {
   if (view.request === null || (auto && view.request.kind === "approval")) return null;
   const { request } = view;
   return (
-    <div className="sticky bottom-0" ref={(element) => toInView(element, request.request)}>
+    <div
+      className="max-h-[45svh] min-h-0 shrink-0 overflow-y-auto overscroll-contain"
+      ref={(element) => toInView(element, request.request)}
+    >
       <RequestCard
         request={request}
         pending={answer.isPending}
