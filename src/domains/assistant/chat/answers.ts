@@ -21,8 +21,24 @@ export function keepAnswer(request: string, answer: Answer): void {
   }
 }
 
-/** Writes the user's decision on a request as one line, or null when this tab did not see it. */
-export function toDecisionText(request: string, message: string): string | null {
+function toName(tool: string | null, message: string): string {
+  const found = tool ?? /^Allow (\S+)/.exec(message)?.[1] ?? null;
+  return found === null ? "the tool call" : `"${toToolName(found)}"`;
+}
+
+/** Writes the decision on a request as one line: from the run's answer event, else from what this tab sent, else null. */
+export function toDecisionText(
+  request: string,
+  message: string,
+  note: { decision: string; reason: string | null; text: string | null; tool: string | null; by: string } | undefined = undefined,
+): string | null {
+  if (note !== undefined) {
+    const who = note.by === "user" ? "You" : "Auto-approve";
+    if (note.decision === "answer") return `${who} answered: ${note.text ?? ""}`;
+    const verb = note.decision === "allow" ? "approved" : "denied";
+    const reason = note.reason?.trim() ?? "";
+    return `${who} ${verb} ${toName(note.tool, message)}${reason === "" ? "" : `: ${reason}`}`;
+  }
   const answer = readAll()[request];
   if (answer === undefined) return null;
   if ("approved" in answer) {

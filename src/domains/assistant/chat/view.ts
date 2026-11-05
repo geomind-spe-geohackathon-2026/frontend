@@ -18,7 +18,14 @@ export type Block =
       error: string | null;
       problem: ToolProblem | null;
     }
-  | { kind: "request"; id: string; agent: string; request: RunRequest; resolved: boolean }
+  | {
+      kind: "request";
+      id: string;
+      agent: string;
+      request: RunRequest;
+      resolved: boolean;
+      answer?: RunAnswerNote;
+    }
   | {
       kind: "end";
       id: string;
@@ -40,6 +47,9 @@ export type AgentNode = {
 };
 
 export type ProblemState = { version: number; document: unknown };
+
+/** What settled a request, from the run's answer event. */
+export type RunAnswerNote = { decision: string; reason: string | null; text: string | null; tool: string | null; by: string };
 
 export type View = {
   status: RunStatus;
@@ -261,6 +271,8 @@ function reduce(view: View, event: RunEvent): View {
       return { ...view, studies: [...view.studies, toRecordedStudy(event)] };
     case "retry":
       return { ...view, retry: toRetryText(event) };
+    case "answer":
+      return noteAnswer(view, event);
     case "run.finished":
       return reduceFinished(view, event);
   }
@@ -314,6 +326,18 @@ function reduceFinished(view: View, event: RunEvent & { type: "run.finished" }):
     ]),
   );
   return { ...next, agents, status: event.status, suggestions: event.suggestions ?? [] };
+}
+
+function noteAnswer(view: View, event: RunEvent & { type: "answer" }): View {
+  const { decision, reason, text, tool, by } = event;
+  return {
+    ...view,
+    blocks: view.blocks.map((block) =>
+      block.kind === "request" && block.request.request === event.request
+        ? { ...block, resolved: true, answer: { decision, reason, text, tool, by } }
+        : block,
+    ),
+  };
 }
 
 function toRetryText(event: RunEvent & { type: "retry" }): string {

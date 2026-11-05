@@ -212,11 +212,28 @@ function toStateBody(type: string, fields: Fields): RunEventBody | null {
       return toStudyRecorded(fields);
     case "retry":
       return toRetry(fields);
+    case "answer":
+      return toAnswerEvent(fields);
     case "run.finished":
       return toFinished(fields);
     default:
       return null;
   }
+}
+
+function toAnswerEvent(fields: Fields): RunEventBody | null {
+  const request = optionalString(fields, "request");
+  const decision = optionalString(fields, "decision");
+  if (request === null || decision === null) return null;
+  return {
+    type: "answer",
+    request,
+    decision,
+    reason: optionalString(fields, "reason"),
+    text: optionalString(fields, "text"),
+    tool: optionalString(fields, "tool"),
+    by: optionalString(fields, "by") ?? "user",
+  };
 }
 
 function toRetry(fields: Fields): RunEventBody {

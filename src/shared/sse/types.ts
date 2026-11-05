@@ -55,6 +55,15 @@ export type RunEventBody =
   | { type: "study.recorded"; call_id: string; study: string; method: string }
   | { type: "retry"; attempt: number; model: string; delay: number; status: number | null }
   | {
+      type: "answer";
+      request: string;
+      decision: string;
+      reason: string | null;
+      text: string | null;
+      tool: string | null;
+      by: string;
+    }
+  | {
       type: "run.finished";
       status: RunStatus;
       stop_reason: string;

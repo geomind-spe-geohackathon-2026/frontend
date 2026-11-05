@@ -316,7 +316,7 @@ const WorkItem = memo(function WorkItem({
 }) {
   if (block.kind === "tool") return <ToolCard block={block} calculations={calculations} />;
   if (block.kind === "request") {
-    const decision = toDecisionText(block.request.request, block.request.message);
+    const decision = toDecisionText(block.request.request, block.request.message, block.answer);
     return (
       <p className="text-[12px] whitespace-pre-line text-muted [overflow-wrap:anywhere]">
         {decision ?? toRequestText(block.request.message)}
@@ -335,7 +335,7 @@ const WorkItem = memo(function WorkItem({
 function Decisions({ blocks }: { blocks: Block[] }) {
   const lines = blocks.flatMap((block) => {
     if (block.kind !== "request" || !block.resolved) return [];
-    const text = toDecisionText(block.request.request, block.request.message);
+    const text = toDecisionText(block.request.request, block.request.message, block.answer);
     return text === null ? [] : [{ id: block.id, text }];
   });
   if (lines.length === 0) return null;
