@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.141 (2026-11-05)
+
+- QA-348: assistant answers show their time after the copy and log icons, like user messages ('20:55', with the date when not today).
+
 ## 1.1.140 (2026-11-05)
 
 - QA-341: a finished run keeps its busy list (each agent and the Total, frozen and marked done) and its summary reads steps · tokens · cost · total time.
