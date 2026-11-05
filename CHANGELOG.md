@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.133 (2026-11-05)
+
+- QA-322 (frontend part): Days covered names its sources from the coverage day's `labels` (gemini 0.6.31: e.g. cooling 'Absorption chiller (geothermal)' / 'Electric chiller'), shows `no_demand` days as 'No demand', and never calls the electric chiller 'backup'; old results fall back to Geothermal/Backup for heating and Main/Other source for cooling.
+
 ## 1.1.132 (2026-11-05)
 
 - QA-316: the auto-approve question shows at most once per browser (remembered after any answer or dismissal); the toggle is quiet when off (no blue). The Study table fits its pane with the chat open: names wrap (full name on hover), Compare structures / Cancel / Run again sit in a '...' menu.

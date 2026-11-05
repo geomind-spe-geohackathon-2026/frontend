@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Coverage } from "@/shared/api/types";
 
 const services = [
-  { key: "heating", label: "Heating", main: "Geothermal" },
-  { key: "cooling", label: "Cooling", main: "Plant" },
+  { key: "heating", label: "Heating", fallback: { main: "Geothermal", other: "Backup" } },
+  { key: "cooling", label: "Cooling", fallback: { main: "Main source", other: "Other source" } },
 ] as const;
 
 /** The days-covered strip of each service, or a plain "not available" when gemini has not published coverage. */
@@ -21,13 +21,13 @@ export function CoverageCard({ coverage }: { coverage: Coverage | null }) {
           </p>
         ) : (
           <div className="flex flex-col gap-4">
-            {services.map(({ key, label, main }) => (
+            {services.map(({ key, label, fallback }) => (
               <section key={key} aria-label={label} className="flex flex-col gap-1.5">
                 <h3 className="text-[12.5px] text-muted">{label}</h3>
                 <DaysStrip
                   days={coverage[key]}
                   title={`${label}, one cell per day`}
-                  mainLabel={main}
+                  fallback={fallback}
                 />
               </section>
             ))}

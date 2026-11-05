@@ -10,39 +10,67 @@ export type Day = {
   electricity?: Energy;
   backup?: Energy;
   short?: Energy;
+  labels?: { main?: string; other?: string | null };
+  no_demand?: boolean;
 };
 
-type Props = { days: Day[]; title: string; mainLabel?: string };
+/** The names of a service's two sources when its days carry no labels. */
+export type SourceNames = { main: string; other: string | null };
+
+type Props = { days: Day[]; title: string; fallback?: SourceNames };
+
+const heatingNames: SourceNames = { main: "Geothermal", other: "Backup" };
 
 const cell = 12;
 const gap = 2;
 const pitch = cell + gap;
-type Shown = "geothermal" | "electric" | "topped" | "backup" | "partly" | "short";
+type Shown = "none" | "geothermal" | "electric" | "topped" | "backup" | "partly" | "short";
 
 const toppedSwatch = "repeating-linear-gradient(135deg, var(--ok) 0 3px, var(--gas) 3px 5px)";
 
-const sources: { source: Shown; label: (main: string) => string; fill: string; swatch?: string }[] =
-  [
-    { source: "geothermal", label: (main) => `${main} only`, fill: "var(--ok)" },
-    {
-      source: "electric",
-      label: (main) => `${main} with heat-pump electricity`,
-      fill: "var(--power)",
-    },
-    {
-      source: "topped",
-      label: (main) => `${main} topped up by backup`,
-      fill: "var(--ok)",
-      swatch: toppedSwatch,
-    },
-    {
-      source: "backup",
-      label: (main) => `Backup only (no ${main.toLowerCase()} heat to this demand)`,
-      fill: "var(--gas)",
-    },
-    { source: "partly", label: () => "Partly short", fill: "var(--warn)" },
-    { source: "short", label: () => "Short", fill: "var(--bad)" },
-  ];
+const sources: {
+  source: Shown;
+  label: (names: SourceNames) => string;
+  fill: string;
+  swatch?: string;
+}[] = [
+  { source: "geothermal", label: ({ main }) => `${main} only`, fill: "var(--ok)" },
+  {
+    source: "electric",
+    label: ({ main }) => `${main} with heat-pump electricity`,
+    fill: "var(--power)",
+  },
+  {
+    source: "topped",
+    label: ({ main, other }) => `${main} topped up by ${toLower(other)}`,
+    fill: "var(--ok)",
+    swatch: toppedSwatch,
+  },
+  {
+    source: "backup",
+    label: ({ other }) => `${other ?? "Other source"} only`,
+    fill: "var(--gas)",
+  },
+  { source: "partly", label: () => "Partly short", fill: "var(--warn)" },
+  { source: "short", label: () => "Short", fill: "var(--bad)" },
+  { source: "none", label: () => "No demand", fill: "var(--border)" },
+];
+
+function toLower(name: string | null): string {
+  if (name === null) return "other source";
+  return name.length > 1 && name[1] === name[1]?.toUpperCase()
+    ? name
+    : name.charAt(0).toLowerCase() + name.slice(1);
+}
+
+function toNames(days: Day[], fallback: SourceNames): SourceNames {
+  const labels = days.find((day) => day.labels !== undefined)?.labels;
+  if (labels === undefined) return fallback;
+  return {
+    main: labels.main ?? fallback.main,
+    other: labels.other === undefined ? fallback.other : labels.other,
+  };
+}
 
 const offShare = 1e-3;
 
@@ -59,6 +87,7 @@ function hasShare(energy: Energy | undefined, day: Day): boolean {
 }
 
 function toShown(day: Day): Shown {
+  if (day.no_demand === true) return "none";
   const electric = hasShare(day.electricity, day);
   if (day.source === "geothermal") return electric ? "electric" : "geothermal";
   if (day.source === "backup" && electric && !hasShare(day.backup, day)) return "electric";
@@ -78,7 +107,7 @@ function toMeanShare(days: Day[]): string {
   return `, ${percent.format(mean)} unmet on average`;
 }
 
-function toYearShare(days: Day[], main: string): { text: string; hasBackup: boolean } | null {
+function toYearShare(days: Day[], { main, other }: SourceNames): string | null {
   const sum = (pick: (day: Day) => Energy | undefined) =>
     days.reduce((total, day) => total + (pick(day)?.value ?? 0), 0);
   const demand = sum((day) => day.demand);
@@ -92,14 +121,14 @@ function toYearShare(days: Day[], main: string): { text: string; hasBackup: bool
   const parts = [
     `${main} gave ${percent.format(geothermal / demand)} of the year's demand (${geothermal.toFixed(0)} of ${demand.toFixed(0)} ${unit})`,
     ...(electricity > 0 ? [`heat-pump electricity ${percent.format(electricity / demand)}`] : []),
-    ...(backup > 0 ? [`backup ${percent.format(backup / demand)}`] : []),
+    ...(backup > 0 ? [`${toLower(other)} ${percent.format(backup / demand)}`] : []),
     ...(short > 0 ? [`unmet ${percent.format(short / demand)}`] : []),
   ];
   const offText =
     off > 0
-      ? `; on ${String(off)} days ${main.toLowerCase()} gave none of this demand (it may still run for another service)`
+      ? `; on ${String(off)} days ${toLower(main)} gave none of this demand (it may still run for another service)`
       : "";
-  return { text: `${parts.join(", ")}${offText}.`, hasBackup: backup > 0 };
+  return `${parts.join(", ")}${offText}.`;
 }
 
 function toDayNumber(date: string): number {
@@ -119,28 +148,30 @@ function toEnergy(label: string, energy: Energy | undefined): string[] {
   return [`${label} ${energy.value.toFixed(1)} ${energy.unit}`];
 }
 
-function toDayTitle(day: Day): string {
+function toDayTitle(day: Day, names: SourceNames): string {
+  const { main, other } = names;
   const parts = [
     ...toEnergy("demand", day.demand),
-    ...toEnergy("geothermal", day.geothermal),
+    ...toEnergy(toLower(main), day.geothermal),
     ...toEnergy("heat-pump electricity", day.electricity),
-    ...toEnergy("backup", day.backup),
+    ...toEnergy(toLower(other), day.backup),
     ...toEnergy("short", day.short),
   ];
   const share = toUnmetShare(day);
   const shown = toShown(day);
   const backupShare =
     day.backup !== undefined && day.demand !== undefined && day.demand.value > 0
-      ? `, backup ${percent.format(day.backup.value / day.demand.value)} of the demand`
+      ? `, ${toLower(other)} ${percent.format(day.backup.value / day.demand.value)} of the demand`
       : "";
+  const label = sources.find((entry) => entry.source === shown)?.label(names) ?? day.source;
   const head =
     shown === "partly" && share !== null
       ? `${day.date}: partly short, ${percent.format(share)} of the demand unmet`
-      : `${day.date}: ${shown === "topped" ? "topped up by backup" : shown === "electric" ? "geothermal with heat-pump electricity" : day.source}${shown === "topped" ? backupShare : ""}`;
+      : `${day.date}: ${toLower(label)}${shown === "topped" ? backupShare : ""}`;
   return [head, ...parts].join(", ");
 }
 
-/** Stripes of the main source over the backup, so a topped-up day reads as mostly main, not as backup only. */
+/** Stripes of the main source over the other source, so a topped-up day reads as mostly main, not as other only. */
 function ToppedPattern({ id }: { id: string }) {
   return (
     <defs>
@@ -163,22 +194,32 @@ function toFill(shown: Shown, patternId: string): string {
   return sources.find((entry) => entry.source === shown)?.fill ?? "var(--gas)";
 }
 
-/** One cell per day, coloured by how it was covered (main source only, main source with heat-pump electricity, main source topped up by backup, backup only, partly short, short), with a legend, day counts, the backup's share of the delivered energy and the rules as text. */
-export function DaysStrip({ days, title, mainLabel }: Props) {
+/** One cell per day, coloured by how it was covered (main only, main with heat-pump electricity, main topped up by the other source, other only, partly short, short, no demand), named from the days' labels, with a legend, day counts, the year's shares and the rules as text. */
+export function DaysStrip({ days, title, fallback = heatingNames }: Props) {
   const patternId = `days-topped-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const first = days[0];
   if (first === undefined) return null;
   const firstDay = toDayNumber(first.date);
   const width = toPosition(days[days.length - 1]?.date ?? first.date, firstDay).x + cell;
-  const main = mainLabel ?? "Geothermal";
-  const yearShare = toYearShare(days, main);
-  const counts = sources.map((entry) => ({
-    ...entry,
-    label: entry.label(main),
-    count: days.filter((day) => toShown(day) === entry.source).length,
-    extra:
-      entry.source === "partly" ? toMeanShare(days.filter((day) => toShown(day) === "partly")) : "",
-  }));
+  const names = toNames(days, fallback);
+  const yearShare = toYearShare(days, names);
+  const present = new Set(days.map(toShown));
+  const counts = sources
+    .filter(
+      (entry) =>
+        names.other !== null ||
+        (entry.source !== "topped" && entry.source !== "backup") ||
+        present.has(entry.source),
+    )
+    .map((entry) => ({
+      ...entry,
+      label: entry.label(names),
+      count: days.filter((day) => toShown(day) === entry.source).length,
+      extra:
+        entry.source === "partly"
+          ? toMeanShare(days.filter((day) => toShown(day) === "partly"))
+          : "",
+    }));
   const summary = counts.map((entry) => `${entry.label} ${String(entry.count)} days`).join(", ");
   return (
     <figure className="m-0">
@@ -195,7 +236,7 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
           const fill = toFill(toShown(day), patternId);
           return (
             <rect key={day.date} x={x} y={y} width={cell} height={cell} rx={2} fill={fill}>
-              <title>{toDayTitle(day)}</title>
+              <title>{toDayTitle(day, names)}</title>
             </rect>
           );
         })}
@@ -212,11 +253,8 @@ export function DaysStrip({ days, title, mainLabel }: Props) {
             {entry.extra}
           </span>
         ))}
-        {yearShare === null ? null : <span className="basis-full text-text">{yearShare.text}</span>}
+        {yearShare === null ? null : <span className="basis-full text-text">{yearShare}</span>}
         <span className="basis-full">
-          {!yearShare?.hasBackup
-            ? null
-            : `Backup is the plant's boilers (gas, CHP or electric) covering what ${main.toLowerCase()} cannot. `}
           A day counts as short when any of its demand is unmet; partly short days got part of it
           (hover a day for the unmet share), short days got none.
         </span>
