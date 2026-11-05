@@ -1,3 +1,4 @@
+import { Duration } from "@/shared/quantity/usage";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 
@@ -175,7 +176,7 @@ function PythonView({ input, output, calculations }: { input: unknown; output: F
       <p className="flex flex-wrap items-center gap-2">
         <span className="font-medium">{text(output?.purpose) ?? text(given.purpose) ?? "Python code"}</span>
         {status === null ? null : <Badge variant={statusTones[status] ?? "info"}>{status.replace("_", " ")}</Badge>}
-        {typeof output?.duration === "number" ? <span className="text-muted">{numberFormat.format(output.duration)} s</span> : null}
+        {typeof output?.duration === "number" ? <Duration seconds={output.duration} className="text-muted" /> : null}
       </p>
       {code === null ? null : <Code code={code} />}
       <Operands operands={list(output?.inputs)} />

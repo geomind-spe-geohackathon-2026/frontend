@@ -1,10 +1,10 @@
+import { Duration, Tokens } from "@/shared/quantity/usage";
 import { toAgentName } from "@/shared/sse/agent-names";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { toShortId } from "@/lib/shortid";
 import { useRequiredParam } from "@/shared/layout/params";
 import { PageHeader } from "@/shared/layout/page-header";
-import { Quantity } from "@/shared/quantity/quantity";
 import type { Run } from "@/shared/api/types";
 import type { LogStep } from "@/shared/sse/runlog";
 import { ErrorNotice } from "@/shared/sse/notice";
@@ -60,7 +60,7 @@ function AgentBranch({ node, steps, selected, onSelect }: StepListProps & { node
           <span className="min-w-0 truncate">{toAgentName(node.path)}</span>
           <span className="shrink-0 text-[11.5px] font-normal text-muted tabular-nums">
             {count} {count === 1 ? "step" : "steps"} ·{" "}
-            <Quantity value={toNodeTokens(node, steps)} unit="" fractionDigits={0} />
+            <Tokens value={toNodeTokens(node, steps)} />
           </span>
         </summary>
         <ul className="ml-2 space-y-0.5 border-l border-border pl-1.5">
@@ -77,7 +77,7 @@ function AgentBranch({ node, steps, selected, onSelect }: StepListProps & { node
                   className={`${rowClass} ${position === selected ? "bg-accent-soft" : ""}`}
                 >
                   <span>Step {step.index}</span>
-                  <Quantity value={toStepTokens(step)} unit="" fractionDigits={0} className="text-muted" />
+                  <Tokens value={toStepTokens(step)} className="text-muted" />
                 </button>
               </li>
             );
@@ -142,7 +142,7 @@ function LogHeader({ projectId, run }: { projectId: string; run: Run }) {
       />
       <p className="mb-3 flex flex-wrap items-center gap-2 text-muted">
         <RunStatusChip status={run.status} />
-        {seconds === null ? null : <Quantity value={seconds} unit="s" fractionDigits={0} />}
+        {seconds === null ? null : <Duration seconds={seconds} />}
         <UsageLine usage={run.usage} />
       </p>
     </>

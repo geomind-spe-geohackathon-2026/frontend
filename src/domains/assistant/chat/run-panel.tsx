@@ -1,3 +1,4 @@
+import { formatDuration } from "@/shared/quantity/usage";
 import { AlternativesTable } from "./alternatives-table";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -19,9 +20,7 @@ import { toRunUsage, type View } from "./view";
 type Props = { projectId: string; runId: string; view: View; run: Run | undefined };
 
 function toClock(seconds: number): string {
-  const whole = Math.floor(seconds);
-  const minutes = String(Math.floor(whole / 60)).padStart(2, "0");
-  return `${minutes}:${String(whole % 60).padStart(2, "0")}`;
+  return formatDuration(Math.floor(seconds));
 }
 
 function Elapsed({ run, active }: { run: Run; active: boolean }) {

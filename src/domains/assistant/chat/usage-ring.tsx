@@ -1,3 +1,4 @@
+import { Tokens } from "@/shared/quantity/usage";
 import type { ReactNode } from "react";
 import { InputGroupButton } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -45,14 +46,14 @@ export function UsageRing({ context, window, usage, cost, agents }: Props) {
         <p className="mb-2 font-medium">Usage of this chat</p>
         <dl className="flex flex-col gap-1.5">
           <Row label="Context">
-            <Quantity value={context} unit="tokens" fractionDigits={0} />
+            <Tokens value={context} unit="tokens" />
             {share === null ? null : ` (${String(Math.round(share * 100))}%)`}
           </Row>
           <Row label="Last run in">
-            <Quantity value={usage.input_tokens} unit="tokens" fractionDigits={0} />
+            <Tokens value={usage.input_tokens} unit="tokens" />
           </Row>
           <Row label="Last run out">
-            <Quantity value={usage.output_tokens} unit="tokens" fractionDigits={0} />
+            <Tokens value={usage.output_tokens} unit="tokens" />
           </Row>
           <Row label="Cost so far">
             <Quantity value={cost} unit="USD" fractionDigits={3} />

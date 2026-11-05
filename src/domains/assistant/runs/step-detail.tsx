@@ -1,3 +1,4 @@
+import { Duration, Tokens } from "@/shared/quantity/usage";
 import { Quantity } from "@/shared/quantity/quantity";
 import type { LlmCall, LogMessage, LogStep, ToolCall } from "@/shared/sse/runlog";
 import { Card, CardAction, CardContent, CardHeader } from "@/components/ui/card";
@@ -55,10 +56,10 @@ function LlmCard({ call, label }: { call: LlmCall; label: string }) {
       <CardHeader>
         <h2>LLM call · {label}</h2>
         <CardAction className="font-mono text-[12px] text-muted">
-          {call.model} · <Quantity value={call.input_tokens} unit="in" fractionDigits={0} /> ·{" "}
-          <Quantity value={call.output_tokens} unit="out" fractionDigits={0} /> ·{" "}
+          {call.model} · <Tokens value={call.input_tokens} unit="in" /> ·{" "}
+          <Tokens value={call.output_tokens} unit="out" /> ·{" "}
           <Quantity value={call.cost} unit="USD" fractionDigits={3} /> ·{" "}
-          <Quantity value={call.duration} unit="s" />
+          <Duration seconds={call.duration} />
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -90,7 +91,7 @@ function ToolCard({ call }: { call: ToolCall }) {
       <CardHeader>
         <h2>Tool call · {toToolName(call.tool)}</h2>
         <CardAction className="flex items-center gap-2">
-          <Quantity value={call.duration} unit="s" />
+          <Duration seconds={call.duration} />
           <Badge variant={failed ? "bad" : "ok"}>{failed ? "failed" : "ok"}</Badge>
         </CardAction>
       </CardHeader>

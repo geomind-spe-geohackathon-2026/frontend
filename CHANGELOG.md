@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.87 (2026-11-05)
+
+- QA-103 (user): one shared formatter (`shared/quantity/usage.tsx`: formatDuration, formatTokens, Duration, Tokens) writes durations as h/min/s ("7 h 43 min 58 s", "4 min 12 s", "38 s", "1.2 s") and token counts with K/M ("2.91 M tokens in · 90.6 K tokens out"); the exact number shows on hover. Used in the run header, run list and project total, the step tree, LLM and tool calls, the per-agent and per-model totals, the chat's usage ring, agent usage, activity durations, run_python cards and the chat timer.
+
 ## 1.1.86 (2026-11-05)
 
 - QA-098 (user): the browser tab shows the GeoMind mark. The icons lived in `public/`, which the production build leaves out (it holds the mock service worker), so every icon URL returned index.html. They now live in `static/`, the build's public folder: favicon.ico (16/32/48), favicon.svg, favicon-16/32.png and a 180 px apple-touch-icon, all linked in index.html; nginx serves them as files with a one-day cache and never falls back to index.html for them. In `npm run dev` the tab has no icon.

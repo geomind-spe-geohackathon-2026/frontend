@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toItems } from "@/shared/api/pagination";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Quantity } from "@/shared/quantity/quantity";
+import { Tokens } from "@/shared/quantity/usage";
 import { chatsQuery } from "@/shared/sse/chats";
 import { ErrorNotice } from "@/shared/sse/notice";
 import { RunStatusChip } from "@/shared/sse/status-chip";
@@ -30,11 +31,7 @@ function Totals({ projectId }: { projectId: string }) {
     <p className="text-muted">
       Project total: <Quantity value={usage.data.runs} unit="runs" fractionDigits={0} />
       {" · "}
-      <Quantity
-        value={usage.data.input_tokens + usage.data.output_tokens}
-        unit="tokens"
-        fractionDigits={0}
-      />
+      <Tokens value={usage.data.input_tokens + usage.data.output_tokens} unit="tokens" />
       {" · "}
       <Quantity value={usage.data.cost} unit="USD" fractionDigits={2} />
     </p>
@@ -68,11 +65,7 @@ function RunRow({
         <RunStatusChip status={run.status} />
       </TableCell>
       <TableCell className="px-3 py-2">
-        <Quantity
-          value={run.usage.input_tokens + run.usage.output_tokens}
-          unit=""
-          fractionDigits={0}
-        />
+        <Tokens value={run.usage.input_tokens + run.usage.output_tokens} />
       </TableCell>
       <TableCell className="px-3 py-2">
         <Quantity value={run.usage.cost} unit="USD" fractionDigits={3} />

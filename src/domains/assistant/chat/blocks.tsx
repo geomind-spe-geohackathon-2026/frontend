@@ -1,8 +1,8 @@
+import { Duration } from "@/shared/quantity/usage";
 import { memo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { Link, useParams } from "react-router-dom";
-import { Quantity } from "@/shared/quantity/quantity";
 import { Badge } from "@/components/ui/badge";
 import { MarkdownText } from "@/shared/ui/markdown-text";
 import { Copy } from "lucide-react";
@@ -127,7 +127,7 @@ function ToolCard({
             ? (toCalculationLine(block, calculations) ?? toSummary(block.summary))
             : toFailureText(block.error, block.problem)}
         </span>
-        {block.duration === null ? null : <Quantity value={block.duration} unit="s" />}
+        {block.duration === null ? null : <Duration seconds={block.duration} />}
       </summary>
       <div className="space-y-2 border-t border-border p-2.5">
         {view === null ? null : (

@@ -1,3 +1,4 @@
+import { Tokens } from "@/shared/quantity/usage";
 import { Quantity } from "@/shared/quantity/quantity";
 import type { Total } from "./totals";
 import {
@@ -40,10 +41,10 @@ export function TotalsTable({ caption, label, rows }: Props) {
               </TableHead>
               <TableCell className="px-3 py-1.5">{row.count}</TableCell>
               <TableCell className="px-3 py-1.5">
-                <Quantity value={row.input} unit="" fractionDigits={0} />
+                <Tokens value={row.input} />
               </TableCell>
               <TableCell className="px-3 py-1.5">
-                <Quantity value={row.output} unit="" fractionDigits={0} />
+                <Tokens value={row.output} />
               </TableCell>
               <TableCell className="px-3 py-1.5">
                 <Quantity value={row.cost} unit="USD" fractionDigits={3} />

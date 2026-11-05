@@ -1,3 +1,4 @@
+import { Tokens } from "@/shared/quantity/usage";
 import { Quantity } from "@/shared/quantity/quantity";
 import type { Usage } from "./types";
 
@@ -5,9 +6,9 @@ import type { Usage } from "./types";
 export function UsageLine({ usage }: { usage: Usage }) {
   return (
     <span>
-      <Quantity value={usage.input_tokens} unit="tokens in" fractionDigits={0} />
+      <Tokens value={usage.input_tokens} unit="tokens in" />
       {" · "}
-      <Quantity value={usage.output_tokens} unit="tokens out" fractionDigits={0} />
+      <Tokens value={usage.output_tokens} unit="tokens out" />
       {" · "}
       <Quantity value={usage.cost} unit="USD" fractionDigits={3} />
     </span>

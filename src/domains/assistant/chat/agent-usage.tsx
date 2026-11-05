@@ -1,3 +1,4 @@
+import { Duration, Tokens } from "@/shared/quantity/usage";
 import { ChevronRight } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { AgentSession, RunAgents } from "@/shared/api/pending";
@@ -28,11 +29,11 @@ function ContextLine({ agent }: { agent: AgentSession }) {
   if (agent.context_used === null) return <span>context n/a</span>;
   return (
     <span>
-      <Quantity value={agent.context_used} unit="tokens" fractionDigits={0} />
+      <Tokens value={agent.context_used} unit="tokens" />
       {agent.context_left === null ? null : (
         <>
           {" used, "}
-          <Quantity value={agent.context_left} unit="left" fractionDigits={0} />
+          <Tokens value={agent.context_left} unit="left" />
         </>
       )}
     </span>
@@ -64,9 +65,9 @@ function AgentRow({ agent }: { agent: AgentSession }) {
         <div className="mt-1 pl-6 text-[12px] text-muted-foreground">
           <ContextLine agent={agent} />
           {" · "}
-          <Quantity value={agent.input_tokens} unit="in" fractionDigits={0} />
+          <Tokens value={agent.input_tokens} unit="in" />
           {" · "}
-          <Quantity value={agent.output_tokens} unit="out" fractionDigits={0} />
+          <Tokens value={agent.output_tokens} unit="out" />
           {` · ${String(agent.tool_calls.length)} tool calls`}
           {failed > 0 ? <span className="text-bad">{` (${String(failed)} failed)`}</span> : null}
         </div>
@@ -79,7 +80,7 @@ function AgentRow({ agent }: { agent: AgentSession }) {
               <li key={call.call_id} className={isFailed(call) ? "text-bad" : ""}>
                 {toToolName(call.tool)}
                 {call.duration === null ? null : (
-                  <span className="text-muted-foreground"> · {call.duration.toFixed(1)} s</span>
+                  <span className="text-muted-foreground"> · <Duration seconds={call.duration} /></span>
                 )}
               </li>
             ))}
