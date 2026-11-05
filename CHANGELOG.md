@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.73 (2026-11-05)
+
+- QA-075 (Sahand): the run usage panel counts a tool call as failed only when it really failed (the API sends `error: false` for a success; every call showed as failed in red); agents show display names from one shared map (Project lead, Case lead, Geoscientist, ...; else the id in words) in the usage panel, the run panel, the chat's busy lines and the run log; each context ring shows its percent, so it no longer looks like a spinner.
+
 ## 1.1.72 (2026-11-05)
 
 - Compare structures: Open and Save as plant on every row (backend 1.1.69 with gemini 0.6.6 stores a plant for every rank); a row turns both off with "Plant not stored for this structure yet" only after a real 404.
