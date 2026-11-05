@@ -6,6 +6,7 @@ The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0
 
 - QA-290: the Report page warns "Out of date" when its result ran on an older case or plant version than the project's current ones, and says to run the study again before sending the report.
 - QA-292: a new chat first asks in a small dialog whether to turn on auto-approve; the answer sets the chat's auto-approve (Esc counts as No).
+- QA-297: Days covered shows heat-pump electricity (`electricity`, gemini >= 0.6.22) as its own band and share; a day served by geothermal plus heat-pump electricity without backup counts as served by geothermal.
 
 ## 1.1.128 (2026-11-05)
 

@@ -7,6 +7,7 @@ export type Day = {
   source: DaySource;
   demand?: Energy;
   geothermal?: Energy;
+  electricity?: Energy;
   backup?: Energy;
   short?: Energy;
 };
@@ -16,13 +17,18 @@ type Props = { days: Day[]; title: string; mainLabel?: string };
 const cell = 12;
 const gap = 2;
 const pitch = cell + gap;
-type Shown = "geothermal" | "topped" | "backup" | "partly" | "short";
+type Shown = "geothermal" | "electric" | "topped" | "backup" | "partly" | "short";
 
 const toppedSwatch = "repeating-linear-gradient(135deg, var(--ok) 0 3px, var(--gas) 3px 5px)";
 
 const sources: { source: Shown; label: (main: string) => string; fill: string; swatch?: string }[] =
   [
     { source: "geothermal", label: (main) => `${main} only`, fill: "var(--ok)" },
+    {
+      source: "electric",
+      label: (main) => `${main} with heat-pump electricity`,
+      fill: "var(--power)",
+    },
     {
       source: "topped",
       label: (main) => `${main} topped up by backup`,
@@ -47,8 +53,15 @@ function toUnmetShare(day: Day): number | null {
   return Math.min(1, Math.max(0, day.short.value / day.demand.value));
 }
 
+function hasShare(energy: Energy | undefined, day: Day): boolean {
+  const demand = day.demand?.value ?? 0;
+  return demand > 0 && (energy?.value ?? 0) > offShare * demand;
+}
+
 function toShown(day: Day): Shown {
-  if (day.source === "geothermal") return "geothermal";
+  const electric = hasShare(day.electricity, day);
+  if (day.source === "geothermal") return electric ? "electric" : "geothermal";
+  if (day.source === "backup" && electric && !hasShare(day.backup, day)) return "electric";
   if (day.source === "backup") {
     const main = day.geothermal?.value ?? 0;
     const demand = day.demand?.value ?? 0;
@@ -72,11 +85,13 @@ function toYearShare(days: Day[], main: string): { text: string; hasBackup: bool
   const unit = days.find((day) => day.demand !== undefined)?.demand?.unit;
   if (demand <= 0 || unit === undefined) return null;
   const geothermal = sum((day) => day.geothermal);
+  const electricity = sum((day) => day.electricity);
   const backup = sum((day) => day.backup);
   const short = sum((day) => day.short);
   const off = days.filter((day) => toShown(day) === "backup").length;
   const parts = [
     `${main} gave ${percent.format(geothermal / demand)} of the year's demand (${geothermal.toFixed(0)} of ${demand.toFixed(0)} ${unit})`,
+    ...(electricity > 0 ? [`heat-pump electricity ${percent.format(electricity / demand)}`] : []),
     ...(backup > 0 ? [`backup ${percent.format(backup / demand)}`] : []),
     ...(short > 0 ? [`unmet ${percent.format(short / demand)}`] : []),
   ];
@@ -108,6 +123,7 @@ function toDayTitle(day: Day): string {
   const parts = [
     ...toEnergy("demand", day.demand),
     ...toEnergy("geothermal", day.geothermal),
+    ...toEnergy("heat-pump electricity", day.electricity),
     ...toEnergy("backup", day.backup),
     ...toEnergy("short", day.short),
   ];
@@ -120,7 +136,7 @@ function toDayTitle(day: Day): string {
   const head =
     shown === "partly" && share !== null
       ? `${day.date}: partly short, ${percent.format(share)} of the demand unmet`
-      : `${day.date}: ${shown === "topped" ? "topped up by backup" : day.source}${shown === "topped" ? backupShare : ""}`;
+      : `${day.date}: ${shown === "topped" ? "topped up by backup" : shown === "electric" ? "geothermal with heat-pump electricity" : day.source}${shown === "topped" ? backupShare : ""}`;
   return [head, ...parts].join(", ");
 }
 
@@ -147,7 +163,7 @@ function toFill(shown: Shown, patternId: string): string {
   return sources.find((entry) => entry.source === shown)?.fill ?? "var(--gas)";
 }
 
-/** One cell per day, coloured by how it was covered (main source only, main source topped up by backup, backup only, partly short, short), with a legend, day counts, the backup's share of the delivered energy and the rules as text. */
+/** One cell per day, coloured by how it was covered (main source only, main source with heat-pump electricity, main source topped up by backup, backup only, partly short, short), with a legend, day counts, the backup's share of the delivered energy and the rules as text. */
 export function DaysStrip({ days, title, mainLabel }: Props) {
   const patternId = `days-topped-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const first = days[0];
