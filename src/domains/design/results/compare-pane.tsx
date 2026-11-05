@@ -25,15 +25,23 @@ function toRange(
   return [row.p5, row.p95];
 }
 
+function toKey(x: number, y: number): string {
+  return `${x.toPrecision(6)}:${y.toPrecision(6)}`;
+}
+
 function toPoints(comparison: ResultComparison, x: Kpi, y: Kpi): ScatterPoint[] {
-  const points = comparison.items.flatMap((item) => {
+  const marks = new Map<string, string[]>();
+  const points = comparison.items.flatMap((item, index) => {
     const xValue = findKpi(item, x.name)?.value ?? null;
     const yValue = findKpi(item, y.name)?.value ?? null;
     if (xValue === null || yValue === null) return [];
+    const key = toKey(xValue, yValue);
+    marks.set(key, [...(marks.get(key) ?? []), String(index + 1)]);
     return [{ id: item.id, label: item.name, x: xValue, y: yValue }];
   });
   return toMergedPoints(points).map((point) => ({
     ...point,
+    mark: marks.get(toKey(point.x, point.y))?.join(","),
     xRange: toRange(comparison, point.id, x.name),
     yRange: toRange(comparison, point.id, y.name),
   }));

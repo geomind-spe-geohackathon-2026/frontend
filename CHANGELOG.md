@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.127 (2026-11-05)
+
+- QA-281: on Days covered, "geothermal topped up by backup" days are diagonal stripes (mostly the geothermal colour with thin backup stripes), clearly different from plain "Backup only"; the legend uses the same stripes.
+- QA-244 (reopened): Compare points carry their table row number (# column) instead of the full name, so labels no longer overlap each other, the spread bars or the chart's right edge; the full name is in the tooltip and the table.
+
 ## 1.1.126 (2026-11-05)
 
 - QA-267: the event parser kept no `ts` on step events, so every stage timer counted from the page load; it now keeps the server time of `step.started` and `step.finished`, and the timers stay the same after a reload.

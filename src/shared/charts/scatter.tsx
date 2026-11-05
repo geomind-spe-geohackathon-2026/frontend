@@ -18,6 +18,7 @@ import { toNiceTicks, toPaddedDomain } from "./scale";
 export type ScatterPoint = {
   id: string;
   label: string;
+  mark?: string | undefined;
   x: number;
   y: number;
   xRange?: [number, number] | undefined;
@@ -55,32 +56,6 @@ function toSummary(points: ScatterPoint[], paretoIds: string[]): string {
   return `${String(points.length)} designs, on the trade-off line: ${pareto.join(", ") || "none"}`;
 }
 
-const labelStep = 14;
-
-function toLabelShifts(rows: Row[]): number[] {
-  const xs = rows.map((row) => row.x);
-  const ys = rows.map((row) => row.y);
-  const xSpan = Math.max(...xs) - Math.min(...xs) || 1;
-  const ySpan = Math.max(...ys) - Math.min(...ys) || 1;
-  const shifts: number[] = [];
-  rows.forEach((row, index) => {
-    const taken = new Set(
-      rows
-        .slice(0, index)
-        .map((other, at) => ({ other, shift: shifts[at] ?? 0 }))
-        .filter(
-          ({ other }) =>
-            Math.abs(other.x - row.x) < 0.4 * xSpan && Math.abs(other.y - row.y) < 0.06 * ySpan,
-        )
-        .map(({ shift }) => shift),
-    );
-    let shift = 0;
-    while (taken.has(shift)) shift += labelStep;
-    shifts.push(shift);
-  });
-  return shifts;
-}
-
 function toError(value: number, range: [number, number] | undefined): [number, number] {
   return range === undefined ? [0, 0] : [value - range[0], range[1] - value];
 }
@@ -97,7 +72,6 @@ function toRows(points: ScatterPoint[]): Row[] {
 export function Scatter({ points, paretoIds, xTitle, yTitle, title }: Props) {
   if (points.length === 0) return null;
   const rows = toRows(points);
-  const shifts = toLabelShifts(rows);
   const front = rows.filter((row) => paretoIds.includes(row.id)).sort((a, b) => a.x - b.x);
   const xTicks = toTicks(points.flatMap((point) => [point.x, ...(point.xRange ?? [])]));
   const yTicks = toTicks(points.flatMap((point) => [point.y, ...(point.yRange ?? [])]));
@@ -108,7 +82,7 @@ export function Scatter({ points, paretoIds, xTitle, yTitle, title }: Props) {
       aria-label={`${title}: ${toSummary(points, paretoIds)}`}
       className="aspect-auto h-[360px] w-full"
     >
-      <ScatterChart margin={{ top: 16, right: 96, bottom: 24, left: 24 }}>
+      <ScatterChart margin={{ top: 16, right: 24, bottom: 24, left: 24 }}>
         <CartesianGrid />
         <XAxis
           type="number"
@@ -142,13 +116,12 @@ export function Scatter({ points, paretoIds, xTitle, yTitle, title }: Props) {
           <ErrorBar dataKey="xError" direction="x" width={4} stroke="var(--muted)" />
           <ErrorBar dataKey="yError" direction="y" width={4} stroke="var(--muted)" />
           <LabelList
-            dataKey="label"
+            dataKey="mark"
             content={(props) => {
-              const x = Number(props.x ?? 0) + Number(props.width ?? 0) / 2 + 8;
-              const y = Number(props.y ?? 0) + Number(props.height ?? 0) / 2 + 4;
-              const shift = shifts[Number(props.index ?? 0)] ?? 0;
+              const x = Number(props.x ?? 0) + Number(props.width ?? 0) + 1;
+              const y = Number(props.y ?? 0) - 1;
               return (
-                <text x={x} y={y + shift} className="fill-foreground text-[12px]">
+                <text x={x} y={y} className="fill-foreground text-[11px] tabular-nums">
                   {String(props.value ?? "")}
                 </text>
               );
