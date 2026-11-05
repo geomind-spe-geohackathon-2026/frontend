@@ -6,7 +6,9 @@ import { toModuleName } from "./names";
 type Props = { items: Capacity[]; label: string };
 
 function toUse(item: Capacity): string {
-  if (item.peak === null || item.share === null) return "not used in this run";
+  if (item.peak === null || item.share === null) {
+    return item.reason ?? `no peak use measured for a rating in ${item.unit}`;
+  }
   const share = `${(item.share * 100).toFixed(0)}% of the rating`;
   return `peak ${formatFigure(item.peak)} ${item.peak_unit}, ${share}`;
 }

@@ -2,6 +2,11 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.118 (2026-11-05)
+
+- QA-213: a capacity tile with no peak shows the reason the API gives, else "no peak use measured for a rating in <unit>", never "not used in this run" (an exchanger rated in MW/K has no peak even when it ran).
+- QA-214: Days covered no longer says geothermal was "off" on days it gave none of that demand; it may have run for another service (summer cooling).
+
 ## 1.1.117 (2026-11-05)
 
 - QA-193: on the approval card only the request text and JSON scroll; the reason box and Approve/Deny stay visible below it. The "Accept case" approval says in one sentence what it does.

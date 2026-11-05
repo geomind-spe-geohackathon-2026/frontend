@@ -25,7 +25,7 @@ const sources: { source: Shown; label: (main: string) => string; fill: string }[
   },
   {
     source: "backup",
-    label: (main) => `Backup only (${main.toLowerCase()} off)`,
+    label: (main) => `Backup only (no ${main.toLowerCase()} heat to this demand)`,
     fill: "var(--gas)",
   },
   { source: "partly", label: () => "Partly short", fill: "var(--warn)" },
@@ -74,7 +74,10 @@ function toYearShare(days: Day[], main: string): { text: string; hasBackup: bool
     ...(backup > 0 ? [`backup ${percent.format(backup / demand)}`] : []),
     ...(short > 0 ? [`unmet ${percent.format(short / demand)}`] : []),
   ];
-  const offText = off > 0 ? `; ${main.toLowerCase()} was off on ${String(off)} days` : "";
+  const offText =
+    off > 0
+      ? `; on ${String(off)} days ${main.toLowerCase()} gave none of this demand (it may still run for another service)`
+      : "";
   return { text: `${parts.join(", ")}${offText}.`, hasBackup: backup > 0 };
 }
 
