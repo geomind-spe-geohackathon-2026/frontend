@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.58 (2026-11-05)
+
+- QA-057: the approval card shows "What the call sends" as a monospace block that keeps the JSON's indentation and wraps long values, and asks with the tool's readable name (Allow "Set case" to change the project?).
+
 ## 1.1.57 (2026-11-05)
 
 - QA-048: in a narrow panel (under 44 rem) the Study table leaves out the Kind and Started by columns and wraps the study name, so Result and the row buttons stay in view.

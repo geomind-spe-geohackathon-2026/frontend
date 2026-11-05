@@ -1,4 +1,4 @@
-import { toRoundedText } from "@/shared/sse/pretty";
+import { toRoundedText, toToolName } from "@/shared/sse/pretty";
 import { useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -108,6 +108,34 @@ function Question({ request, pending, onAnswer }: Omit<Props, "failure">) {
   );
 }
 
+const sendsMark = "What the call sends:";
+
+function toAskText(text: string): string {
+  const found = /^Allow (\S+) \((\w+)\)\?/.exec(text);
+  if (found === null) return text;
+  const effect = found[2] === "write" ? "change the project" : (found[2] ?? "");
+  return `${text.slice(0, found.index)}Allow "${toToolName(found[1] ?? "")}" to ${effect}?${text.slice(found.index + found[0].length)}`;
+}
+
+function RequestMessage({ message }: { message: string }) {
+  const at = message.indexOf(sendsMark);
+  const ask = at < 0 ? message : message.slice(0, at).trimEnd();
+  const sends = at < 0 ? null : message.slice(at + sendsMark.length).replace(/^\n+/, "");
+  return (
+    <div className="max-h-[50vh] space-y-2 overflow-y-auto pr-1 text-[13.5px] leading-6">
+      <p className="whitespace-pre-line [overflow-wrap:anywhere]">{toAskText(ask)}</p>
+      {sends === null ? null : (
+        <>
+          <p className="text-[12px] text-muted">{sendsMark}</p>
+          <pre className="rounded-control bg-sunken p-2 font-mono text-[12px] leading-5 whitespace-pre-wrap [overflow-wrap:anywhere]">
+            {sends}
+          </pre>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** The card of a pending request: Approve and Deny with an optional reason, or option buttons or free text. */
 export function RequestCard({ request, pending, failure, onAnswer }: Props) {
   return (
@@ -116,9 +144,7 @@ export function RequestCard({ request, pending, failure, onAnswer }: Props) {
       className="space-y-2 rounded-card border border-warn bg-warn-soft p-3"
     >
       <h2>{request.kind === "approval" ? "Approval needed" : "The assistant asks"}</h2>
-      <div className="max-h-[50vh] overflow-y-auto pr-1 text-[13.5px] leading-6 whitespace-pre-line [overflow-wrap:anywhere]">
-        {toRoundedText(request.message)}
-      </div>
+      <RequestMessage message={toRoundedText(request.message)} />
       {request.kind === "approval" ? (
         <Approval pending={pending} onAnswer={onAnswer} />
       ) : (
