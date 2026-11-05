@@ -77,6 +77,26 @@ export function DataHead({ children, className }: { children?: ReactNode; classN
   );
 }
 
+/** The box of the shared data table around a caption and the caller's own TableHeader (give it dataTableClass.header) and TableBody, for tables with row headers or several header rows. */
+export function DataTableFrame({
+  caption,
+  children,
+  className,
+}: {
+  caption: string;
+  children: ReactNode;
+  className?: string | undefined;
+}) {
+  return (
+    <div className={cn(dataTableClass.box, className)}>
+      <Table className="text-[12.5px]">
+        <TableCaption className="sr-only">{caption}</TableCaption>
+        {children}
+      </Table>
+    </div>
+  );
+}
+
 /** The shared data table: compact one-line rows, a header row that stays on top while the body scrolls, and scrolling both ways inside its box. Rows are TableRows of DataCells (or plain TableCells for buttons and badges). */
 export function DataTable({
   caption,
@@ -87,17 +107,14 @@ export function DataTable({
   caption: string;
   head: ReactNode;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
-    <div className={cn(dataTableClass.box, className)}>
-      <Table className="text-[12.5px]">
-        <TableCaption className="sr-only">{caption}</TableCaption>
-        <TableHeader className={dataTableClass.header}>
-          <TableRow>{head}</TableRow>
-        </TableHeader>
-        <TableBody>{children}</TableBody>
-      </Table>
-    </div>
+    <DataTableFrame caption={caption} className={className}>
+      <TableHeader className={dataTableClass.header}>
+        <TableRow>{head}</TableRow>
+      </TableHeader>
+      <TableBody>{children}</TableBody>
+    </DataTableFrame>
   );
 }

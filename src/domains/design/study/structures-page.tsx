@@ -11,10 +11,9 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Notice } from "@/shared/ui/notice";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { tableCardClass } from "@/shared/ui/table-card";
+import { TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { DataCell, DataHead, DataTableFrame, dataTableClass } from "@/shared/ui/data-table";
 
 const limit = 10;
 const compareMost = 3;
@@ -183,21 +182,20 @@ function RankTable({
   const shownMetrics = [...objectiveKeys.filter((key) => metricKeys.includes(key)), ...metricKeys.filter((key) => !objectiveKeys.includes(key))];
   const several = data.objectives.length > 1;
   return (
-    <Card className={tableCardClass}>
-      <Table className="[&_td]:p-2.5 [&_td]:align-top [&_td]:whitespace-normal [&_th]:p-2.5">
-        <TableHeader>
+    <DataTableFrame caption="Best structures" className="max-h-[70vh]">
+        <TableHeader className={dataTableClass.header}>
           <TableRow>
-            <TableHead scope="col">Compare</TableHead>
-            <TableHead scope="col">Rank</TableHead>
-            <TableHead scope="col">Structure</TableHead>
-            <TableHead scope="col">Feasible</TableHead>
+            <DataHead>Compare</DataHead>
+            <DataHead>Rank</DataHead>
+            <DataHead>Structure</DataHead>
+            <DataHead>Feasible</DataHead>
             {shownMetrics.map((key) => (
-              <TableHead key={key} scope="col">
+              <DataHead key={key}>
                 {objectiveKeys.includes(key) ? toObjectiveName(data.objectives[objectiveKeys.indexOf(key)] ?? key) : toWords(key)}
-              </TableHead>
+              </DataHead>
             ))}
-            <TableHead scope="col">Parameters</TableHead>
-            <TableHead scope="col">Actions</TableHead>
+            <DataHead>Parameters</DataHead>
+            <DataHead>Actions</DataHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -223,20 +221,20 @@ function RankTable({
                     </Badge>
                   ) : null}
                 </TableCell>
-                <TableCell className="min-w-[12rem]">{toStructureText(row.structure)}</TableCell>
+                <DataCell>{toStructureText(row.structure)}</DataCell>
                 <TableCell>
                   <Feasible row={row} />
                 </TableCell>
                 {shownMetrics.map((key) => (
-                  <TableCell key={key} className="tabular-nums">
+                  <DataCell key={key} className="tabular-nums">
                     {toValueText(row.metrics[key])}
-                  </TableCell>
+                  </DataCell>
                 ))}
-                <TableCell className="min-w-[12rem] text-[12px] text-muted">
+                <DataCell className="text-muted">
                   {Object.entries(row.parameters)
                     .map(([name, value]) => `${toWords(name)} ${toValueText(value)}`)
                     .join(" · ") || "–"}
-                </TableCell>
+                </DataCell>
                 <TableCell>
                   <RowActions studyId={data.study} row={row} />
                 </TableCell>
@@ -244,8 +242,7 @@ function RankTable({
             );
           })}
         </TableBody>
-      </Table>
-    </Card>
+    </DataTableFrame>
   );
 }
 
@@ -267,15 +264,12 @@ function CompareTable({ rows }: { rows: StudyStructure[] }) {
   return (
     <section aria-label="Side by side" className="space-y-2">
       <h2>Side by side</h2>
-      <Card className={tableCardClass}>
-        <Table className="[&_td]:p-2.5 [&_td]:align-top [&_td]:whitespace-normal [&_th]:p-2.5">
-          <TableHeader>
+      <DataTableFrame caption="Structures side by side" className="max-h-[70vh]">
+          <TableHeader className={dataTableClass.header}>
             <TableRow>
-              <TableHead scope="col">Value</TableHead>
+              <DataHead>Value</DataHead>
               {rows.map((row) => (
-                <TableHead key={row.rank} scope="col">
-                  Rank {row.rank}
-                </TableHead>
+                <DataHead key={row.rank}>Rank {row.rank}</DataHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -284,21 +278,20 @@ function CompareTable({ rows }: { rows: StudyStructure[] }) {
               const differs = new Set(line.values).size > 1;
               return (
                 <TableRow key={`${line.group}-${line.key}`}>
-                  <TableHead scope="row" className="font-medium whitespace-normal">
+                  <DataCell className="font-medium">
                     {line.group === "" ? null : <span className="text-[11.5px] text-muted">{line.group} · </span>}
                     {line.key}
-                  </TableHead>
+                  </DataCell>
                   {line.values.map((value, position) => (
-                    <TableCell key={position} className={differs ? "bg-warn-soft font-medium" : "text-muted"}>
+                    <DataCell key={position} className={differs ? "bg-warn-soft font-medium" : "text-muted"}>
                       {value}
-                    </TableCell>
+                    </DataCell>
                   ))}
                 </TableRow>
               );
             })}
           </TableBody>
-        </Table>
-      </Card>
+      </DataTableFrame>
       <p className="text-[12px] text-muted">Highlighted rows differ between the chosen structures.</p>
     </section>
   );

@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.84 (2026-11-05)
+
+- QA-096 step 3: Results (compare, constraints with the module in its own column, sensitivity, spread) and the evolve structures (ranked and side by side) use the shared data table; `DataTableFrame` holds tables that build their own header.
+
 ## 1.1.83 (2026-11-05)
 
 - QA-096 step 2: Markdown tables (chat answers, .md files, reports), the agent study record and the chat's Alternatives use the shared data table. A cell opens its full content only when it is cut; DataCell and DataHead take any content (links, code) as children.

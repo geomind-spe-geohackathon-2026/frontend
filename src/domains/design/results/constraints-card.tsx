@@ -4,15 +4,8 @@ import { Card, CardContent, CardAction, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import type { Constraint, ConstraintStatus, ResultDetail } from "@/shared/api/types";
 import { toCheckTitle, toModuleName } from "./names";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableCaption,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { DataCell, DataHead, DataTable } from "@/shared/ui/data-table";
 
 type Tone = "ok" | "bad" | "off";
 
@@ -50,23 +43,21 @@ function toDate(worst: string | null): string {
 function Row({ constraint }: { constraint: Constraint }) {
   return (
     <TableRow>
-      <TableHead scope="row" className="text-left font-medium">
-        {toCheckTitle(constraint.title)}
+      <DataCell className="font-medium">{toCheckTitle(constraint.title)}</DataCell>
+      <TableCell className="py-1.5">
         {constraint.module === null ? null : (
-          <Badge variant="off" className="ml-1.5">
-            {toModuleName(constraint.module)}
-          </Badge>
+          <Badge variant="off">{toModuleName(constraint.module)}</Badge>
         )}
-      </TableHead>
-      <TableCell>
+      </TableCell>
+      <TableCell className="py-1.5">
         <Badge variant={tones[constraint.status]}>{words[constraint.status]}</Badge>
       </TableCell>
-      <TableCell className="tabular-nums">{toValue(constraint)}</TableCell>
-      <TableCell className="text-muted tabular-nums">{constraint.limit}</TableCell>
-      <TableCell className={`tabular-nums ${constraint.near ? "text-warn" : "text-muted"}`}>
+      <DataCell className="tabular-nums">{toValue(constraint)}</DataCell>
+      <DataCell className="text-muted tabular-nums">{constraint.limit}</DataCell>
+      <DataCell className={`tabular-nums ${constraint.near ? "text-warn" : "text-muted"}`}>
         {toMargin(constraint)}
-      </TableCell>
-      <TableCell className="text-muted tabular-nums">{toDate(constraint.worst)}</TableCell>
+      </DataCell>
+      <DataCell className="text-muted tabular-nums">{toDate(constraint.worst)}</DataCell>
     </TableRow>
   );
 }
@@ -111,33 +102,19 @@ export function ConstraintsCard({ result }: { result: ResultDetail }) {
           <p className="text-muted">No constraint checks in this result.</p>
         ) : null}
         {rows.length === 0 ? null : (
-          <Table className="w-full border-collapse text-left [&_td]:p-2 [&_th]:p-2">
-            <TableCaption className="sr-only">Constraint checks of {result.name}</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead scope="col" className="text-[12.5px] font-medium text-muted">
-                  Check
-                </TableHead>
-                <TableHead scope="col" className="text-[12.5px] font-medium text-muted">
-                  Status
-                </TableHead>
-                {["Value", "Limit", "Margin", "Worst day"].map((name) => (
-                  <TableHead
-                    key={name}
-                    scope="col"
-                    className="text-[12.5px] font-medium text-muted"
-                  >
-                    {name}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((constraint) => (
-                <Row key={constraint.name} constraint={constraint} />
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable
+            caption={`Constraint checks of ${result.name}`}
+            className="max-h-[70vh]"
+            head={["Check", "Module", "Status", "Value", "Limit", "Margin", "Worst day"].map(
+              (name) => (
+                <DataHead key={name}>{name}</DataHead>
+              ),
+            )}
+          >
+            {rows.map((constraint) => (
+              <Row key={constraint.name} constraint={constraint} />
+            ))}
+          </DataTable>
         )}
         <MoreChecks
           shown={rows.length}
