@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.144 (2026-11-05)
+
+- QA-345 (reopened): the agent's name is an inline bold prefix with a colon on the same line as the live text ('Case lead: The PDF is fully read ...').
+
 ## 1.1.143 (2026-11-05)
 
 - QA-341 follow-up: a finished run's summary reads per-agent totals from the run's `instances` (backend 45c4ce2), so the frozen busy list survives a reload; nothing shows until the backend field is live.
