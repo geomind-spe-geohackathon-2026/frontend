@@ -1,4 +1,5 @@
-import { Duration, formatDuration } from "@/shared/quantity/usage";
+import { Duration, formatDuration, Tokens } from "@/shared/quantity/usage";
+import { Quantity } from "@/shared/quantity/quantity";
 import { memo, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
@@ -369,6 +370,32 @@ function toStepCount(steps: number): string {
   return `${String(steps)} ${steps === 1 ? "step" : "steps"}`;
 }
 
+function UsageParts({ tokens, cost }: { tokens: number; cost: number }) {
+  return (
+    <>
+      <span className="shrink-0">
+        · <Tokens value={tokens} unit="tokens" />
+      </span>
+      <span className="shrink-0">
+        · <Quantity value={cost} unit="USD" fractionDigits={3} />
+      </span>
+    </>
+  );
+}
+
+function toWorkUsage(work: Block[]): { tokens: number; cost: number } {
+  return work.reduce(
+    (total, block) =>
+      block.kind === "text" && block.usage !== undefined
+        ? {
+            tokens: total.tokens + block.usage.input_tokens + block.usage.output_tokens,
+            cost: total.cost + block.usage.cost,
+          }
+        : total,
+    { tokens: 0, cost: 0 },
+  );
+}
+
 /** One line per working agent run (each parallel instance its own, IMP-025): name, what it does, its steps; it opens to its own work. */
 function WorkingAgents({
   blocks,
@@ -409,6 +436,7 @@ function WorkingAgents({
                   </span>
                   <DoingLine text={toDoing(own, agents)} />
                   <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
+                  <UsageParts tokens={agent.tokens} cost={agent.cost} />
                   <StageTimer since={agent.startedAt} />
                 </button>
               }
@@ -460,7 +488,7 @@ function StepsWindow({
 
 function toRunningLabel(work: Block[]): string {
   const steps = work.filter((block) => block.kind === "tool").length;
-  return `Steps so far (${String(steps)} ${steps === 1 ? "step" : "steps"})`;
+  return `Steps so far (${toStepCount(steps)})`;
 }
 
 function toDoneLabel(work: Block[]): string {
@@ -522,11 +550,13 @@ function WorkLog({
   label,
   calculations,
   runId,
+  totals,
 }: {
   work: Block[];
   label: string;
   calculations: Calculation[];
   runId: string | null;
+  totals: ReactNode;
 }) {
   return (
     <StepsWindow
@@ -536,11 +566,27 @@ function WorkLog({
       runId={runId}
       emptyText="No steps."
       trigger={
-        <button type="button" className="cursor-pointer text-left text-muted">
+        <button
+          type="button"
+          className="flex min-w-0 cursor-pointer flex-wrap items-center gap-1.5 text-left text-muted"
+        >
           {label}
+          {totals}
         </button>
       }
     />
+  );
+}
+
+function RunTotals({ blocks, agents }: { blocks: Block[]; agents: AgentNode[] }) {
+  const usage = toWorkUsage(blocks);
+  const since = Math.min(...agents.map((agent) => agent.startedAt));
+  if (usage.tokens === 0 && agents.length === 0) return null;
+  return (
+    <>
+      <UsageParts tokens={usage.tokens} cost={usage.cost} />
+      {Number.isFinite(since) ? <StageTimer since={since} /> : null}
+    </>
   );
 }
 
@@ -593,6 +639,7 @@ export function Blocks({
           label={running ? toRunningLabel(work) : toDoneLabel(work)}
           calculations={calculations}
           runId={runId}
+          totals={<RunTotals blocks={blocks} agents={running ? agents : []} />}
         />
       )}
       <Decisions blocks={blocks} />

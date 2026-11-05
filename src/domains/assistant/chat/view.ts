@@ -5,7 +5,15 @@ import type { RunEvent, RunRequest, ToolProblem, Usage } from "@/shared/sse/type
 import { applyChanges } from "./patch";
 
 export type Block =
-  | { kind: "text"; id: string; agent: string; text: string; open: boolean; settled: number }
+  | {
+      kind: "text";
+      id: string;
+      agent: string;
+      text: string;
+      open: boolean;
+      settled: number;
+      usage?: Usage;
+    }
   | {
       kind: "tool";
       id: string;
@@ -47,6 +55,10 @@ export type AgentNode = {
   state: "running" | "done";
   steps: number;
   tools: number;
+  /** Input plus output tokens of the run's finished steps. */
+  tokens: number;
+  /** Cost in USD of the run's finished steps. */
+  cost: number;
   /** Browser clock (ms) when the view first saw this run; the stage timer counts from it. */
   startedAt: number;
 };
@@ -54,7 +66,13 @@ export type AgentNode = {
 export type ProblemState = { version: number; document: unknown };
 
 /** What settled a request, from the run's answer event. */
-export type RunAnswerNote = { decision: string; reason: string | null; text: string | null; tool: string | null; by: string };
+export type RunAnswerNote = {
+  decision: string;
+  reason: string | null;
+  text: string | null;
+  tool: string | null;
+  by: string;
+};
 
 export type View = {
   status: RunStatus;
@@ -124,15 +142,22 @@ function touchAgent(view: View, event: RunEvent): View {
     state: "running",
     steps: 0,
     tools: 0,
+    tokens: 0,
+    cost: 0,
     startedAt: Date.now(),
   };
   // The server's time of the agent's first step (backend 1.1.99), else the time this view first saw it.
-  const stamp = event.type === "step.started" && base.steps === 0 ? Date.parse(event.ts ?? "") : NaN;
+  const stamp =
+    event.type === "step.started" && base.steps === 0 ? Date.parse(event.ts ?? "") : NaN;
   const startedAt = Number.isNaN(stamp) ? base.startedAt : stamp;
   const steps = base.steps + (event.type === "step.started" ? 1 : 0);
   const tools = base.tools + (event.type === "tool.started" ? 1 : 0);
+  const used = event.type === "step.finished" ? event.usage : null;
+  const tokens = base.tokens + (used === null ? 0 : used.input_tokens + used.output_tokens);
+  const cost = base.cost + (used === null ? 0 : used.cost);
   const finished = event.type === "run.finished" && event.parent !== null;
-  const node: AgentNode = { ...base, steps, tools, startedAt, state: finished ? "done" : base.state };
+  const state = finished ? "done" : base.state;
+  const node: AgentNode = { ...base, steps, tools, tokens, cost, startedAt, state };
   return { ...view, agents: { ...view.agents, [key]: node } };
 }
 
@@ -163,7 +188,14 @@ function changeText(view: View, event: RunEvent & { type: "text.delta" }): View 
 
 function startStep(view: View, event: RunEvent & { type: "step.started" }): View {
   const id = nextId(view);
-  const block: Block = { kind: "text", id, agent: toActor(event), text: "", open: true, settled: 0 };
+  const block: Block = {
+    kind: "text",
+    id,
+    agent: toActor(event),
+    text: "",
+    open: true,
+    settled: 0,
+  };
   const next = addBlock(view, block);
   const key = toStepKey(event);
   const window = event.context_window ?? view.window;
@@ -174,7 +206,11 @@ function finishStep(view: View, event: RunEvent & { type: "step.finished" }): Vi
   const key = toStepKey(event);
   const id = view.openSteps[key];
   if (id === undefined) {
-    return { ...view, context: event.usage.input_tokens, stepUsage: addUsage(view.stepUsage, event.usage) };
+    return {
+      ...view,
+      context: event.usage.input_tokens,
+      stepUsage: addUsage(view.stepUsage, event.usage),
+    };
   }
   const rest = Object.fromEntries(Object.entries(view.openSteps).filter(([name]) => name !== key));
   const next = changeBlock(view, id, (block) =>
@@ -184,6 +220,7 @@ function finishStep(view: View, event: RunEvent & { type: "step.finished" }): Vi
           text: event.text,
           open: false,
           settled: block.text === "" ? event.text.length : block.settled,
+          usage: event.usage,
         }
       : block,
   );
@@ -241,7 +278,14 @@ function finishTool(view: View, event: RunEvent & { type: "tool.finished" }): Vi
     blocks: view.blocks.map((block) => {
       if (block.kind !== "tool" || block.id !== event.call_id) return block;
       if (isNoCaseYet(block, event)) {
-        return { ...block, state: "done", summary: noCaseYet, duration: event.duration, error: null, problem: null };
+        return {
+          ...block,
+          state: "done",
+          summary: noCaseYet,
+          duration: event.duration,
+          error: null,
+          problem: null,
+        };
       }
       const failed = event.error !== undefined || event.problem !== undefined;
       return {

@@ -13,7 +13,10 @@ function toShape(view: View): View {
     block.kind === "text" ? { ...block, settled: 0 } : block,
   );
   const agents = Object.fromEntries(
-    Object.entries(view.agents).map(([key, agent]) => [key, { ...agent, startedAt: 0 }]),
+    Object.entries(view.agents).map(([key, agent]) => [
+      key,
+      { ...agent, startedAt: 0, tokens: 0, cost: 0 },
+    ]),
   );
   return { ...view, blocks, agents };
 }
