@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.150 (2026-11-05)
+
+- QA-363: a finished agent stays in the live busy list with a green filled circle and white check, 'done', and its steps, tokens, cost and time frozen; Total keeps counting it and says how many are still working.
+
 ## 1.1.149 (2026-11-05)
 
 - QA-360 (reopened): the project layout sets 'Geomind · <project name>' after every render instead of restoring an earlier title on cleanup (an overlapping old layout could put 'Geomind' back); the home pages set 'Geomind'.
