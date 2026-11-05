@@ -47,6 +47,8 @@ export type AgentNode = {
   state: "running" | "done";
   steps: number;
   tools: number;
+  /** Browser clock (ms) when the view first saw this run; the stage timer counts from it. */
+  startedAt: number;
 };
 
 export type ProblemState = { version: number; document: unknown };
@@ -121,11 +123,15 @@ function touchAgent(view: View, event: RunEvent): View {
     state: "running",
     steps: 0,
     tools: 0,
+    startedAt: Date.now(),
   };
+  // The server's time of the agent's first step (backend 1.1.99), else the time this view first saw it.
+  const stamp = event.type === "step.started" && base.steps === 0 ? Date.parse(event.ts ?? "") : NaN;
+  const startedAt = Number.isNaN(stamp) ? base.startedAt : stamp;
   const steps = base.steps + (event.type === "step.started" ? 1 : 0);
   const tools = base.tools + (event.type === "tool.started" ? 1 : 0);
   const finished = event.type === "run.finished" && event.parent !== null;
-  const node: AgentNode = { ...base, steps, tools, state: finished ? "done" : base.state };
+  const node: AgentNode = { ...base, steps, tools, startedAt, state: finished ? "done" : base.state };
   return { ...view, agents: { ...view.agents, [key]: node } };
 }
 

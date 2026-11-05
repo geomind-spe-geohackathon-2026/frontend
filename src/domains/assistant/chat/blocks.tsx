@@ -1,5 +1,5 @@
-import { Duration } from "@/shared/quantity/usage";
-import { memo, useState, type ReactNode } from "react";
+import { Duration, formatDuration } from "@/shared/quantity/usage";
+import { memo, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, toData } from "@/shared/api/client";
 import { Link, useParams } from "react-router-dom";
@@ -347,6 +347,24 @@ function DoingLine({ text }: { text: string }) {
   );
 }
 
+/** The stage timer of an agent's line: time since the line's agent started, ticking each second. */
+function StageTimer({ since }: { since: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+  return (
+    <span className="shrink-0 tabular-nums">
+      · {formatDuration(Math.floor(Math.max(0, now - since) / 1000))}
+    </span>
+  );
+}
+
 function toStepCount(steps: number): string {
   return `${String(steps)} ${steps === 1 ? "step" : "steps"}`;
 }
@@ -391,6 +409,7 @@ function WorkingAgents({
                   </span>
                   <DoingLine text={toDoing(own, agents)} />
                   <span className="shrink-0 tabular-nums">· {toStepCount(agent.steps)}</span>
+                  <StageTimer since={agent.startedAt} />
                 </button>
               }
             />

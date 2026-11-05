@@ -12,7 +12,10 @@ function toShape(view: View): View {
   const blocks = view.blocks.map((block) =>
     block.kind === "text" ? { ...block, settled: 0 } : block,
   );
-  return { ...view, blocks };
+  const agents = Object.fromEntries(
+    Object.entries(view.agents).map(([key, agent]) => [key, { ...agent, startedAt: 0 }]),
+  );
+  return { ...view, blocks, agents };
 }
 
 const recorded = toEvents(toRecording(0, "run-1", "example question", "approved"), "run-1", 1);

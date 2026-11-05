@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.113 (2026-11-05)
+
+- Plan E2: each agent line in the busy list shows a stage timer (time since its first step, from the server `ts` of backend 1.1.99), next to its step count.
+
 ## 1.1.112 (2026-11-05)
 
 - QA-146: the busy list never shows an unnamed line: an agent run with an empty id (the root run) is named "Coordinator", and an empty instance name falls back to the agent's name.

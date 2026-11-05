@@ -35,7 +35,7 @@ type Origin = {
 
 export type RunEventBody =
   | { type: "run.started"; run: string; loop: string | null }
-  | { type: "step.started"; index: number; model: string; context_window?: number }
+  | { type: "step.started"; index: number; model: string; ts?: string; context_window?: number }
   | { type: "text.delta"; index: number; text: string; buffered?: true }
   | {
       type: "tool.started";
@@ -54,7 +54,7 @@ export type RunEventBody =
       error?: string;
       problem?: ToolProblem;
     }
-  | { type: "step.finished"; index: number; usage: Usage; text: string }
+  | { type: "step.finished"; index: number; usage: Usage; text: string; ts?: string }
   | { type: "state.changed"; version: number; changes: StateChange[] }
   | ({ type: "request" } & RunRequest)
   | ({ type: "usage" } & Usage)
