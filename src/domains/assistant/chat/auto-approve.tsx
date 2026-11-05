@@ -15,6 +15,27 @@ import {
 } from "@/components/ui/dialog";
 import type { RunRequest } from "@/shared/sse/types";
 
+const preferencesKey = ["assistant", "preferences"] as const;
+
+/** The user's own auto-approve choice and whether they ever made it, stored on the server (QA-292). */
+export function usePreferences() {
+  const queryClient = useQueryClient();
+  const stored = useQuery({
+    queryKey: preferencesKey,
+    queryFn: async ({ signal }) => toData(await api.GET("/assistant/preferences", { signal })),
+    retry: false,
+    staleTime: 60_000,
+  });
+  const save = useMutation({
+    mutationFn: async (next: boolean) =>
+      toData(await api.PUT("/assistant/preferences", { body: { auto_approve: next } })),
+    onSuccess: (data) => {
+      queryClient.setQueryData(preferencesKey, data);
+    },
+  });
+  return { preferences: stored.data, save: save.mutate };
+}
+
 function toKey(chatId: string | null) {
   return ["chats", chatId ?? "new", "auto-approve"] as const;
 }
@@ -46,7 +67,8 @@ export function useAutoApprove(chatId: string | null): [boolean, (on: boolean) =
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: toKey(chatId) }),
   });
-  const [draft, setDraft] = useState(false);
+  const { preferences } = usePreferences();
+  const [draft, setDraft] = useState<boolean | null>(null);
   const change = (next: boolean) => {
     if (chatId === null) {
       setDraft(next);
@@ -54,7 +76,8 @@ export function useAutoApprove(chatId: string | null): [boolean, (on: boolean) =
     }
     save.mutate(next);
   };
-  return [chatId === null ? draft : (stored.data?.auto_approve ?? false), change];
+  const fresh = draft ?? preferences?.auto_approve ?? false;
+  return [chatId === null ? fresh : (stored.data?.auto_approve ?? false), change];
 }
 
 /** Stores the auto-approve choice on a chat that was just made, before its first message starts a run. */
@@ -111,25 +134,7 @@ export function AutoApproveButton({
   );
 }
 
-const askedKey = "geomind.auto-approve.asked";
-
-function wasAsked(): boolean {
-  try {
-    return window.localStorage.getItem(askedKey) !== null;
-  } catch {
-    return false;
-  }
-}
-
-function rememberAsked(): void {
-  try {
-    window.localStorage.setItem(askedKey, "1");
-  } catch {
-    return;
-  }
-}
-
-/** Asks once per browser, when a new chat opens, whether to turn auto-approve on; closing the dialog counts as no. */
+/** Asks, when a new chat opens, whether to turn auto-approve on, only while the user never answered (stored on the server); closing the dialog counts as no. */
 export function AutoApproveAsk({
   show,
   onAnswer,
@@ -137,15 +142,16 @@ export function AutoApproveAsk({
   show: boolean;
   onAnswer: (on: boolean) => void;
 }) {
-  const [asked, setAsked] = useState(wasAsked);
+  const { preferences, save } = usePreferences();
+  const [asked, setAsked] = useState(false);
   const answer = (on: boolean) => {
-    rememberAsked();
     setAsked(true);
+    save(on);
     onAnswer(on);
   };
   return (
     <Dialog
-      open={show && !asked}
+      open={show && !asked && preferences?.auto_approve_set === false}
       onOpenChange={(open) => {
         if (!open) answer(false);
       }}

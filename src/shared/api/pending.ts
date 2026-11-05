@@ -131,6 +131,9 @@ export type PortSuggestions = { port: string; suggestions: PortSuggestion[] };
 /** Routes the backend has not published yet (Connectors), typed by hand like openapi-typescript and merged into `paths` by the client; delete each once `schema.d.ts` has it. */
 export type AutoApprove = { auto_approve: boolean };
 
+/** The user's own auto-approve choice for new chats; `auto_approve_set` is false until they answered once (QA-292). */
+export type AssistantPreferences = { auto_approve: boolean; auto_approve_set: boolean };
+
 export type RunCall = {
   call_id: string;
   tool: string;
@@ -216,6 +219,10 @@ export type PendingPaths = {
   "/assistant/chat/{chat_id}/auto-approve": Omit<Route, "get" | "put"> & {
     get: Read<AutoApprove, never, { chat_id: string }>;
     put: Write<AutoApprove, AutoApprove, { chat_id: string }>;
+  };
+  "/assistant/preferences": Omit<Route, "get" | "put"> & {
+    get: Read<AssistantPreferences, never>;
+    put: Write<AssistantPreferences, AutoApprove>;
   };
   "/workspace/mcp": Omit<Route, "get" | "post"> & {
     get: Read<Connector[], never>;

@@ -101,7 +101,7 @@ function useSendToChat(projectId: string, chatId: string | null, auto: boolean) 
   const send = useSendMessage(projectId);
   async function handleSend(content: string): Promise<void> {
     const target = chatId ?? (await create.mutateAsync({})).id;
-    if (chatId === null && auto) await saveAutoApprove(target, true);
+    if (chatId === null) await saveAutoApprove(target, auto);
     await send.mutateAsync({ chatId: target, content });
     if (chatId === null) void navigate(`/projects/${projectId}/assistant/chat/${target}`);
   }
