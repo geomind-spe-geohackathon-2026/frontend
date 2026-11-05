@@ -1,12 +1,22 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, TriangleAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { projectQuery } from "@/shared/api/projects";
+import { isOutOfDate } from "@/shared/api/results";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { Notice } from "@/shared/ui/notice";
-import type { Report, ReportPart, ReportPartInfo, Result, Study } from "@/shared/api/types";
+import type {
+  Project,
+  Report,
+  ReportPart,
+  ReportPartInfo,
+  Result,
+  Study,
+} from "@/shared/api/types";
 import type { Run } from "@/shared/api/types";
 import { previewQuery } from "./api";
 import { ExportButtons } from "./export-buttons";
@@ -49,6 +59,23 @@ function PreviewBody({
   return <ReportDocument preview={preview.data} flowsheet={flowsheet} />;
 }
 
+function toVersion(value: number | null): string {
+  return value === null ? "-" : String(value);
+}
+
+function OutOfDate({ project, made }: { project: Project | undefined; made: Result | undefined }) {
+  if (project === undefined || made === undefined || !isOutOfDate(project, made)) return null;
+  return (
+    <Alert className="border-warn bg-warn-soft">
+      <TriangleAlert aria-hidden="true" className="text-warn" />
+      <AlertTitle>Out of date</AlertTitle>
+      <AlertDescription>
+        {`This result ran on case version ${toVersion(made.case_version)}, plant version ${toVersion(made.plant_version)}; the project now has case version ${toVersion(project.case_version)}, plant version ${toVersion(project.plant_version)}. Run the study again before you send this report.`}
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 function OptionsButton({ children }: { children: ReactNode }) {
   return (
     <Popover>
@@ -80,7 +107,9 @@ export function ReportEditor({ projectId, results, runs, studies, parts }: Props
   const include = toOrderedParts(order, chosen);
   const request = { project: projectId, result, ...(run === "" ? {} : { run }), include };
   const preview = useQuery(previewQuery(request));
-  const name = results.find((entry) => entry.id === result)?.name ?? result;
+  const made = results.find((entry) => entry.id === result);
+  const name = made?.name ?? result;
+  const project = useQuery(projectQuery(projectId));
   const flowsheet = useFlowsheetSvg(preview.data?.flowsheet);
   const { exporter, handleExport } = useReportExport(request, name, flowsheet);
 
@@ -126,6 +155,7 @@ export function ReportEditor({ projectId, results, runs, studies, parts }: Props
           </>
         }
       />
+      <OutOfDate project={project.data} made={made} />
       {exporter.isError ? <Notice status="failed" error={exporter.error} /> : null}
       <PreviewBody include={include} preview={preview} flowsheet={flowsheet} />
     </>
