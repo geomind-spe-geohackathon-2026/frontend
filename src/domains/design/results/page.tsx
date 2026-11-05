@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Notice } from "@/shared/ui/notice";
+import { OutOfDateAlert } from "@/shared/ui/out-of-date";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { resultsQuery } from "@/shared/api/results";
 import { ComparePane } from "./compare-pane";
@@ -80,6 +82,14 @@ export function ResultsPage() {
   return (
     <>
       <PageHeader title="Results" description="Designs found by the studies, with their checks." />
+      <OutOfDateAlert
+        projectId={projectId}
+        action={
+          <Button size="sm" asChild>
+            <Link to={`/projects/${projectId}/design/study`}>Run the study</Link>
+          </Button>
+        }
+      />
       {renderBody()}
     </>
   );

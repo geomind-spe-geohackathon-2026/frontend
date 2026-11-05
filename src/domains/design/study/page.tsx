@@ -6,6 +6,7 @@ import { PageHeader } from "@/shared/layout/page-header";
 import { useRequiredParam } from "@/shared/layout/params";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/shared/ui/notice";
+import { OutOfDateAlert } from "@/shared/ui/out-of-date";
 import { hasActiveStudy, studiesQuery, useCancelStudy, useStartStudy } from "./api";
 import { NewStudyDialog } from "./new-study-dialog";
 import { StudyTable } from "./study-table";
@@ -21,6 +22,10 @@ export function StudyPage() {
   const [template, setTemplate] = useState<Study | null>(null);
   const items = toItems(studies.data?.pages);
   const mutationError = start.error ?? cancel.error;
+  const openNew = () => {
+    setTemplate(null);
+    setDialogOpen(true);
+  };
   useRefreshOnFinish(projectId, hasActiveStudy(items));
 
   return (
@@ -29,13 +34,15 @@ export function StudyPage() {
         title="Study"
         description="Heavy calculations run in the background. This list refreshes while one is running."
         actions={
-          <Button
-            variant="default"
-            onClick={() => {
-              setTemplate(null);
-              setDialogOpen(true);
-            }}
-          >
+          <Button variant="default" onClick={openNew}>
+            New study
+          </Button>
+        }
+      />
+      <OutOfDateAlert
+        projectId={projectId}
+        action={
+          <Button size="sm" onClick={openNew}>
             New study
           </Button>
         }
