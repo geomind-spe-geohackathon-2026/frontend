@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { toNotice } from "@/app/notice";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -7,6 +8,9 @@ import { AppSidebar } from "./sidebar";
 export function HomeLayout() {
   const location = useLocation();
   const notice = toNotice(location.state);
+  useEffect(() => {
+    document.title = "Geomind";
+  }, []);
   return (
     <SidebarProvider className="min-h-0 flex-1">
       <AppSidebar />

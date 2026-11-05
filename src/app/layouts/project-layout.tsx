@@ -172,13 +172,10 @@ export function ProjectLayout() {
   const project = useQuery(projectQuery(projectId));
   const name = project.data?.name;
   useEffect(() => {
-    if (name === undefined) return;
-    const before = document.title;
-    document.title = `Geomind · ${name}`;
-    return () => {
-      document.title = before;
-    };
-  }, [name]);
+    if (name !== undefined && document.title !== `Geomind · ${name}`) {
+      document.title = `Geomind · ${name}`;
+    }
+  });
 
   if (hasCode(project.error, "project_not_found")) {
     return (
