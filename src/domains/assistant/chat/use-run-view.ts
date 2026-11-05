@@ -49,21 +49,44 @@ function toBatcher(flush: (events: RunEvent[]) => void) {
   };
 }
 
+const refreshMs = 2_000;
+
+function toRefresher(queryClient: ReturnType<typeof useQueryClient>) {
+  const pending = new Map<string, readonly unknown[]>();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  return {
+    add(queryKey: readonly unknown[]) {
+      pending.set(JSON.stringify(queryKey), queryKey);
+      timer ??= setTimeout(() => {
+        timer = null;
+        const keys = [...pending.values()];
+        pending.clear();
+        keys.forEach((key) => {
+          void queryClient.invalidateQueries({ queryKey: key }, { cancelRefetch: false });
+        });
+      }, refreshMs);
+    },
+    stop() {
+      if (timer !== null) clearTimeout(timer);
+    },
+  };
+}
+
 function refreshFor(
-  queryClient: ReturnType<typeof useQueryClient>,
+  refresh: ReturnType<typeof toRefresher>,
   projectId: string,
   runId: string,
   event: RunEvent,
 ): void {
   if (event.type === "request" || event.type === "run.started") {
-    void queryClient.invalidateQueries({ queryKey: chatsKey(projectId) });
+    refresh.add(chatsKey(projectId));
   }
   if (
     event.type === "step.finished" ||
     event.type === "tool.finished" ||
     event.type === "run.finished"
   ) {
-    void queryClient.invalidateQueries({ queryKey: runAgentsQuery(projectId, runId).queryKey });
+    refresh.add(runAgentsQuery(projectId, runId).queryKey);
   }
 }
 
@@ -85,6 +108,7 @@ export function useRunView(projectId: string, chatId: string | null, runId: stri
     const batch = toBatcher((events) => {
       dispatch({ kind: "events", events });
     });
+    const refresh = toRefresher(queryClient);
     dispatch({ kind: "reset" });
     void streamEvents({
       path: `/assistant/runs/${runId}/events`,
@@ -96,15 +120,16 @@ export function useRunView(projectId: string, chatId: string | null, runId: stri
       },
       onEvent: (event) => {
         batch.add(event);
-        refreshFor(queryClient, projectId, runId, event);
+        refreshFor(refresh, projectId, runId, event);
         if (event.type !== "run.finished" || event.parent !== null) return;
         finished = true;
-        void queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
+        refresh.add(["projects", projectId]);
       },
     });
     return () => {
       controller.abort();
       batch.stop();
+      refresh.stop();
     };
   }, [runId, projectId, queryClient]);
 

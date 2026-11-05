@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.122 (2026-11-05)
+
+- QA-246: the chat stream no longer refetches on every event: refreshes it asks for (chats, agents, the project after the run) are collected and sent at most once per 2 s, without cancelling a request already on its way (that cancel-and-repeat made bursts of 20 identical calls, and a replay of a long run made hundreds). A 429 answer is retried with backoff (5, 10, 20, 40 s) instead of showing an error.
+
 ## 1.1.121 (2026-11-05)
 
 - QA-244: Compare rounds the depth (3,282 m, not 3281.98316...); point labels of designs close together are moved apart; "The dashed line is the trade-off line" shows only when the line is drawn (two or more designs on it).
