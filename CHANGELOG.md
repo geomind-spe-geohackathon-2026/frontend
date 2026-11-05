@@ -2,6 +2,10 @@
 
 The frontend uses semantic versions (v1.x.y). It talks to backend contract 1.0.0 and later.
 
+## 1.1.91 (2026-11-05)
+
+- QA-113 (user): the shared drop zone (`shared/attach/drop-zone.tsx`, used by Knowledge, the project Library and New project) is about three times taller (128 px under a list, 192 px when empty), icon and text centred; while files are dragged over it the border turns solid accent with a soft accent fill and ring, and it reads "Drop to add the files" (no flicker when the pointer crosses its text).
+
 ## 1.1.90 (2026-11-05)
 
 - QA-108 (user, addition): every table has a row-number column "#" (1, 2, 3 ..., narrow and muted), drawn by a CSS counter (`.data-table-numbered` in `styles/index.css`) so no table needs its own cells; on by default in DataTable and DataTableFrame (prop `numbered={false}` where a table has its own rank: Alternatives, evolve structures) and in Markdown tables. The chat's runs window now uses the shared table too, so every table in the app has the three backgrounds and the numbers.

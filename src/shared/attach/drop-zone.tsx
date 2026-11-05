@@ -11,7 +11,7 @@ type Props = {
   onFiles: (files: File[]) => void;
 };
 
-/** A dashed box that takes dropped files or opens the file picker from its browse link; slim fits under a list. */
+/** The one drop zone for every upload area: a tall dashed box that takes dropped files or opens the file picker from its browse link, and lights up while files are dragged over it; slim is the shorter one under a list. */
 export function DropZone({ label, title, accept, slim = false, disabled = false, onFiles }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -23,15 +23,15 @@ export function DropZone({ label, title, accept, slim = false, disabled = false,
       data-slot="drop-zone"
       data-over={over}
       className={cn(
-        "flex items-center justify-center gap-2 rounded-lg border border-dashed border-border text-center text-sm text-muted-foreground transition-colors data-[over=true]:border-accent data-[over=true]:bg-accent/5",
-        slim ? "flex-row px-4 py-3" : "flex-col px-6 py-10",
+        "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-center text-sm text-muted-foreground transition-colors data-[over=true]:border-solid data-[over=true]:border-accent data-[over=true]:bg-accent-soft data-[over=true]:text-foreground data-[over=true]:ring-4 data-[over=true]:ring-accent/20 data-[over=true]:[&>*]:pointer-events-none",
+        slim ? "min-h-32 px-4 py-6" : "min-h-48 px-6 py-10",
       )}
       onDragOver={(event) => {
         stop(event);
         setOver(true);
       }}
-      onDragLeave={() => {
-        setOver(false);
+      onDragLeave={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOver(false);
       }}
       onDrop={(event) => {
         stop(event);
@@ -39,8 +39,11 @@ export function DropZone({ label, title, accept, slim = false, disabled = false,
         if (!disabled) onFiles([...event.dataTransfer.files]);
       }}
     >
-      <Upload aria-hidden="true" className={slim ? "size-4" : "size-6"} />
+      <Upload aria-hidden="true" className={cn(slim ? "size-5" : "size-6", over && "text-accent")} />
       {title === undefined ? null : <p className="font-medium text-foreground">{title}</p>}
+      {over ? (
+        <span className="font-medium">Drop to add the files</span>
+      ) : (
       <span>
         Drag and drop files here, or{" "}
         <button
@@ -54,6 +57,7 @@ export function DropZone({ label, title, accept, slim = false, disabled = false,
           browse
         </button>
       </span>
+      )}
       <input
         ref={input}
         type="file"
